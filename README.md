@@ -66,18 +66,29 @@ It runs on any platform where Go compiles — including **Android/Termux** and m
 
 ---
 
+## 📊 Test Environment & Specifications
+
+These tests were executed inside a **`proot` environment on Termux/Android**. This is a constrained, emulated user-space environment without native root permissions, demonstrating Sentinel's true zero-dependency advantage and ultra-fast performance even on mobile hardware limitations.
+
+- **OS / Kernel**: Linux localhost 6.17.0-PRoot-Distro (Android / Termux)
+- **Architecture**: `aarch64` (ARM64)
+- **CPU**: 8-Core ARM (Cortex-A55 / Cortex-A75) @ 2.0 GHz
+- **Memory**: ~2.5 GB Total RAM (~640 MB Available during tests)
+
+---
+
 ## 📊 The Doomsday Benchmark: Sentinel vs. Industry Standards
 
 We executed the **"Doomsday Benchmark"** (available in `tests/benchmark/doomsday_generator.py`) generating ~15MB of compressed minified lines, high-entropy noise, and syntax baits. The payload was seeded with exactly 3 Real Secrets (GitHub PAT, Base64 Encoded AWS Key, and PEM Private Key) alongside 100 fake Stripe keys, 20,000 invalid AWS keys, and common Android constants like `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` and `sg.messageId`.
 
-### 1. The Execution Matrix
+### Comparison Benchmark Matrix
 
-| Metric | Sentinel v1.2.1 | Gitleaks v8 | TruffleHog v3 |
+| Metric | Sentinel | Gitleaks | TruffleHog |
 | :--- | :--- | :--- | :--- |
-| **Execution Time** | **1.573s** | 4.365s | 11.902s |
-| **False Positives (Traps)** | **0** | 101 | 1 (Unverified) |
+| **Execution Time (Real)** | **2.37s** | 1.81s | 18.54s |
+| **False Positives (Traps)** | **0** | 100 | 0 |
 | **Caught Secrets (Out of 3)** | **3 / 3** | 2 / 3 | 1 / 3 |
-| **Signal-to-Noise Ratio** | **100% (3 true, 0 noise)** | 1.9% (2 true, 101 noise) | 50% (1 true, 1 noise) |
+| **Signal-to-Noise Ratio** | **100% (3 true, 0 noise)** | 2.0% (2 true, 100 noise) | 100% (1 true, 0 noise) |
 
 ### 🧠 Why Sentinel Obliterated the Standards
 
@@ -325,18 +336,22 @@ Sentinel's Tier 1 catalogue detects **60+ secret families** across all major pla
 
 ## Performance
 
-All measurements on a 2023 ARM64 / equivalent Linux environment:
+All measurements derived live from a restricted `proot` Android/Termux environment (ARM64 Cortex-A55/A75):
 
-| Scenario | File Size | Time | Outcome |
-|----------|-----------|------|---------|
-| Clean file, no secrets | 50 KB | < 2 ms | ✔ Clean |
-| Clean file, no secrets | 1 MB | < 8 ms | ✔ Clean |
-| One secret buried in file | 50 KB | < 5 ms | ✘ Blocked |
-| High-entropy scan (entropy tier) | 50 KB | < 3 ms | varies |
-| Large binary file (skipped) | 15 MB | < 1 ms | ⊘ Skipped |
-| Automaton construction (60+ sigs) | — | < 200 µs | — |
+### Detailed Performance Metrics
 
-**Design decisions enabling sub-15ms latency:**
+| Benchmark Suite | Avg. Time per Op | Allocations / Op | Throughput |
+| :--- | :--- | :--- | :--- |
+| **Aho-Corasick Automaton Build** | 2.62 ms | 507 | - |
+| **Full Scan Pipeline (Clean)** | 2.40 ms | 1200 | 20.28 MB/s |
+| **Full Scan Pipeline (With Secret)** | 0.13 ms | 39 | 0.89 MB/s |
+| **Tier 1 Search (No Hit)** | 1.26 ms | 14 | 88.99 MB/s |
+| **Tier 1 Search (With Hit)** | 0.60 ms | 18 | 91.75 MB/s |
+| **Tier 2 Entropy Analysis (Small)** | 0.02 ms | 0 (Zero Allocs) | 1.78 MB/s |
+| **Tier 2 Entropy Analysis (Large)** | 0.03 ms | 0 (Zero Allocs) | 142.06 MB/s |
+
+**Design decisions enabling ultra-low latency:**
+- The hot scan path features **zero allocations** where possible.
 - The Aho-Corasick automaton is built **once** at startup and reused across all files.
 - Binary files are rejected in **O(8 192)** via null-byte scan — a fixed, bounded cost.
 - The newline index is pre-computed in a **single pass** before pattern matching begins.
