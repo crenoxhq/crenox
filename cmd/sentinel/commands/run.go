@@ -69,7 +69,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 
 	// ── Verify we are inside a git repository ────────────────────────────────
 	if !git.IsInsideWorkTree() {
-		return fmt.Errorf("not inside a git repository")
+		return fmt.Errorf("not inside a git repository. Please navigate to a repository or use 'sentinel scan' for ad-hoc scanning")
 	}
 
 	// ── List staged files ─────────────────────────────────────────────────────

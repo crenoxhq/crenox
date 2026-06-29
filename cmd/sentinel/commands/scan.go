@@ -85,7 +85,7 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose 
 	for _, p := range paths {
 		info, err := os.Stat(p)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "sentinel: cannot stat %q: %v\n", p, err)
+			fmt.Fprintf(os.Stderr, "sentinel: the path %q does not exist or is inaccessible\n", p)
 			continue
 		}
 		if info.IsDir() {

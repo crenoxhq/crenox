@@ -167,7 +167,7 @@ type Match struct {
 	Line int
 
 	// LineContent is the full text of the matching line (up to 512 bytes).
-	LineContent string
+	LineContent []byte
 }
 
 // Build constructs an Aho-Corasick automaton from the given signatures.
@@ -259,7 +259,7 @@ func buildNewlineIndex(content []byte) []int {
 
 // lineAt returns the 1-indexed line number and the text of the line containing
 // offset using a binary search on the pre-built newline index.
-func lineAt(content []byte, newlines []int, offset int) (int, string) {
+func lineAt(content []byte, newlines []int, offset int) (int, []byte) {
 	lo, hi := 0, len(newlines)
 	for lo < hi {
 		mid := (lo + hi) / 2
@@ -285,7 +285,7 @@ func lineAt(content []byte, newlines []int, offset int) (int, string) {
 	if end-start > 512 {
 		end = start + 512
 	}
-	return lineNum, string(content[start:end])
+	return lineNum, content[start:end]
 }
 
 // toLower converts an ASCII byte to lowercase without a branch table.

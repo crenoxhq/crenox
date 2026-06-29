@@ -92,6 +92,56 @@ func TestScanner_CommentedSecret_Suppressed(t *testing.T) {
 	}
 }
 
+func TestScanner_InlineSuppression_DifferentForms(t *testing.T) {
+	s := defaultScanner()
+
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name: "Go/C style preceding",
+			content: `// sentinel:ignore
+credentialToken := "ghp_REALTOKEN1234567890abcdef"`,
+		},
+		{
+			name: "Shell/Python style preceding",
+			content: `# sentinel:ignore
+AWS_KEY="AKIAIOSFODNN7EXAMPLE1234"`,
+		},
+		{
+			name: "HTML/XML style preceding",
+			content: `<!-- sentinel:ignore -->
+<secret>sk-ant-api03-1234567890abcdef123456789</secret>`,
+		},
+		{
+			name: "Same-line trailing comment",
+			content: `credentialToken := "ghp_REALTOKEN1234567890abcdef" // sentinel:ignore`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			findings := scan(s, "testfile", tt.content)
+			if len(findings) != 0 {
+				t.Errorf("expected 0 findings for %s, got %d", tt.name, len(findings))
+			}
+		})
+	}
+
+	t.Run("Same-line comment does not suppress next line", func(t *testing.T) {
+		content := `token1 := "ghp_REALTOKEN1234567890abcdef" // sentinel:ignore
+token2 := "ghp_REALTOKEN0987654321fedcba"`
+		findings := scan(s, "testfile", content)
+		if len(findings) != 1 {
+			t.Fatalf("expected 1 finding for the next line, got %d", len(findings))
+		}
+		if findings[0].Token != "ghp_REALTOKEN0987654321fedcba" {
+			t.Errorf("wrong token reported: %s", findings[0].Token)
+		}
+	})
+}
+
 func TestScanner_TestFile_Suppressed(t *testing.T) {
 	s := defaultScanner()
 	findings := scan(s, "auth/auth_test.go", `token := "ghp_TESTTOKEN1234567890abcdef"`)

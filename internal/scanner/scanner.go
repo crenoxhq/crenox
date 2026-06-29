@@ -27,6 +27,9 @@ import (
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Tier identifies which detection tier produced a finding.
+// Note: "Tier 3 (Context)" is implemented as a suppression/filtering layer
+// via the sentinelcontext package, which is why it doesn't have a direct
+// TierContext constant representing a detection source here.
 type Tier int
 
 const (
@@ -103,6 +106,20 @@ func New(automaton *trie.Automaton, opts Options) *Scanner {
 	}
 }
 
+// isDuplicateMatch checks if a new Finding's token already exists in the matches slice.
+func (s *Scanner) isDuplicateMatch(matches []Finding, newMatch Finding) bool {
+	for _, m := range matches {
+		if newMatch.DetectionTier == TierEntropy || m.DetectionTier == TierEntropy {
+			if strings.Contains(newMatch.Token, m.Token) || strings.Contains(m.Token, newMatch.Token) {
+				return true
+			}
+		} else if m.Token == newMatch.Token {
+			return true
+		}
+	}
+	return false
+}
+
 // fmtVerbRE matches printf-style format verbs so they can be rejected as tokens.
 var fmtVerbRE = regexp.MustCompile(`^%[+\-# 0-9]*[vTtbcdoOqxXUeEfFgGsSpw]`)
 
@@ -116,6 +133,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 	// We don't need a global map anymore since we process line by line.
 	lineNum := 0
 	start := 0
+	skipNextLine := false
 	for start < len(content) {
 		lineNum++
 		end := bytes.IndexByte(content[start:], '\n')
@@ -129,7 +147,18 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		}
 
 		lineTrim := bytes.TrimSpace(rawLine)
-		var capturedTokens []string
+
+		// ── Inline Suppression (sentinel:ignore) ──────────────────────────────
+		if skipNextLine {
+			skipNextLine = false
+			continue
+		}
+		if bytes.Contains(lineTrim, []byte("sentinel:ignore")) {
+			if bytes.HasPrefix(lineTrim, []byte("//")) || bytes.HasPrefix(lineTrim, []byte("#")) || bytes.HasPrefix(lineTrim, []byte("/*")) || bytes.HasPrefix(lineTrim, []byte("<!--")) {
+				skipNextLine = true
+			}
+			continue
+		}
 
 		// ── Skip comment lines early (Tier 3 check 2 fast path) ──────────────
 		if bytes.HasPrefix(lineTrim, []byte("//")) || bytes.HasPrefix(lineTrim, []byte("#")) {
@@ -186,6 +215,8 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		hasSpace := bytes.ContainsRune(targetStr, ' ')
 		if hasSpace {
 			spaceCount := bytes.Count(targetStr, []byte{' '})
+			// Space counts of 11, 14, 17, 20, and 23 correspond strictly to
+			// 12, 15, 18, 21, and 24-word BIP-39 crypto wallet recovery phrases.
 			if spaceCount == 11 || spaceCount == 14 || spaceCount == 17 || spaceCount == 20 || spaceCount == 23 {
 				if isStrictBip39Mnemonic(string(targetStr)) {
 					findings = append(findings, Finding{
@@ -230,18 +261,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 					decision = sentinelcontext.Classify(filePath, string(rawLine), token)
 				}
 				if decision == sentinelcontext.Real {
-					isDuplicate := false
-					for _, ct := range capturedTokens {
-						if ct == token {
-							isDuplicate = true
-							break
-						}
-					}
-					if isDuplicate {
-						continue
-					}
-					capturedTokens = append(capturedTokens, token)
-					findings = append(findings, Finding{
+					newMatch := Finding{
 						FilePath:      filePath,
 						Line:          lineNum,
 						LineContent:   string(rawLine),
@@ -251,7 +271,11 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 						SignatureID:   m.Sig.ID,
 						Description:   m.Sig.Description,
 						Severity:      m.Sig.Severity,
-					})
+					}
+					if s.isDuplicateMatch(findings, newMatch) {
+						continue
+					}
+					findings = append(findings, newMatch)
 				}
 			}
 
@@ -279,18 +303,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 						decision = sentinelcontext.Classify(filePath, string(rawLine), token)
 					}
 					if decision == sentinelcontext.Real {
-						isDuplicate := false
-						for _, ct := range capturedTokens {
-							if ct == token {
-								isDuplicate = true
-								break
-							}
-						}
-						if isDuplicate {
-							continue
-						}
-						capturedTokens = append(capturedTokens, token)
-						findings = append(findings, Finding{
+						newMatch := Finding{
 							FilePath:      filePath,
 							Line:          lineNum,
 							LineContent:   string(rawLine),
@@ -300,7 +313,11 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 							SignatureID:   m.Sig.ID,
 							Description:   m.Sig.Description,
 							Severity:      m.Sig.Severity,
-						})
+						}
+						if s.isDuplicateMatch(findings, newMatch) {
+							continue
+						}
+						findings = append(findings, newMatch)
 					}
 				}
 			}
@@ -342,18 +359,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 								decision = sentinelcontext.Classify(filePath, string(rawLine), token)
 							}
 							if decision == sentinelcontext.Real {
-								isDuplicate := false
-								for _, ct := range capturedTokens {
-									if ct == token {
-										isDuplicate = true
-										break
-									}
-								}
-								if isDuplicate {
-									continue
-								}
-								capturedTokens = append(capturedTokens, token)
-								findings = append(findings, Finding{
+								newMatch := Finding{
 									FilePath:      filePath,
 									Line:          lineNum,
 									LineContent:   string(rawLine),
@@ -363,7 +369,11 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 									SignatureID:   m.Sig.ID,
 									Description:   m.Sig.Description + " (Base64 Decoded)",
 									Severity:      m.Sig.Severity,
-								})
+								}
+								if s.isDuplicateMatch(findings, newMatch) {
+									continue
+								}
+								findings = append(findings, newMatch)
 							}
 						}
 					}
@@ -378,23 +388,12 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 				if cLen >= s.opts.MinSecretLength {
 					hits := entropy.Analyze(compVal, s.opts.EntropyThreshold, s.opts.MinSecretLength)
 					for _, h := range hits {
-						isDuplicate := false
-						for _, ct := range capturedTokens {
-							if strings.Contains(h.Token, ct) || strings.Contains(ct, h.Token) {
-								isDuplicate = true
-								break
-							}
-						}
-						if isDuplicate {
-							continue
-						}
 						decision := sentinelcontext.Real
 						if !s.opts.DisableContext {
 							decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token)
 						}
 						if decision == sentinelcontext.Real {
-							capturedTokens = append(capturedTokens, h.Token)
-							findings = append(findings, Finding{
+							newMatch := Finding{
 								FilePath:      filePath,
 								Line:          lineNum,
 								LineContent:   string(rawLine),
@@ -404,7 +403,11 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 								SignatureID:   fmt.Sprintf("high-entropy-%s", h.Kind),
 								Description:   fmt.Sprintf("High-entropy %s string (entropy=%.2f)", strings.ToUpper(h.Kind), h.Entropy),
 								Severity:      entropySeverity(h.Entropy),
-							})
+							}
+							if s.isDuplicateMatch(findings, newMatch) {
+								continue
+							}
+							findings = append(findings, newMatch)
 						}
 					}
 				}
@@ -558,6 +561,9 @@ func extractRHS(line string) (string, bool) {
 			}
 			if next == '=' || prev == '!' || prev == '<' || prev == '>' || prev == '=' {
 				continue
+			}
+			if i+1 >= len(line) {
+				return "", false
 			}
 			return strings.TrimSpace(line[i+1:]), true
 		}
@@ -760,6 +766,8 @@ func entropySeverity(e float64) string {
 
 // aggregateBlobs finds consecutive lines of high-entropy base64 and merges them
 // into a single massive blob finding, preventing alert fragmentation.
+// This mitigates alert fatigue by squashing multi-line high-entropy strings
+// (like JKS keystores or PEM certs) into a single CRITICAL finding.
 func aggregateBlobs(findings []Finding) []Finding {
 	if len(findings) < 3 {
 		return findings
