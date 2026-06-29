@@ -2,8 +2,8 @@
 
 This document serves as our public roadmap to explain upcoming enterprise features to users and contributors.
 
-- [ ] **Inline Suppression (`sentinel:ignore`)**
-  *Status: Planned*
+- [x] **Inline Suppression (`sentinel:ignore`)**
+  *Status: Implemented*
   Allows developers to bypass false positives directly in the source code. By adding a comment containing `sentinel:ignore` on the preceding line, the engine will completely skip scanning the immediately following line.
 
 - [ ] **SARIF Output Format**
@@ -18,6 +18,6 @@ This document serves as our public roadmap to explain upcoming enterprise featur
   *Status: Planned*
   Empowering enterprise teams to define their own proprietary regex patterns, static prefixes, and custom rules within the `.sentinel.yaml` configuration file to catch company-specific tokens.
 
-- [ ] **Native `pre-commit` Framework Hook**
-  *Status: Planned*
+- [x] **Native `pre-commit` Framework Hook**
+  *Status: Implemented*
   Adding a `.pre-commit-hooks.yaml` configuration to the repository. This will allow large engineering teams to manage and distribute Sentinel seamlessly using the globally recognized Python-based `pre-commit` ecosystem without manual binary installations.
