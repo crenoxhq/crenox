@@ -190,7 +190,7 @@ func Classify(filePath, lineContent, token string) Decision {
 // entirely when appropriate.
 func IsTestFilePath(path string) bool {
 	lower := strings.ToLower(path)
-	
+
 	for _, suffix := range safeFileSuffixes {
 		if strings.HasSuffix(lower, suffix) {
 			return true
@@ -233,10 +233,10 @@ func extractVarName(line, token string) string {
 			// Find the closest alphanumeric identifier to the left
 			end := -1
 			for j := i - 1; j >= 0; j-- {
-				isAlphaNum := (line[j] >= 'a' && line[j] <= 'z') || 
-							  (line[j] >= 'A' && line[j] <= 'Z') || 
-							  (line[j] >= '0' && line[j] <= '9') || 
-							  line[j] == '_' || line[j] == '-'
+				isAlphaNum := (line[j] >= 'a' && line[j] <= 'z') ||
+					(line[j] >= 'A' && line[j] <= 'Z') ||
+					(line[j] >= '0' && line[j] <= '9') ||
+					line[j] == '_' || line[j] == '-'
 				if isAlphaNum && end == -1 {
 					end = j
 				} else if !isAlphaNum && end != -1 {

@@ -117,7 +117,7 @@ AWS_KEY="AKIAIOSFODNN7EXAMPLE1234"`,
 <secret>sk-ant-api03-1234567890abcdef123456789</secret>`,
 		},
 		{
-			name: "Same-line trailing comment",
+			name:    "Same-line trailing comment",
 			content: `credentialToken := "ghp_REALTOKEN1234567890abcdef" // sentinel:ignore`,
 		},
 	}
@@ -674,4 +674,81 @@ func BenchmarkScanner_MassiveMinifiedLine(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = s.ScanContent("minified.json", content)
 	}
+}
+
+func TestScanner_V2_Fiabilidad_Inteligencia(t *testing.T) {
+	automaton := trie.Build(trie.BuiltinSignatures)
+
+	t.Run("ALLOWLIST: Exact and Glob Matching", func(t *testing.T) {
+		opts := scanner.Options{
+			EntropyThreshold: 3.5,
+			MinSecretLength:  20,
+			AllowlistPatterns: []string{
+				"ghp_EXACTMATCHONLY1234567890123456",
+				"sk_test_*",
+			},
+		}
+		sec := scanner.New(automaton, opts)
+
+		// Real test key, fake live key, exact match, non-exact match
+		content := []byte(`
+			var token1 = "ghp_EXACTMATCHONLY1234567890123456" // Should be ALLOWED
+			var token2 = "ghp_EXACTMATCHONLY1234567890123456789" // Should be BLOCKED (different)
+			var token3 = "AKIAIOSFODNN7ALLOWED" // Should be ALLOWED
+			var token4 = "AKIAIOSFODNN7BLOCKED" // Should be BLOCKED
+		`)
+
+		findings := sec.ScanContent("config/keys.go", content)
+		if len(findings) != 2 {
+			t.Fatalf("expected exactly 2 findings (the ones not allowlisted), got %d", len(findings))
+		}
+
+		foundLive := false
+		foundToken2 := false
+		for _, f := range findings {
+			if strings.Contains(f.Token, "BLOCKED") {
+				foundLive = true
+			}
+			if f.Token == "ghp_EXACTMATCHONLY1234567890123456789" {
+				foundToken2 = true
+			}
+		}
+
+		if !foundLive || !foundToken2 {
+			t.Errorf("expected to find sk_live and token2, but got: %+v", findings)
+		}
+	})
+
+	t.Run("HEX BLOB AGGREGATION: Massive Keystore", func(t *testing.T) {
+		opts := scanner.Options{
+			EntropyThreshold: 3.5,
+			MinSecretLength:  20,
+		}
+		sec := scanner.New(automaton, opts)
+
+		// 5 lines of high-entropy hex. Should be squashed into exactly 1 massive-hex-blob finding.
+		content := []byte(`
+a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f91
+8a2e1d7f6c5b4a3928170e9f8d7c6b5a4938271605f4e3d2c1b0a9f8e7d6c5b2
+f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4031221304f5e6d7c8b9a3
+0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f4
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+		`)
+
+		findings := sec.ScanContent("keys/database.hex", content)
+		if len(findings) != 1 {
+			t.Fatalf("expected exactly 1 aggregated finding, got %d", len(findings))
+		}
+
+		f := findings[0]
+		if f.Severity != "CRITICAL" {
+			t.Errorf("expected CRITICAL severity for aggregated blob, got %s", f.Severity)
+		}
+		if f.SignatureID != "massive-hex-blob" {
+			t.Errorf("expected signature 'massive-hex-blob', got %s", f.SignatureID)
+		}
+		if !strings.Contains(f.LineContent, "5 consecutive lines of Hex") {
+			t.Errorf("expected line content to mention '5 consecutive lines of Hex', got: %s", f.LineContent)
+		}
+	})
 }

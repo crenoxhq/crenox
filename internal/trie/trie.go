@@ -247,7 +247,7 @@ func (a *Automaton) Search(content []byte) []Match {
 			for end < len(content) && content[end] != '\n' {
 				end++
 			}
-			
+
 			lineContent := content[lineStart:end]
 			if len(lineContent) > 512 {
 				lineContent = lineContent[:512]
@@ -265,8 +265,6 @@ func (a *Automaton) Search(content []byte) []Match {
 	}
 	return matches
 }
-
-
 
 // toLower converts an ASCII byte to lowercase without a branch table.
 func toLower(b byte) byte {

@@ -2,6 +2,8 @@ package commands
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,7 +39,7 @@ func NewUpdateCmd() *cobra.Command {
 
 			// 2. Query GitHub Releases
 			fmt.Println("Checking GitHub for the latest release...")
-			
+
 			// Custom client to force IPv4 and bypass broken local DNS by using Google DNS
 			client := &http.Client{
 				Transport: &http.Transport{
@@ -52,7 +54,7 @@ func NewUpdateCmd() *cobra.Command {
 					}).DialContext,
 				},
 			}
-			
+
 			resp, err := client.Get("https://api.github.com/repos/sentinel-cli/sentinel/releases/latest")
 			if err != nil {
 				return fmt.Errorf("failed to reach github: %w", err)
@@ -76,15 +78,27 @@ func NewUpdateCmd() *cobra.Command {
 			}
 
 			var downloadURL string
+			var downloadName string
 			for _, asset := range release.Assets {
 				lowerName := strings.ToLower(asset.Name)
 				hasOS := strings.Contains(lowerName, goos) || (goos == "darwin" && strings.Contains(lowerName, "macos"))
 				hasArch := strings.Contains(lowerName, goarch) || (goarch == "amd64" && strings.Contains(lowerName, "x86_64")) || (goarch == "386" && strings.Contains(lowerName, "i386"))
-				
+
 				if hasOS && hasArch {
 					// We prefer raw binaries, avoid compressed archives for direct replacement.
 					if !strings.HasSuffix(lowerName, ".tar.gz") && !strings.HasSuffix(lowerName, ".zip") && !strings.HasSuffix(lowerName, ".sha256") {
 						downloadURL = asset.BrowserDownloadURL
+						downloadName = asset.Name
+						break
+					}
+				}
+			}
+
+			var sha256URL string
+			if downloadURL != "" {
+				for _, asset := range release.Assets {
+					if asset.Name == downloadName+".sha256" {
+						sha256URL = asset.BrowserDownloadURL
 						break
 					}
 				}
@@ -107,13 +121,13 @@ func NewUpdateCmd() *cobra.Command {
 
 			// 3. Safe Binary Replacement
 			tmpPath := exePath + ".tmp"
-			
+
 			// Download to temporary file
 			out, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 			if err != nil {
 				return fmt.Errorf("failed to create temporary file: %w", err)
 			}
-			
+
 			dlResp, err := client.Get(downloadURL)
 			if err != nil {
 				out.Close()
@@ -134,6 +148,30 @@ func NewUpdateCmd() *cobra.Command {
 				return fmt.Errorf("failed to write binary to disk: %w", err)
 			}
 			out.Close()
+
+			if sha256URL != "" {
+				fmt.Println("Verifying SHA-256 checksum...")
+				shaResp, err := client.Get(sha256URL)
+				if err == nil && shaResp.StatusCode == http.StatusOK {
+					defer shaResp.Body.Close()
+					shaBytes, _ := io.ReadAll(shaResp.Body)
+					expectedHash := strings.Fields(string(shaBytes))[0]
+
+					f, err := os.Open(tmpPath)
+					if err == nil {
+						h := sha256.New()
+						io.Copy(h, f)
+						f.Close()
+						actualHash := hex.EncodeToString(h.Sum(nil))
+						if actualHash != expectedHash {
+							os.Remove(tmpPath)
+							return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedHash, actualHash)
+						}
+					}
+				} else {
+					fmt.Println("Warning: Could not fetch SHA-256 checksum file.")
+				}
+			}
 
 			// Overwrite running executable atomically
 			if err := os.Rename(tmpPath, exePath); err != nil {

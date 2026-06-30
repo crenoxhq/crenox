@@ -71,7 +71,7 @@ func TestAnalyze_DetectsHighEntropyBase64(t *testing.T) {
 
 func TestAnalyze_DetectsHighEntropyHex(t *testing.T) {
 	// 64-char hex string — looks like a SHA-256 key.
-	hexKey := "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9"
+	hexKey := "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"
 	content := []byte("hash = " + hexKey)
 	hits := entropy.Analyze(content, 3.5, 20)
 	if len(hits) == 0 {

@@ -89,11 +89,12 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 
 	// ── Construct scanner ─────────────────────────────────────────────────────
 	scanOpts := scanner.Options{
-		EntropyThreshold: cfg.EntropyThreshold,
-		MinSecretLength:  cfg.MinSecretLength,
-		DisableTrie:      cfg.DisableTiers.Trie,
-		DisableEntropy:   cfg.DisableTiers.Entropy,
-		DisableContext:   cfg.DisableTiers.Context,
+		EntropyThreshold:  cfg.EntropyThreshold,
+		MinSecretLength:   cfg.MinSecretLength,
+		DisableTrie:       cfg.DisableTiers.Trie,
+		DisableEntropy:    cfg.DisableTiers.Entropy,
+		DisableContext:    cfg.DisableTiers.Context,
+		AllowlistPatterns: cfg.AllowlistPatterns,
 	}
 	sec := scanner.New(automaton, scanOpts)
 
@@ -169,7 +170,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 
 	rep.PrintFindings(allFindings)
 	rep.PrintSummary(allFindings, elapsed, scannedCount)
-	
+
 	if msg := <-updateChan; msg != "" {
 		fmt.Fprintln(os.Stderr, msg)
 	}

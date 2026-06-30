@@ -252,11 +252,11 @@ type jsonFinding struct {
 }
 
 type jsonReport struct {
-	Version     string        `json:"sentinel_version"`
-	Status      string        `json:"status"`
-	ScannedFiles int          `json:"scanned_files"`
-	ElapsedMs   int64         `json:"elapsed_ms"`
-	Findings    []jsonFinding `json:"findings"`
+	Version      string        `json:"sentinel_version"`
+	Status       string        `json:"status"`
+	ScannedFiles int           `json:"scanned_files"`
+	ElapsedMs    int64         `json:"elapsed_ms"`
+	Findings     []jsonFinding `json:"findings"`
 }
 
 func (r *Reporter) jsonFindings(findings []scanner.Finding) bool {
@@ -358,5 +358,3 @@ func truncateForDisplay(s string, maxLen int) string {
 	}
 	return s[:maxLen] + "…"
 }
-
-

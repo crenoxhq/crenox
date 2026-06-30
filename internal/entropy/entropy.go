@@ -103,6 +103,10 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 					if isJavaConstant(tok) || isAllSameChar(tok) {
 						return
 					}
+					// If the token is entirely hex, let extractHexTokens handle it with the scaled threshold.
+					if IsHexLike(string(tok)) {
+						return
+					}
 					e := Shannon(tok)
 					if e >= threshold {
 						hits = append(hits, EntropyHit{
@@ -122,7 +126,14 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						return
 					}
 					e := Shannon(tok)
-					if e >= threshold {
+					// Hex has max entropy 4.0 (log2(16)), whereas Base64 has max entropy 6.0.
+					// Scale the provided threshold proportionally for hex tokens.
+					hexThreshold := threshold * (4.0 / 6.0)
+					// But never drop below a sane minimum (e.g., 3.0) to avoid false positives.
+					if hexThreshold < 3.0 {
+						hexThreshold = 3.0
+					}
+					if e >= hexThreshold {
 						hits = append(hits, EntropyHit{
 							Token:       string(tok),
 							Entropy:     e,

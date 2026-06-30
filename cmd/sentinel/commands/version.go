@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"github.com/sentinel-cli/sentinel/pkg/version"
+	"github.com/spf13/cobra"
 )
 
 // NewVersionCmd builds the `sentinel version` sub-command.

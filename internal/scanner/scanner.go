@@ -85,11 +85,12 @@ type Finding struct {
 
 // Options controls what the scanner does during a scan.
 type Options struct {
-	EntropyThreshold float64
-	MinSecretLength  int
-	DisableTrie      bool
-	DisableEntropy   bool
-	DisableContext   bool
+	EntropyThreshold  float64
+	MinSecretLength   int
+	DisableTrie       bool
+	DisableEntropy    bool
+	DisableContext    bool
+	AllowlistPatterns []string
 }
 
 // Scanner is the central scanning engine.
@@ -150,7 +151,7 @@ func isLogIndicator(line []byte) bool {
 					return true
 				}
 			}
-			// authorization: 
+			// authorization:
 			if i+15 <= len(line) {
 				if (line[i+1]|0x20) == 'u' && (line[i+2]|0x20) == 't' && (line[i+3]|0x20) == 'h' &&
 					(line[i+4]|0x20) == 'o' && (line[i+5]|0x20) == 'r' && (line[i+6]|0x20) == 'i' &&
@@ -228,9 +229,14 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		// Do NOT skip lines starting with digits — those are log timestamps.
 		isCodeComment := bytes.HasPrefix(lineTrim, prefixSlash) || bytes.HasPrefix(lineTrim, prefixHash)
 		if isCodeComment {
-			// Exception: if the line contains a secret prefix keyword, scan it anyway.
-			// (e.g. a commented-out config line that still has a real token)
-			continue
+			if bytes.HasPrefix(lineTrim, prefixSlash) {
+				lineTrim = bytes.TrimSpace(bytes.TrimPrefix(lineTrim, prefixSlash))
+			} else if bytes.HasPrefix(lineTrim, prefixHash) {
+				lineTrim = bytes.TrimSpace(bytes.TrimPrefix(lineTrim, prefixHash))
+			}
+			// We strip the comment prefix and let the pipeline process the inner content.
+			// Tier 3's SafeComment classification will properly suppress it if needed,
+			// which is the architecturally correct approach for handling comments.
 		}
 
 		// ── Value isolation ───────────────────────────────────────────────────
@@ -247,8 +253,6 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		// This prevents "token=%s" format verbs, SQL bind params like
 		// "password=?", and variable names like "ACAccountSID" from being
 		// treated as secret values.
-
-
 
 		val, _ := extractSecretValue(lineTrim)
 		// We do not 'continue' here if val == nil, because we still want to run
@@ -520,6 +524,25 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			}
 		}
 	}
+
+	// ── Apply Allowlist Patterns ────────────────────────────────────────────
+	if len(s.opts.AllowlistPatterns) > 0 {
+		filtered := findings[:0]
+		for _, f := range findings {
+			allowed := false
+			for _, pat := range s.opts.AllowlistPatterns {
+				if matched, err := filepath.Match(pat, f.Token); (err == nil && matched) || f.Token == pat {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				filtered = append(filtered, f)
+			}
+		}
+		findings = filtered
+	}
+
 	return aggregateBlobs(findings)
 }
 
@@ -767,14 +790,15 @@ func extractTokenFromOffset(val []byte, prefix string, offset int) string {
 	}
 
 	after = bytes.TrimLeft(after, "\"'`=: ")
-	
+
 	// Truncate at the first closing quote to properly isolate tokens in minified code
-	// where space delimiters do not exist.
 	if qIdx := bytes.IndexAny(after, "\"'`"); qIdx > 0 {
 		after = after[:qIdx]
 	}
 
-	fields := bytes.Fields(after)
+	fields := bytes.FieldsFunc(after, func(r rune) bool {
+		return r == ' ' || r == '\t' || r == '\n' || r == '\r' || r == '@' || r == '/' || r == '?' || r == '&'
+	})
 	if len(fields) == 0 {
 		return ""
 	}
@@ -901,15 +925,19 @@ func aggregateBlobs(findings []Finding) []Finding {
 	flushBlob := func() {
 		if len(currentBlob) >= 3 {
 			first := currentBlob[0]
+			kind := "Base64"
+			if strings.Contains(first.SignatureID, "hex") {
+				kind = "Hex"
+			}
 			result = append(result, Finding{
 				FilePath:      first.FilePath,
 				Line:          first.Line,
-				LineContent:   fmt.Sprintf("[... %d consecutive lines of Base64 ...]", len(currentBlob)),
+				LineContent:   fmt.Sprintf("[... %d consecutive lines of %s ...]", len(currentBlob), kind),
 				Token:         fmt.Sprintf("<%d lines aggregated>", len(currentBlob)),
 				Entropy:       first.Entropy,
 				DetectionTier: TierTrie,
-				SignatureID:   "massive-base64-blob",
-				Description:   "Massive Base64/Cryptographic Blob Detected (Potential Keystore/Vault)",
+				SignatureID:   fmt.Sprintf("massive-%s-blob", strings.ToLower(kind)),
+				Description:   fmt.Sprintf("Massive %s/Cryptographic Blob Detected (Potential Keystore/Vault)", kind),
 				Severity:      "CRITICAL",
 			})
 		} else {
@@ -919,12 +947,12 @@ func aggregateBlobs(findings []Finding) []Finding {
 	}
 
 	for _, f := range findings {
-		if f.SignatureID == "high-entropy-base64" {
+		if f.SignatureID == "high-entropy-base64" || f.SignatureID == "high-entropy-hex" {
 			if len(currentBlob) == 0 {
 				currentBlob = append(currentBlob, f)
 			} else {
 				lastLine := currentBlob[len(currentBlob)-1].Line
-				if f.Line == lastLine+1 || f.Line == lastLine {
+				if (f.Line == lastLine+1 || f.Line == lastLine) && f.SignatureID == currentBlob[0].SignatureID {
 					currentBlob = append(currentBlob, f)
 				} else {
 					flushBlob()

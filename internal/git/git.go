@@ -72,8 +72,6 @@ func IsInsideWorkTree() bool {
 	return strings.TrimSpace(string(out)) == "true"
 }
 
-
-
 // runGit executes git with the supplied arguments and returns combined output.
 func runGit(args ...string) ([]byte, error) {
 	cmd := exec.Command("git", args...)

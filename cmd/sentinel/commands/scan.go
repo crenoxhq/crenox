@@ -103,7 +103,12 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 	seenTokens := make(map[string]struct{})
 
 	if history {
+		targetDir := "."
+		if len(paths) > 0 {
+			targetDir = paths[0]
+		}
 		cmd := exec.Command("git", "log", "--all", "-p")
+		cmd.Dir = targetDir
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			return fmt.Errorf("git log pipe: %w", err)
@@ -190,32 +195,20 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			}
 			if info.IsDir() {
 				if recursive {
-					cmd := exec.Command("git", "ls-files", "-z")
-					cmd.Dir = p
-					out, err := cmd.Output()
-					if err == nil && len(out) > 0 {
-						files := bytes.Split(out, []byte{0})
-						for _, f := range files {
-							if len(f) > 0 {
-								targets = append(targets, filepath.Join(p, string(f)))
-							}
-						}
-					} else {
-						_ = filepath.WalkDir(p, func(path string, d fs.DirEntry, err error) error {
-							if err != nil {
-								return nil
-							}
-							if d.IsDir() {
-								name := d.Name()
-								if name == ".git" || name == "build" || name == "node_modules" {
-									return fs.SkipDir
-								}
-								return nil
-							}
-							targets = append(targets, path)
+					_ = filepath.WalkDir(p, func(path string, d fs.DirEntry, err error) error {
+						if err != nil {
 							return nil
-						})
-					}
+						}
+						if d.IsDir() {
+							name := d.Name()
+							if name == ".git" || name == "build" || name == "node_modules" {
+								return fs.SkipDir
+							}
+							return nil
+						}
+						targets = append(targets, path)
+						return nil
+					})
 				} else {
 					entries, _ := os.ReadDir(p)
 					for _, e := range entries {

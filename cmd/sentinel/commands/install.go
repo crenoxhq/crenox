@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -162,11 +161,5 @@ func currentBinaryPath() (string, error) {
 
 // runGitConfig wraps `git config --global key value`.
 func runGitConfig(key, value string) error {
-	var cmd string
-	if runtime.GOOS == "windows" {
-		cmd = "git"
-	} else {
-		cmd = "git"
-	}
-	return runCommand(cmd, "config", "--global", key, value)
+	return runCommand("git", "config", "--global", key, value)
 }

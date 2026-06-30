@@ -33,7 +33,7 @@ func NewUninstallCmd() *cobra.Command {
 					fmt.Printf("Removed binary: %s\n", exePath)
 				}
 			}
-			
+
 			if !removedBin {
 				fmt.Printf("Could not automatically remove the sentinel binary. You may need to remove it manually from your PATH.\n")
 			}
