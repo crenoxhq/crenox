@@ -104,7 +104,7 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						return
 					}
 					// If the token is entirely hex, let extractHexTokens handle it with the scaled threshold.
-					if IsHexLike(string(tok)) {
+					if isHexLikeBytes(tok) {
 						return
 					}
 					e := Shannon(tok)
@@ -251,6 +251,20 @@ func IsHexLike(s string) bool {
 		return false
 	}
 	for _, b := range []byte(s) {
+		if !hexSet[b] {
+			return false
+		}
+	}
+	return true
+}
+
+// isHexLikeBytes returns true when every byte in s is in the hex alphabet.
+// Avoids converting slice to string to prevent heap allocations.
+func isHexLikeBytes(s []byte) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, b := range s {
 		if !hexSet[b] {
 			return false
 		}

@@ -41,7 +41,7 @@ func main() {
 that prevents accidental commits of API keys, SSH private keys, passwords,
 and other sensitive data using a three-tier detection pipeline:
 
-  Tier 1 (PATTERN)  — Aho-Corasick trie matching of 60+ known secret signatures
+  Tier 1 (PATTERN)  — Aho-Corasick trie matching of 70+ known secret signatures
   Tier 2 (ENTROPY)  — Shannon entropy analysis for unknown/novel secrets
   Tier 3 (CONTEXT)  — Context-aware false-positive suppression
   
@@ -52,13 +52,13 @@ CLI Commands & Flags:
 
   sentinel run                  Run the core pre-commit scan on staged files.
       -c, --config string       Path to .sentinel.yaml config file.
-      -f, --format string       Output format: pretty|json|plain.
+      -f, --format string       Output format: pretty|json|plain|sarif.
       --fail-fast               Stop after the first finding.
       -v, --verbose             Enable verbose debug output.
 
   sentinel scan [path...]       Ad-hoc mode to scan arbitrary files or directories.
       -c, --config string       Path to config file.
-      -f, --format string       Output format.
+      -f, --format string       Output format: pretty|json|plain|sarif.
       -r, --recursive           Scan directories recursively.
       -v, --verbose             Enable verbose output.
       --history                 Deep scan the entire git commit history.

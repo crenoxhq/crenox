@@ -138,6 +138,23 @@ var BuiltinSignatures = []Signature{
 	{ID: "generic-api-key", Description: "Hardcoded api_key assignment", Prefix: "api_key=", Severity: "MEDIUM"},
 	{ID: "generic-token-key", Description: "Hardcoded token assignment", Prefix: "token=", Severity: "MEDIUM"},
 
+	// ── JSON/YAML generic assignments ─────────────────────────────────────────
+	{ID: "generic-password-json", Description: "Hardcoded password assignment (JSON/YAML)", Prefix: "password:", Severity: "MEDIUM"},
+	{ID: "generic-secret-json", Description: "Hardcoded secret assignment (JSON/YAML)", Prefix: "secret:", Severity: "MEDIUM"},
+	{ID: "generic-api-key-json", Description: "Hardcoded api_key assignment (JSON/YAML)", Prefix: "api_key:", Severity: "MEDIUM"},
+	{ID: "generic-token-json", Description: "Hardcoded token assignment (JSON/YAML)", Prefix: "token:", Severity: "MEDIUM"},
+
+	// ── Framework specific secret keys ────────────────────────────────────────
+	{ID: "django-secret-key", Description: "Django SECRET_KEY assignment", Prefix: "SECRET_KEY =", Severity: "HIGH"},
+	{ID: "wordpress-auth-key", Description: "WordPress AUTH_KEY definition", Prefix: "AUTH_KEY", Severity: "HIGH"},
+	{ID: "wordpress-secure-auth-key", Description: "WordPress SECURE_AUTH_KEY definition", Prefix: "SECURE_AUTH_KEY", Severity: "HIGH"},
+	{ID: "wordpress-logged-in-key", Description: "WordPress LOGGED_IN_KEY definition", Prefix: "LOGGED_IN_KEY", Severity: "HIGH"},
+	{ID: "wordpress-nonce-key", Description: "WordPress NONCE_KEY definition", Prefix: "NONCE_KEY", Severity: "HIGH"},
+	{ID: "wordpress-auth-salt", Description: "WordPress AUTH_SALT definition", Prefix: "AUTH_SALT", Severity: "HIGH"},
+	{ID: "wordpress-secure-auth-salt", Description: "WordPress SECURE_AUTH_SALT definition", Prefix: "SECURE_AUTH_SALT", Severity: "HIGH"},
+	{ID: "wordpress-logged-in-salt", Description: "WordPress LOGGED_IN_SALT definition", Prefix: "LOGGED_IN_SALT", Severity: "HIGH"},
+	{ID: "wordpress-nonce-salt", Description: "WordPress NONCE_SALT definition", Prefix: "NONCE_SALT", Severity: "HIGH"},
+
 	// ── Certificates / Private Keys ───────────────────────────────────────────
 	{ID: "pem-private-key", Description: "PEM Formatted Private Key", Prefix: "-----BEGIN ", Validator: regexp.MustCompile(`(?i)^-----BEGIN [A-Z ]*PRIVATE KEY-----`), Severity: "CRITICAL"},
 }

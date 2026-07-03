@@ -365,9 +365,22 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 						Severity:      m.Sig.Severity,
 					}
 					if s.isDuplicateMatch(findings, newMatch) {
-						continue
+						replaced := false
+						for idx, existing := range findings {
+							if existing.Token == newMatch.Token && strings.HasPrefix(existing.SignatureID, "generic-") && !strings.HasPrefix(newMatch.SignatureID, "generic-") {
+								findings[idx].SignatureID = newMatch.SignatureID
+								findings[idx].Description = newMatch.Description
+								findings[idx].Severity = newMatch.Severity
+								replaced = true
+								break
+							}
+						}
+						if !replaced {
+							continue
+						}
+					} else {
+						findings = append(findings, newMatch)
 					}
-					findings = append(findings, newMatch)
 				}
 			}
 
@@ -773,7 +786,8 @@ func firstQuotedLiteral(s []byte) []byte {
 // literal found in s, separated by spaces.  Used for non-assignment lines
 // where we want to scan only what is inside string literals.
 func allQuotedLiterals(s []byte) []byte {
-	var parts [][]byte
+	var partsBuf [8][]byte
+	parts := partsBuf[:0]
 	inQuote := false
 	var quoteChar byte
 	var start int
@@ -795,6 +809,9 @@ func allQuotedLiterals(s []byte) []byte {
 	if len(parts) == 0 {
 		return nil
 	}
+	if len(parts) == 1 {
+		return parts[0]
+	}
 	return bytes.Join(parts, []byte(" "))
 }
 
@@ -807,7 +824,7 @@ func extractTokenFromOffset(val []byte, prefix string, offset int) string {
 	}
 
 	var after []byte
-	if strings.HasSuffix(prefix, "=") || strings.HasSuffix(prefix, ":") {
+	if containsAssignmentOrKeyword(prefix) {
 		after = bytes.TrimSpace(val[offset+1:])
 	} else {
 		after = bytes.TrimSpace(val[start:])
@@ -822,7 +839,7 @@ func extractTokenFromOffset(val []byte, prefix string, offset int) string {
 		return string(after) // fallback
 	}
 
-	after = bytes.TrimLeft(after, "\"'`=: ")
+	after = bytes.TrimLeft(after, "\"'`=: ,() ")
 
 	// Truncate at the first closing quote to properly isolate tokens in minified code
 	if qIdx := bytes.IndexAny(after, "\"'`"); qIdx > 0 {
@@ -840,6 +857,37 @@ func extractTokenFromOffset(val []byte, prefix string, offset int) string {
 		return ""
 	}
 	return tok
+}
+
+// containsAssignmentOrKeyword checks case-insensitively if prefix contains '=' or ':',
+// or the substrings "key" or "salt" without heap allocations.
+func containsAssignmentOrKeyword(s string) bool {
+	for i := 0; i < len(s); i++ {
+		b := s[i]
+		if b == '=' || b == ':' {
+			return true
+		}
+		if b == 'k' || b == 'K' {
+			if i+2 < len(s) {
+				b1 := s[i+1]
+				b2 := s[i+2]
+				if (b1 == 'e' || b1 == 'E') && (b2 == 'y' || b2 == 'Y') {
+					return true
+				}
+			}
+		}
+		if b == 's' || b == 'S' {
+			if i+3 < len(s) {
+				b1 := s[i+1]
+				b2 := s[i+2]
+				b3 := s[i+3]
+				if (b1 == 'a' || b1 == 'A') && (b2 == 'l' || b2 == 'L') && (b3 == 't' || b3 == 'T') {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // cleanToken strips non-alphanumeric characters commonly found trailing or leading

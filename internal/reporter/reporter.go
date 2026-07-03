@@ -31,6 +31,7 @@ const (
 	FormatPretty Format = iota
 	FormatJSON
 	FormatPlain
+	FormatSARIF
 )
 
 // ParseFormat converts a string to a Format constant.
@@ -40,6 +41,8 @@ func ParseFormat(s string) Format {
 		return FormatJSON
 	case "plain", "text":
 		return FormatPlain
+	case "sarif":
+		return FormatSARIF
 	default:
 		return FormatPretty
 	}
@@ -93,8 +96,8 @@ var (
 // PrintHeader prints the Sentinel startup banner.
 func (r *Reporter) PrintHeader() {
 	switch r.format {
-	case FormatJSON:
-		// No header in JSON mode.
+	case FormatJSON, FormatSARIF:
+		// No header in machine-readable modes.
 	case FormatPlain:
 		fmt.Fprintf(r.w, "sentinel %s — pre-commit security scan\n", version.Version)
 		fmt.Fprintln(r.w, strings.Repeat("-", 60))
@@ -106,7 +109,7 @@ func (r *Reporter) PrintHeader() {
 // PrintFindings renders all findings.  Returns true if any CRITICAL or HIGH
 // severity findings were emitted (useful for exit-code logic).
 func (r *Reporter) PrintFindings(findings []scanner.Finding) bool {
-	if r.format == FormatJSON {
+	if r.format == FormatJSON || r.format == FormatSARIF {
 		return r.jsonFindings(findings)
 	}
 	hasBlocker := false
@@ -124,6 +127,8 @@ func (r *Reporter) PrintSummary(findings []scanner.Finding, elapsed time.Duratio
 	switch r.format {
 	case FormatJSON:
 		r.jsonSummary(findings, elapsed, scannedFiles)
+	case FormatSARIF:
+		r.sarifSummary(findings)
 	case FormatPlain:
 		r.plainSummary(findings, elapsed, scannedFiles)
 	default:
@@ -137,6 +142,8 @@ func (r *Reporter) PrintClean(elapsed time.Duration, scannedFiles int) {
 	case FormatJSON:
 		fmt.Fprintf(r.w, `{"status":"clean","scanned_files":%d,"elapsed_ms":%d}`+"\n",
 			scannedFiles, elapsed.Milliseconds())
+	case FormatSARIF:
+		r.sarifSummary(nil)
 	case FormatPlain:
 		fmt.Fprintf(r.w, "sentinel: clean — %d file(s) scanned in %s\n",
 			scannedFiles, elapsed.Round(time.Millisecond))
@@ -357,4 +364,134 @@ func truncateForDisplay(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen] + "…"
+}
+
+// SARIF output structures
+type sarifRule struct {
+	ID               string               `json:"id"`
+	ShortDescription sarifRuleDescription `json:"shortDescription"`
+}
+
+type sarifRuleDescription struct {
+	Text string `json:"text"`
+}
+
+type sarifDriver struct {
+	Name           string      `json:"name"`
+	Version        string      `json:"version"`
+	InformationURI string      `json:"informationUri"`
+	Rules          []sarifRule `json:"rules"`
+}
+
+type sarifTool struct {
+	Driver sarifDriver `json:"driver"`
+}
+
+type sarifLocation struct {
+	PhysicalLocation sarifPhysicalLocation `json:"physicalLocation"`
+}
+
+type sarifPhysicalLocation struct {
+	ArtifactLocation sarifArtifactLocation `json:"artifactLocation"`
+	Region           sarifRegion           `json:"region"`
+}
+
+type sarifArtifactLocation struct {
+	URI string `json:"uri"`
+}
+
+type sarifRegion struct {
+	StartLine   int `json:"startLine"`
+	StartColumn int `json:"startColumn"`
+}
+
+type sarifMessage struct {
+	Text string `json:"text"`
+}
+
+type sarifResult struct {
+	RuleID    string          `json:"ruleId"`
+	Message   sarifMessage    `json:"message"`
+	Locations []sarifLocation `json:"locations"`
+}
+
+type sarifRun struct {
+	Tool    sarifTool     `json:"tool"`
+	Results []sarifResult `json:"results"`
+}
+
+type sarifReport struct {
+	Schema  string     `json:"$schema"`
+	Version string     `json:"version"`
+	Runs    []sarifRun `json:"runs"`
+}
+
+func (r *Reporter) sarifSummary(findings []scanner.Finding) {
+	seenRules := make(map[string]string)
+	for _, f := range findings {
+		ruleID := f.SignatureID
+		if ruleID == "" {
+			ruleID = "generic-secret"
+		}
+		seenRules[ruleID] = f.Description
+	}
+
+	rules := make([]sarifRule, 0, len(seenRules))
+	for rID, rDesc := range seenRules {
+		rules = append(rules, sarifRule{
+			ID: rID,
+			ShortDescription: sarifRuleDescription{
+				Text: rDesc,
+			},
+		})
+	}
+
+	results := make([]sarifResult, 0, len(findings))
+	for _, f := range findings {
+		ruleID := f.SignatureID
+		if ruleID == "" {
+			ruleID = "generic-secret"
+		}
+		results = append(results, sarifResult{
+			RuleID: ruleID,
+			Message: sarifMessage{
+				Text: fmt.Sprintf("Secret detected: %s (Severity: %s)", f.Description, f.Severity),
+			},
+			Locations: []sarifLocation{
+				{
+					PhysicalLocation: sarifPhysicalLocation{
+						ArtifactLocation: sarifArtifactLocation{
+							URI: f.FilePath,
+						},
+						Region: sarifRegion{
+							StartLine:   f.Line,
+							StartColumn: 1,
+						},
+					},
+				},
+			},
+		})
+	}
+
+	report := sarifReport{
+		Schema:  "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+		Version: "2.1.0",
+		Runs: []sarifRun{
+			{
+				Tool: sarifTool{
+					Driver: sarifDriver{
+						Name:           "Sentinel",
+						Version:        version.Version,
+						InformationURI: "https://github.com/sentinel-cli/sentinel",
+						Rules:          rules,
+					},
+				},
+				Results: results,
+			},
+		},
+	}
+
+	enc := json.NewEncoder(r.w)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(report)
 }

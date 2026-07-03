@@ -13,6 +13,12 @@ func NewUninstallCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "uninstall",
 		Short: "Completely remove Sentinel from the system",
+		Long: `Completely remove Sentinel, its pre-commit hooks, and global configurations from your system.
+This command performs the following cleanup steps:
+  1. Unsets the global git config 'core.hooksPath' if it was configured for Sentinel.
+  2. Deletes the 'sentinel' executable binary from your system path.
+  3. Removes the global configuration and hook folder located at '~/.config/sentinel'.
+  4. Deletes the local pre-commit hook file '.git/hooks/pre-commit' in the current working directory.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("Uninstalling Sentinel...")
 

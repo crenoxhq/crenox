@@ -5,6 +5,7 @@ package tests
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -751,4 +752,35 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 			t.Errorf("expected line content to mention '5 consecutive lines of Hex', got: %s", f.LineContent)
 		}
 	})
+}
+
+func TestScanner_CustomSignature_Detected(t *testing.T) {
+	customSigs := []trie.Signature{
+		{
+			ID:          "my-api-key",
+			Description: "My custom API key",
+			Prefix:      "mycustom_",
+			Severity:    "HIGH",
+			Validator:   regexp.MustCompile(`^mycustom_[a-zA-Z0-9]{16}$`),
+		},
+	}
+
+	automaton := trie.Build(customSigs)
+	s := scanner.New(automaton, scanner.Options{
+		EntropyThreshold: 3.5,
+		MinSecretLength:  10,
+	})
+
+	findings := scan(s, "main.go", `token := "mycustom_ABC123xyz7890123"`)
+	if len(findings) == 0 {
+		t.Fatal("expected finding for custom signature prefix matching and validation")
+	}
+
+	f := findings[0]
+	if f.SignatureID != "my-api-key" {
+		t.Errorf("expected SignatureID 'my-api-key', got %s", f.SignatureID)
+	}
+	if f.Severity != "HIGH" {
+		t.Errorf("expected Severity 'HIGH', got %s", f.Severity)
+	}
 }

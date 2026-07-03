@@ -22,6 +22,13 @@ func NewUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
 		Short: "Update Sentinel to the latest version",
+		Long: `Check GitHub for the latest release of Sentinel and update the current executable binary.
+This command performs the following actions:
+  1. Detects your operating system (OS) and architecture (e.g. linux/arm64, darwin/amd64).
+  2. Queries the GitHub API for the latest release metadata.
+  3. Downloads the matching binary payload and its SHA-256 checksum.
+  4. Verifies the cryptographic integrity of the downloaded file.
+  5. Atomically replaces the active 'sentinel' executable with the new version.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("Updating Sentinel to the latest version...")
 

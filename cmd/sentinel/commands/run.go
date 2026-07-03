@@ -4,6 +4,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -30,18 +31,23 @@ func NewRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run the pre-commit security scan (called by git hook)",
-		Long: `Run is invoked automatically by git when you execute 'git commit' or by the pre-commit framework.
-It scans all staged changes for secrets using the three-tier detection pipeline.
-Exit code 0 means clean. Exit code 1 blocks the commit.
+		Long: `Execute the core Sentinel scanning pipeline against all staged files.
+This command is designed to be run automatically by Git as a pre-commit hook (or via the Python 'pre-commit' framework).
+It extracts staged file contents, runs the Aho-Corasick trie matching, Shannon entropy analysis, and context validation.
 
-You can bypass false positives by adding '// sentinel:ignore' to the preceding line or at the end of the line.`,
+If findings with CRITICAL or HIGH severity are discovered, the commit is blocked (exits with code 1).
+If no secrets are found, or if they are ignored, the commit proceeds (exits with code 0).
+
+To bypass a finding on a specific line, add a comment containing '// sentinel:ignore' (or '# sentinel:ignore') on the preceding line or on the same line.
+
+Custom rules, user-defined signatures, allowlist patterns, and file exclusions are resolved automatically from the '.sentinel.yaml' configuration file.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runScan(configPath, format, failFast, verbose)
 		},
 	}
 
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .sentinel.yaml config file")
-	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain")
+	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain|sarif")
 	cmd.Flags().BoolVar(&failFast, "fail-fast", false, "stop after first finding")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose debug output")
 
@@ -85,7 +91,26 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	}
 
 	// ── Build Aho-Corasick automaton once ─────────────────────────────────────
-	automaton := trie.Build(trie.BuiltinSignatures)
+	sigs := make([]trie.Signature, len(trie.BuiltinSignatures))
+	copy(sigs, trie.BuiltinSignatures)
+	for _, cs := range cfg.CustomSignatures {
+		var val *regexp.Regexp
+		if cs.Regex != "" {
+			val = regexp.MustCompile(cs.Regex)
+		}
+		sev := cs.Severity
+		if sev == "" {
+			sev = "HIGH"
+		}
+		sigs = append(sigs, trie.Signature{
+			ID:          cs.ID,
+			Description: cs.Description,
+			Prefix:      cs.Prefix,
+			Severity:    sev,
+			Validator:   val,
+		})
+	}
+	automaton := trie.Build(sigs)
 
 	// ── Construct scanner ─────────────────────────────────────────────────────
 	scanOpts := scanner.Options{

@@ -45,15 +45,15 @@ func NewInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install the pre-commit hook into a git repository",
-		Long: `Install writes a pre-commit hook script into .git/hooks/pre-commit.
+		Long: `Install Sentinel's pre-commit hook script into your Git repository.
+By default, the hook is installed locally for the current repository. You can choose to install it globally to automatically protect all Git repositories on your system.
 
-  Local install (default):
-    Installs the hook for the current git repository only.
-
-  Global install (--global):
-    Configures git's core.hooksPath to point to a global hooks directory
-    (~/.config/sentinel/hooks) so the hook applies to ALL repositories on
-    this machine without requiring per-repository installation.`,
+Installation Modes:
+  1. Local Installation (Default):
+     Writes the executable script to '<repo_root>/.git/hooks/pre-commit'. This applies only to the target repository.
+  
+  2. Global Installation (--global):
+     Creates a global Git hooks directory at '~/.config/sentinel/hooks' and configures Git (git config --global core.hooksPath) to point to it. Any repository you work on will run Sentinel automatically during commits.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if global {
 				return installGlobal(force)

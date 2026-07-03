@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sync"
 	"time"
@@ -35,18 +36,28 @@ func NewScanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "scan [path...]",
 		Short: "Scan files or directories for secrets (ad-hoc mode)",
-		Long: `Scan lets you run Sentinel against arbitrary files or directories,
-independent of git staging.  Useful for auditing existing codebases.
+		Long: `Scan arbitrary files, directories, or historical Git commits for secrets in ad-hoc mode.
+Unlike the 'run' command (which only inspects Git-staged modifications), 'scan' allows you to audit entire folders recursively or scan the full commit history of a repository to locate historical credentials leaks.
 
-You can also use the '--history' flag to audit the entire Git commit tree.
-The output will prefix findings with their respective commit hashes (e.g. 3de60c5:file.go).
+Scanning Modes:
+  1. Files & Directories (Default):
+     Pass specific files or directories as arguments. Directories are scanned recursively when the '--recursive' flag is active.
+  
+  2. Git History (--history):
+     Audits the entire Git commit log history of the repository. Findings will be prefixed with the triggering Git commit hash (e.g. 5906dee:config/app.json).
 
-You can bypass false positives by adding '// sentinel:ignore' to the preceding line or at the end of the line.
+You can bypass false positives on specific lines using '// sentinel:ignore' comments.
+
+Custom rules, user-defined signatures, allowlist patterns, and file exclusions are resolved automatically from the '.sentinel.yaml' configuration file.
 
 Examples:
-  sentinel scan ./src
+  # Scan a folder recursively
+  sentinel scan -r ./src
+  
+  # Scan specific configuration files
   sentinel scan config.yaml secrets.env
-  sentinel scan --recursive /home/user/projects/myapp
+  
+  # Scan the entire Git commit tree history of the current repository
   sentinel scan --history .`,
 		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -58,7 +69,7 @@ Examples:
 	}
 
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .sentinel.yaml config file")
-	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain")
+	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain|sarif")
 	cmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "scan directories recursively")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 	cmd.Flags().BoolVar(&history, "history", false, "scan entire git commit history")
@@ -82,13 +93,33 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 	// Human-readable formats (pretty, plain) go to stderr so progress messages
 	// and findings are visible even when stdout is redirected.
 	outStream := os.Stderr
-	if reporter.ParseFormat(format) == reporter.FormatJSON {
+	parsedFormat := reporter.ParseFormat(format)
+	if parsedFormat == reporter.FormatJSON || parsedFormat == reporter.FormatSARIF {
 		outStream = os.Stdout
 	}
-	rep := reporter.New(outStream, reporter.ParseFormat(format))
+	rep := reporter.New(outStream, parsedFormat)
 	rep.PrintHeader()
 
-	automaton := trie.Build(trie.BuiltinSignatures)
+	sigs := make([]trie.Signature, len(trie.BuiltinSignatures))
+	copy(sigs, trie.BuiltinSignatures)
+	for _, cs := range cfg.CustomSignatures {
+		var val *regexp.Regexp
+		if cs.Regex != "" {
+			val = regexp.MustCompile(cs.Regex)
+		}
+		sev := cs.Severity
+		if sev == "" {
+			sev = "HIGH"
+		}
+		sigs = append(sigs, trie.Signature{
+			ID:          cs.ID,
+			Description: cs.Description,
+			Prefix:      cs.Prefix,
+			Severity:    sev,
+			Validator:   val,
+		})
+	}
+	automaton := trie.Build(sigs)
 	scanOpts := scanner.Options{
 		EntropyThreshold:  cfg.EntropyThreshold,
 		MinSecretLength:   cfg.MinSecretLength,

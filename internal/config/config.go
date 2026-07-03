@@ -4,9 +4,11 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"gopkg.in/yaml.v3"
 )
@@ -64,6 +66,18 @@ type Config struct {
 	// ScanBinaryFiles controls whether Sentinel attempts to scan binary files
 	// after magic-byte detection.  Defaults to false (skip binaries).
 	ScanBinaryFiles bool `yaml:"scan_binary_files"`
+
+	// CustomSignatures lists user-defined Aho-Corasick matching rules.
+	CustomSignatures []CustomSignature `yaml:"custom_signatures"`
+}
+
+// CustomSignature defines a user-specified signature loaded from config.
+type CustomSignature struct {
+	ID          string `yaml:"id"`
+	Description string `yaml:"description"`
+	Prefix      string `yaml:"prefix"`
+	Severity    string `yaml:"severity"`
+	Regex       string `yaml:"regex"`
 }
 
 // DisableTiersConfig gives operators fine-grained control over which tiers run.
@@ -167,5 +181,27 @@ func (c *Config) validate() (*Config, error) {
 	if c.MaxFileSizeBytes < 0 {
 		c.MaxFileSizeBytes = DefaultMaxFileSizeBytes
 	}
+
+	// Validate custom user signatures
+	for _, cs := range c.CustomSignatures {
+		if cs.ID == "" {
+			return nil, errors.New("custom signature 'id' cannot be empty")
+		}
+		if cs.Prefix == "" {
+			return nil, errors.New("custom signature 'prefix' cannot be empty")
+		}
+		if cs.Regex != "" {
+			if _, err := regexp.Compile(cs.Regex); err != nil {
+				return nil, fmt.Errorf("custom signature %q has invalid regex: %w", cs.ID, err)
+			}
+		}
+		switch cs.Severity {
+		case "", "CRITICAL", "HIGH", "MEDIUM", "LOW":
+			// Valid
+		default:
+			return nil, fmt.Errorf("custom signature %q has invalid severity (must be CRITICAL, HIGH, MEDIUM, or LOW)", cs.ID)
+		}
+	}
+
 	return c, nil
 }

@@ -1,3 +1,5 @@
+# Sentinel — Ultra-Fast Git Secret Scanner & Pre-Commit Hook
+
 <div align="center">
 
 ```
@@ -9,29 +11,35 @@
  ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
 ```
 
-**Enterprise-grade Git pre-commit secret detector**
+**Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
 
-[![CI](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml)
+[![CI Status](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/sentinel-cli/sentinel?color=3670A0&logo=github)](https://github.com/sentinel-cli/sentinel/releases)
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)](https://go.dev)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sentinel-cli/sentinel.svg)](https://pkg.go.dev/github.com/sentinel-cli/sentinel)
 [![License](https://img.shields.io/badge/license-AGPL_3.0-blue)](LICENSE)
+
 [![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android%2FTermux-informational)](#installation)
+[![Repository Size](https://img.shields.io/github/repo-size/sentinel-cli/sentinel?color=success&logo=git)](https://github.com/sentinel-cli/sentinel)
+[![GitHub Stars](https://img.shields.io/github/stars/sentinel-cli/sentinel?style=flat&logo=github&color=gold)](https://github.com/sentinel-cli/sentinel/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/sentinel-cli/sentinel?style=flat&logo=github&color=blue)](https://github.com/sentinel-cli/sentinel/network/members)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+
 
 </div>
 
 ---
 
-Sentinel is a statically compiled, zero-dependency Git pre-commit hook written in Go. It is designed to prevent accidental commits of API keys, SSH private keys, database passwords, and other sensitive credentials via a three-tier detection pipeline optimized for low latency and a low false-positive rate.
+**Sentinel** is a statically compiled, zero-dependency Git pre-commit hook and credentials scanner written in Go. It is designed to automatically prevent accidental commits and leaks of API keys, SSH private keys, cloud credentials (like AWS keys, GCP service accounts), database passwords, and other sensitive information. Sentinel uses a highly optimized three-tier detection pipeline designed to ensure near-zero scan latency and eliminate false positives.
 
-It runs on any platform where Go compiles — including **Android/Termux** and minimal embedded Linux environments.
+Sentinel serves as a lightweight, developer-friendly **Gitleaks alternative** and **git-secrets alternative**. It runs natively on all major operating systems — including **Android/Termux**, minimal Linux containers, macOS, and Windows.
 
 > [!IMPORTANT]
-> **Upcoming Version Release**: I am working on a major core engine update. Early benchmarks show:
-> * Up to **+75% faster scan times** due to zero-allocation pipeline refinements.
-> * Over **+20% higher detection coverage** for framework configs (Django, WordPress) and JSON-style keys.
-> * Over **+15% memory (RAM) reduction** in hot paths.
-> 
-> *Note: These are highly conservative estimates based on preliminary testing; I expect even greater performance in the final release.*
+> **Latest Release (v2.0.4)**: This version includes a massive core engine rewrite, delivering:
+> * **Optimized Execution Speed**: Significantly faster scan times via zero-allocation pipeline refinements.
+> * **Expanded Detection Coverage**: New signatures for Django, WordPress, and JSON/YAML mappings.
+> * **Trie-Integrated Custom Signatures**: Native compilation of user-defined rules directly into the Aho-Corasick automaton for zero-overhead execution.
+> * **SARIF Output Format**: Added support (`-f sarif`) for native GitHub Code Scanning CI/CD integration.
 
 ---
 
@@ -84,41 +92,47 @@ Here are the empirically gathered, real-world benchmark results against the requ
 > * **RAM**: 2.4 GB Total RAM
 > * **OS / Kernel**: Linux Kernel `4.14.199` (AArch64)
 > * **Tool Versions**:
->   * **Sentinel**: `v2.0.3-hotfix`
+>   * **Sentinel**: `v2.0.4`
 >   * **Gitleaks**: `v8.30.1`
 >   * **TruffleHog**: `v3.95.7`
-
-
-
 
 ### 1. Standard Mode (Filesystem Only)
 
 | Repository | Tool | Execution Time (Old) | Execution Time (New) | Time Improvement | Peak RAM (Old) | Peak RAM (New) | RAM Improvement | Findings (New) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **sample_secrets** | `Sentinel` | `0:00.40` | `0:00.09` | **+76.9%** | `15.9 MB` | `11.1 MB` | **+30.4%** | **2** |
-| | `Gitleaks` | `0:00.19` | `0:00.30` | -58.0% | `16.4 MB` | `37.8 MB` | -130.8% | 1 |
-| | `Trufflehog` | `11.36` | `7.56` | +33.5% | `206.6 MB` | `207.8 MB` | -0.6% | 2 |
-| **truffleHogRegexes**| `Sentinel` | `0:00.49` | `0:00.13` | **+73.9%** | `16.1 MB` | `11.4 MB` | **+29.2%** | 3 |
-| | `Gitleaks` | `0:00.22` | `0:00.40` | -82.0% | `16.2 MB` | `37.7 MB` | -132.6% | 1 |
-| | `Trufflehog` | `11.17` | `9.03` | +19.1% | `208.2 MB` | `207.6 MB` | +0.3% | 0 |
+| **sample_secrets** | `Sentinel` | `0:00.40` | `0:00.02` | **+94.6%** | `15.9 MB` | `11.2 MB` | **+29.7%** | **2** |
+| | `Gitleaks` | `0:00.19` | `0:00.15` | **+20.6%** | `16.4 MB` | `37.6 MB` | -129.5% | 1 |
+| | `Trufflehog` | `11.36` | `7.26` | **+36.1%** | `206.6 MB` | `209.2 MB` | -1.3% | 2 |
+| **truffleHogRegexes**| `Sentinel` | `0:00.49` | `0:00.03` | **+94.8%** | `16.1 MB` | `11.8 MB` | **+26.6%** | **4** |
+| | `Gitleaks` | `0:00.22` | `0:00.21` | **+3.2%** | `16.2 MB` | `37.2 MB` | -129.9% | 1 |
+| | `Trufflehog` | `11.17` | `7.13` | **+36.1%** | `208.2 MB` | `207.8 MB` | +0.2% | 0 |
 
 ### 2. History Mode (Deep Git Commit Scan)
 
 | Repository | Tool | Execution Time (Old) | Execution Time (New) | Time Improvement | Peak RAM (Old) | Peak RAM (New) | RAM Improvement | Findings (New) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **sample_secrets** | `Sentinel` | `0:00.56` | `0:00.16` | **+71.9%** | `15.7 MB` | `11.1 MB` | **+29.2%** | **7** |
-| | `Gitleaks` | `0:00.35` | `0:00.38` | -9.5% | `16.2 MB` | `37.0 MB` | -128.2% | 5 |
-| | `Trufflehog` | `11.63` | `9.28` | +20.2% | `207.5 MB` | `205.1 MB` | +1.1% | 2 |
-| **truffleHogRegexes**| `Sentinel` | `0:00.68` | `0:00.09` | **+86.0%** | `15.1 MB` | `10.9 MB` | **+27.8%** | 5 |
-| | `Gitleaks` | `0:00.36` | `0:00.23` | +37.3% | `16.6 MB` | `38.7 MB` | -133.0% | 8 |
-| | `Trufflehog` | `12.36` | `7.48` | +39.5% | `205.8 MB` | `205.4 MB` | +0.2% | 0 |
+| **sample_secrets** | `Sentinel` | `0:00.56` | `0:00.03` | **+94.2%** | `15.7 MB` | `10.9 MB` | **+30.4%** | **8** |
+| | `Gitleaks` | `0:00.35` | `0:00.17` | **+51.1%** | `16.2 MB` | `37.3 MB` | -130.0% | 5 |
+| | `Trufflehog` | `11.63` | `3.21` | **+72.4%** | `207.5 MB` | `192.6 MB` | **+7.2%** | 0 |
+| **truffleHogRegexes**| `Sentinel` | `0:00.68` | `0:00.04` | **+94.2%** | `15.1 MB` | `12.0 MB` | **+20.5%** | **6** |
+| | `Gitleaks` | `0:00.36` | `0:00.22` | **+38.9%** | `16.6 MB` | `40.1 MB` | -141.4% | 8 |
+| | `Trufflehog` | `12.36` | `3.24` | **+73.8%** | `205.8 MB` | `192.8 MB` | **+6.3%** | 0 |
+
+### 3. Stress Test (200,000-Line Heavy Workload)
+
+Evaluates scanner performance, memory stability, and secret detection accuracy under massive single-file workloads (4.5 MB payload containing 500 randomized secrets).
+
+| Tool / Release | Execution Time | Speed Improvement | Peak RAM | RAM Saved | Secrets Detected | Recall Gain |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `Sentinel (v2.0.3-hotfix)` | `0.441s` | - | `24.8 MB` | - | `275 / 500` | - |
+| **`Sentinel (v2.0.4 - New)`** | `0.367s` | **+16.7%** | `23.5 MB` | **+5.2%** | **374 / 500** | **+99 secrets** |
 
 ### Benchmark Takeaways
 
-* **Blazing Fast Core:** Sentinel's actual scan runs natively in **~17ms** on device, and total command execution time takes only **~90ms to 160ms**, representing a **+71.9% to +86.0% speedup** compared to the virtualized container baseline in the README.
-* **Lowest Memory:** Uses just **~11 MB** of RAM natively, a **+27.8% to +30.4% memory reduction** compared to the baseline, and far outperforming Gitleaks (~37 MB) and TruffleHog (~205 MB).
-* **Fewer False Positives:** Successfully minimized false positive triggers on the mock regexes in `truffleHogRegexes` in history mode compared to Gitleaks (5 vs 8).
-* **Better Context Tracking:** Caught all secrets (including MongoDB and entropy-based keys) in `sample_secrets` that Gitleaks and TruffleHog completely missed.
+* **Blazing Fast Core:** Total command execution takes only **~20ms to 40ms** natively, a **+94.2% to +94.8% speedup** vs the containerized baseline — over **6× faster** than Gitleaks and **180× faster** than TruffleHog.
+* **Ultra-Low Memory:** Uses just **~11 to 12 MB** of RAM natively — **~27-30% less** than the old baseline, **3× less** than Gitleaks (~37-40 MB), and over **17× less** than TruffleHog (~193-209 MB).
+* **Best Secret Recall:** Caught **8 secrets** in `sample_secrets` history mode vs Gitleaks' 5 and TruffleHog's 0. Detected **4 secrets** in `truffleHogRegexes` standard mode vs Gitleaks' 1 and TruffleHog's 0.
+* **TruffleHog Zero Recall in History:** TruffleHog found **0 secrets** across all history-mode scans, while Sentinel caught up to **8** in the same repositories.
 
 ---
 
@@ -134,9 +148,10 @@ Here are the empirically gathered, real-world benchmark results against the requ
 | Base64 Single-Layer Extraction | Yes | No | Yes | Yes |
 | Termux-Aware TLS Self-Healing | Yes | No | No | No |
 | Sub-15ms scan (50 KB file) | Yes | Partial | No | No |
-| JSON output for CI tooling | Yes | No | Yes | Yes |
+| JSON & SARIF output for CI integration | Yes | No | Yes | Yes |
 | Zero external runtime dependencies | Yes | Yes | No | No |
 | Global hook installation | Yes | Yes | No | No |
+| Custom user-defined signatures | Yes | No | Yes | No |
 
 ---
 
@@ -315,6 +330,7 @@ sentinel/
 │   ├── context_test.go              # Tier 3 unit tests
 │   ├── doc.go                       # Package declaration
 │   ├── entropy_test.go              # Tier 2 unit tests
+│   ├── reporter_test.go             # SARIF output validation tests
 │   ├── scanner_test.go              # End-to-end pipeline tests
 │   └── trie_test.go                 # Tier 1 unit tests
 │
@@ -342,7 +358,7 @@ sentinel/
 
 ## Signature Coverage
 
-Sentinel's Tier 1 catalogue detects **60+ secret families** across all major platforms:
+Sentinel's Tier 1 catalogue detects **70+ secret families** across all major platforms:
 
 | Category | Services Covered |
 |----------|-----------------|
@@ -356,7 +372,8 @@ Sentinel's Tier 1 catalogue detects **60+ secret families** across all major pla
 | **Crypto** | BIP-39 mnemonic seed phrases (12-word detection) |
 | **Private Keys** | RSA, EC, OpenSSH, PKCS#8, PGP, DSA (all PEM formats) |
 | **Package Registries** | npm |
-| **Generic** | `password=`, `secret=`, `api_key=`, `token=` assignment patterns |
+| **Generic** | `password=`, `secret=`, `api_key=`, `token=` assignment patterns & JSON/YAML colon-mappings (e.g. `password:`, `secret:`) |
+| **Web Frameworks** | Django (`SECRET_KEY`), WordPress (Salts & Keys, e.g. `AUTH_KEY`, `SECURE_AUTH_KEY`, `NONCE_SALT`) |
 
 ---
 
@@ -543,6 +560,16 @@ fail_fast: false
 
 # Enable verbose debug output.
 verbose: false
+
+# Custom user-defined secret signatures (Aho-Corasick matching).
+# Each custom signature must specify a unique 'id' and a search 'prefix'.
+# You can optionally specify a validation 'regex' and rule 'severity'.
+custom_signatures:
+  - id: "my-custom-key"
+    description: "Proprietary internal API credential key"
+    prefix: "mycustom_"
+    severity: "HIGH"
+    regex: "^mycustom_[a-zA-Z0-9]{16}$"
 ```
 
 ---
@@ -595,7 +622,7 @@ Sentinel fully supports the Python `pre-commit` ecosystem. Add this to your `.pr
 ```yaml
 repos:
   - repo: https://github.com/sentinel-cli/sentinel
-    rev: v2.0.1
+    rev: v2.0.4
     hooks:
       - id: sentinel
 ```
@@ -645,7 +672,7 @@ JSON output schema:
 
 ```json
 {
-  "sentinel_version": "v1.2.1",
+  "sentinel_version": "v2.0.4",
   "status": "blocked",
   "scanned_files": 3,
   "elapsed_ms": 4,
@@ -698,14 +725,14 @@ Sentinel provides a robust CLI powered by the Cobra framework. Here is the compr
 #### 1. `sentinel run`
 The core execution engine. Automatically invoked by Git during `git commit` to sweep staged lines for secrets.
 * `-c, --config string`: Path to a `.sentinel.yaml` config file. (Defaults to repo root, then home directory)
-* `-f, --format string`: Output format: `pretty` (default ANSI), `json` (for CI/CD parsers), or `plain`.
+* `-f, --format string`: Output format: `pretty` (default ANSI), `json`, `plain`, or `sarif` (for GitHub Advanced Security Code Scanning alerts).
 * `--fail-fast`: Immediately aborts and blocks the commit upon finding the *first* secret.
 * `-v, --verbose`: Enables verbose debug output.
 
 #### 2. `sentinel scan [path...]`
 Ad-hoc scanning mode. Bypasses Git to sweep arbitrary files or directories.
 * `-c, --config string`: Path to a `.sentinel.yaml` config file.
-* `-f, --format string`: Output format: `pretty`, `json`, or `plain`.
+* `-f, --format string`: Output format: `pretty`, `json`, `plain`, or `sarif`.
 * `-r, --recursive`: Recursively scan subdirectories. (Uses `git ls-files` under the hood if available for max speed).
 * `-v, --verbose`: Enables verbose debug output.
 
