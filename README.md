@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Sentinel Logo](logo.svg?v=3)
+![Sentinel Logo](logo.jpg)
 
 **Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
 
