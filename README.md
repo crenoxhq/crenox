@@ -15,15 +15,15 @@
 
 **Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
 
-[![CI](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml/badge.svg?branch=main&v=3)](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/sentinel-cli/sentinel?color=3670A0&logo=github&label=latest&v=3)](https://github.com/sentinel-cli/sentinel/releases)
-[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&v=3)](https://go.dev)
-[![Go Reference](https://pkg.go.dev/badge/github.com/sentinel-cli/sentinel/v2.svg?v=3)](https://pkg.go.dev/github.com/sentinel-cli/sentinel/v2)
-[![Stars](https://img.shields.io/github/stars/sentinel-cli/sentinel?style=flat&logo=github&color=gold&v=3)](https://github.com/sentinel-cli/sentinel/stargazers)
-[![Downloads](https://img.shields.io/github/downloads/sentinel-cli/sentinel/total?color=brightgreen&logo=github&v=3)](https://github.com/sentinel-cli/sentinel/releases)
-[![License](https://img.shields.io/badge/license-AGPL_3.0-blue&v=3)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android%2FTermux-informational&v=3)](#installation)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg?v=3)](https://github.com/avelino/awesome-go)
+[![CI](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml/badge.svg?branch=main&v=4)](https://github.com/sentinel-cli/sentinel/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/sentinel-cli/sentinel?color=3c6382&logo=github&label=latest&v=4)](https://github.com/sentinel-cli/sentinel/releases)
+[![Go Version](https://img.shields.io/badge/Go-1.22+-2f3542?logo=go&v=4)](https://go.dev)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sentinel-cli/sentinel/v2.svg?v=4)](https://pkg.go.dev/github.com/sentinel-cli/sentinel/v2)
+[![Stars](https://img.shields.io/github/stars/sentinel-cli/sentinel?style=flat&logo=github&color=3c6382&v=4)](https://github.com/sentinel-cli/sentinel/stargazers)
+[![Downloads](https://img.shields.io/github/downloads/sentinel-cli/sentinel/total?color=4b6584&logo=github&v=4)](https://github.com/sentinel-cli/sentinel/releases)
+[![License](https://img.shields.io/badge/license-AGPL_3.0-4b6584?v=4)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android%2FTermux-2f3542?v=4)](#installation)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg?v=4)](https://github.com/avelino/awesome-go)
 
 </div>
 
