@@ -47,6 +47,7 @@ and other sensitive data using a three-tier detection pipeline:
   
   Inline Suppression — Append '// sentinel:ignore' to the preceding line or at the end of the line to ignore false positives.
   Framework Support  — Compatible with the Python 'pre-commit' ecosystem.
+  CI/CD Integration  — Official GitHub Actions support with native SARIF output.
 
 CLI Commands & Flags:
 

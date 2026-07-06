@@ -539,17 +539,27 @@ sentinel scan -f sarif -o sentinel.sarif .
 
 ### CI Integration
 
-```yaml
-# GitHub Actions
-- name: Sentinel secret scan
-  run: |
-    sentinel scan -f sarif -o sentinel.sarif .
+#### GitHub Actions (Official Reusable Action)
+The easiest way to integrate Sentinel into your GitHub Actions workflow is by using our official reusable action. It handles Go installation, compilation cache, and scanning automatically:
 
-- name: Upload to GitHub Code Scanning
+```yaml
+- name: Run Sentinel Security Scan
+  uses: sentinel-cli/sentinel@v2
+  with:
+    args: '.'       # Arguments to pass to the scanner
+    sarif: 'true'   # Export findings to sentinel-results.sarif
+```
+
+To upload the results to GitHub Advanced Security (Code Scanning Alerts), configure the upload step:
+
+```yaml
+- name: Upload SARIF report
+  if: always()
   uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: sentinel.sarif
+    sarif_file: sentinel-results.sarif
 ```
+
 
 ```yaml
 # GitLab CI
