@@ -36,6 +36,19 @@
 
 ---
 
+## 📺 Interactive Terminal Demo
+
+See Sentinel scan the famous `sample_secrets` repository and its entire commit history in milliseconds:
+
+[![Watch the Demo](https://img.shields.io/badge/Asciinema_Player-Watch_Interactive_Demo-red?style=for-the-badge&logo=asciinema)](https://sentinel-cli.github.io/sentinel/#pipeline)
+
+To stream the recording directly in your terminal, run:
+```bash
+asciinema play https://sentinel-cli.github.io/sentinel/demo.cast
+```
+
+---
+
 **Sentinel** is a statically compiled, zero-dependency Git pre-commit hook and credentials scanner written in Go. It is designed to automatically prevent accidental commits and leaks of API keys, SSH private keys, cloud credentials (like AWS keys, GCP service accounts), database passwords, and other sensitive information. Sentinel uses a highly optimized three-tier detection pipeline designed to ensure near-zero scan latency and eliminate false positives.
 
 Sentinel serves as a lightweight, developer-friendly **Gitleaks alternative** and **git-secrets alternative**. It runs natively on all major operating systems — including **Android/Termux**, minimal Linux containers, macOS, and Windows.
@@ -51,6 +64,7 @@ Sentinel serves as a lightweight, developer-friendly **Gitleaks alternative** an
 
 ## Table of Contents
 
+- [Interactive Terminal Demo](#-interactive-terminal-demo)
 - [Performance and Benchmarking Analysis](#performance-and-benchmarking-analysis)
 - [Why Sentinel?](#why-sentinel)
 - [Architecture](#architecture)

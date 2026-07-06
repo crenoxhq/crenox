@@ -60,6 +60,8 @@
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Asciinema Player CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
 <body>
 
@@ -140,29 +142,7 @@
             <h3>Output Demonstration</h3>
             <p>When Sentinel identifies a leak, it aborts the commit process and renders a detailed breakdown of the findings in the console:</p>
 
-            <pre class="font-mono">
- ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗     
- ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║     
- ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║     
- ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║     
- ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗
- ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
-  Pre-Commit Security Hook  │  v2.0.4
-
-   CRITICAL   .sentinel.yaml.example:48
-                [PATTERN] AWS Access Key ID
-                Token:  AKIAIO**********MPLE
-                → - "AKIAIOSFODNN7EXAMPLE"
-
-────────────────────────────────────────────────────────────────────
-  SENTINEL SCAN COMPLETE
-  Files scanned : 12
-  Elapsed       : 25.266ms
-  Findings      :  CRITICAL:1   HIGH:0   MEDIUM:0   LOW:0 
-────────────────────────────────────────────────────────────────────
-
-  ✖ COMMIT BLOCKED — remove the secrets above and try again.
-    Hint: If this is a false positive, append '// sentinel:ignore' to the preceding line.</pre>
+            <div id="terminal-demo" style="margin: 2rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3); border: 1px solid var(--color-border);"></div>
         </section>
 
         <!-- Chapter 3: Benchmarks -->
@@ -365,5 +345,16 @@ sentinel install --global</pre>
 
     <!-- JavaScript -->
     <script src="app.js"></script>
+    <!-- Asciinema Player JS -->
+    <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
+    <script>
+        AsciinemaPlayer.create("demo.cast", document.getElementById("terminal-demo"), {
+            cols: 110,
+            rows: 26,
+            autoPlay: true,
+            loop: true,
+            theme: "catppuccin-mocha"
+        });
+    </script>
 </body>
 </html>
