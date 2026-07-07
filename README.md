@@ -110,12 +110,12 @@ Measured on real-world repositories with Sentinel v2.0.5 against the two most po
 
 | Repository | Tool | Execution Time | Peak RAM | Findings |
 |:---|:---|:---|:---|:---|
-| sample\_secrets | **Sentinel v2.0.5** | **150 ms** | **11.1 MB** | **30** |
-| | Gitleaks v8.30.1 | 430 ms | 38.3 MB | 0 |
-| | TruffleHog v3.95.7 | 3.46 s | 192.7 MB | 0 |
-| truffleHogRegexes | **Sentinel v2.0.5** | **30 ms** | **11.0 MB** | **41** |
-| | Gitleaks v8.30.1 | 350 ms | 39.0 MB | 0 |
-| | TruffleHog v3.95.7 | 3.38 s | 192.0 MB | 0 |
+| sample\_secrets | **Sentinel v2.0.5** | **10 ms** | **10.5 MB** | **2** |
+| | Gitleaks v8.30.1 | 11 ms | 37.6 MB | 1 |
+| | TruffleHog v3.95.7 | 1.41 s | 209.2 MB | 3 |
+| truffleHogRegexes | **Sentinel v2.0.5** | **11 ms** | **10.8 MB** | **0** (Noise Filtered) |
+| | Gitleaks v8.30.1 | 74 ms | 37.2 MB | 1 |
+| | TruffleHog v3.95.7 | 1.50 s | 207.8 MB | 0 |
 
 </details>
 
@@ -124,12 +124,12 @@ Measured on real-world repositories with Sentinel v2.0.5 against the two most po
 
 | Repository | Tool | Execution Time | Peak RAM | Findings |
 |:---|:---|:---|:---|:---|
-| sample\_secrets | **Sentinel v2.0.5** | **30 ms** | **10.5 MB** | **96** |
-| | Gitleaks v8.30.1 | 190 ms | 36.7 MB | 0 |
-| | TruffleHog v3.95.7 | 3.52 s | 192.6 MB | 0 |
-| truffleHogRegexes | **Sentinel v2.0.5** | **50 ms** | **11.0 MB** | **63** |
-| | Gitleaks v8.30.1 | 250 ms | 37.6 MB | 0 |
-| | TruffleHog v3.95.7 | 3.38 s | 192.6 MB | 0 |
+| sample\_secrets | **Sentinel v2.0.5** | **103 ms** | **10.5 MB** | **8** |
+| | Gitleaks v8.30.1 | 19 ms | 36.7 MB | 5 |
+| | TruffleHog v3.95.7 | 1.50 s | 192.6 MB | 3 |
+| truffleHogRegexes | **Sentinel v2.0.5** | **43 ms** | **11.0 MB** | **5** |
+| | Gitleaks v8.30.1 | 81 ms | 37.6 MB | 6 |
+| | TruffleHog v3.95.7 | 1.48 s | 192.8 MB | 0 |
 
 </details>
 
