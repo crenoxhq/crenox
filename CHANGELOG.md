@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Consolidated Generic Signature Rules:** Consolidated the redundant JSON/YAML and CLI variable matching rules down to 4 unified, keyword-only signatures (`password`, `secret`, `api_key`, `token`) matching standard coding patterns.
 
 ### Fixed
+- **Recursive Lock File Exclusion:** Upgraded exclude path glob matcher to run filename matching against the path's base name, ensuring files like `*.lock` and `go.sum` are correctly excluded from subdirectories recursively.
+- **Strict AWS Key Validators:** Hardened AWS MFA/STS token detection by adding strict regular expression validators for `ABIA` and `ASIA` prefixes, eliminating false positive alerts on common English word compounds (e.g. "with a bias on").
+- **GitHub Actions Placeholder Suppression:** Enabled full suppression of GitHub Actions `${{secrets.X}}` expressions by passing them intact through clean/trim operations and matching them against safe config placeholder patterns.
+- **Entropy URL Filtering:** Prevented high-entropy false positives triggered by URL hostnames and paths by automatically skipping lines that contain HTTP/HTTPS schemes from entropy analysis.
 - **Dynamic Keyword-Only Assignment Check:** Refined `extractTokenFromOffset` to dynamically verify assignments (`=` or `:`) for generic keywords (`password`, `secret`, `api_key`, `token`), preventing generic false positives.
 - **Output File Descriptor Closure:** Fixed a bug where `os.Exit(1)` bypassed deferred report file closures in `-o` / `--output`, resulting in truncated logs.
 - **Git Repo Validation:** Ensured Sentinel aborts clean-exits on non-git target paths during pre-commit scans.

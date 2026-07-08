@@ -58,7 +58,7 @@ var (
 	envVarPlaceholder = regexp.MustCompile(`^\$\{?[A-Z_][A-Z0-9_]*\}?$`)
 
 	// configPlaceholder matches common config-file placeholder notations.
-	configPlaceholder = regexp.MustCompile(`^<[^>]+>$|^\[\[.+\]\]$|^\{\{.+\}\}$`)
+	configPlaceholder = regexp.MustCompile(`^<[^>]+>$|^\[\[.+\]\]$|^\{\{.+\}\}$|^\$\{\{.+\}\}$`)
 
 	// uuidPattern matches standard UUID v4 format.
 	uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)

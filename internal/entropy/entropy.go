@@ -98,6 +98,17 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 			if i > start {
 				line := content[start:i]
 
+				// Skip lines that are purely a URL — entire line contains a URL so
+				// any extracted token will be a URL segment, not a secret.
+				lineStr := string(line)
+				if containsURL(lineStr) {
+					if i < len(content) {
+						lineNum++
+						start = i + 1
+					}
+					continue
+				}
+
 				// Extract and score Base64-alphabet tokens.
 				extractTokens(line, base64Set, minLen, func(tok []byte) {
 					if isJavaConstant(tok) || isAllSameChar(tok) {
@@ -158,6 +169,20 @@ func isJavaConstant(tok []byte) bool {
 		}
 	}
 	return true
+}
+
+// containsURL returns true when the line looks like it's a URL string
+// (starts with http, https, or //www) so we can skip entropy scoring entirely.
+func containsURL(line string) bool {
+	for i := 0; i+4 < len(line); i++ {
+		if line[i] == 'h' && i+7 <= len(line) && (line[i:i+7] == "http://" || (i+8 <= len(line) && line[i:i+8] == "https://")) {
+			return true
+		}
+		if line[i] == '/' && i+1 < len(line) && line[i+1] == '/' {
+			return true
+		}
+	}
+	return false
 }
 
 // extractTokens splits a line by the given character set and returns all

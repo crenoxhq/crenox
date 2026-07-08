@@ -646,7 +646,14 @@ func HasExcludedExtension(filePath string, excluded []string) bool {
 // MatchesExcludePath returns true when filePath matches any of the given glob
 // patterns.
 func MatchesExcludePath(filePath string, patterns []string) bool {
+	base := filepath.Base(filePath)
 	for _, pattern := range patterns {
+		if !strings.ContainsRune(pattern, '/') && !strings.ContainsRune(pattern, '\\') {
+			matched, err := filepath.Match(pattern, base)
+			if err == nil && matched {
+				return true
+			}
+		}
 		matched, err := filepath.Match(pattern, filePath)
 		if err == nil && matched {
 			return true
@@ -884,6 +891,23 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int) string 
 
 	after = bytes.TrimLeft(after, "\"'`=: ,() \t\n\r")
 
+	// Early return for GitHub Actions / Jinja / Helm expressions like ${{...}} or {{...}}
+	// These must pass intact to the context classifier to be recognized as safe placeholders.
+	if bytes.HasPrefix(after, []byte("${{")) {
+		end := bytes.Index(after, []byte("}}"))
+		if end != -1 {
+			return string(after[:end+2])
+		}
+		return string(after)
+	}
+	if bytes.HasPrefix(after, []byte("{{")) {
+		end := bytes.Index(after, []byte("}}"))
+		if end != -1 {
+			return string(after[:end+2])
+		}
+		return string(after)
+	}
+
 	// Truncate at the first closing quote to properly isolate tokens in minified code
 	if qIdx := bytes.IndexAny(after, "\"'`"); qIdx > 0 {
 		after = after[:qIdx]
@@ -963,6 +987,9 @@ func isStrictBip39Mnemonic(val string) bool {
 // Go identifier (all ASCII letters and digits with no special chars).
 func isPlausibleSecretToken(token, prefix string, minLen int) bool {
 	if len(token) > 400 {
+		return false
+	}
+	if strings.HasPrefix(token, "http://") || strings.HasPrefix(token, "https://") || strings.HasPrefix(token, "//") || strings.HasPrefix(token, "www.") {
 		return false
 	}
 	if len(token) < minLen/2 {

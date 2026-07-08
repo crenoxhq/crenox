@@ -614,6 +614,21 @@ func TestFalsePositive_Regression(t *testing.T) {
 			file:    "deploy.sh",
 			content: `export GITHUB_TOKEN=$GITHUB_TOKEN`,
 		},
+		{
+			name:    "ABIA/ASIA false positive in English text",
+			file:    "description.txt",
+			content: "A static type checker with a bias on type inference and strong type systems.",
+		},
+		{
+			name:    "URL high entropy false positive",
+			file:    "dependencies.yml",
+			content: "url: https://www.tomasvotruba.com/blog/2017/05/03/combine-power-of-php-code-sniffer-and-php-cs-fixer-in-3-lines",
+		},
+		{
+			name:    "GitHub Actions GITHUB_TOKEN placeholder",
+			file:    "links.yml",
+			content: "GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}",
+		},
 	}
 
 	for _, c := range falsePositiveCases {
@@ -669,6 +684,24 @@ func TestTruePositive_Regression(t *testing.T) {
 			name:    "high-entropy token (entropy tier only)",
 			file:    "config/settings.go",
 			content: `SECRET = "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8KvM2nXpQrYsT"`,
+			wantMin: 1,
+		},
+		{
+			name:    "AWS ABIA MFA key",
+			file:    "config.go",
+			content: `aws_mfa_key = "ABIAABCDEFGHIJKLMNOP"`,
+			wantMin: 1,
+		},
+		{
+			name:    "AWS ASIA Session key",
+			file:    "config.go",
+			content: `aws_sts_key = "ASIAABCDEFGHIJKLMNOP"`,
+			wantMin: 1,
+		},
+		{
+			name:    "Secret inside URL query parameter",
+			file:    "url.txt",
+			content: `https://api.service.com/data?api_key=ghp_REALTOKEN1234567890abcdef`,
 			wantMin: 1,
 		},
 	}

@@ -54,8 +54,8 @@ var BuiltinSignatures = []Signature{
 
 	// ── AWS ───────────────────────────────────────────────────────────────────
 	{ID: "aws-access-key", Description: "AWS Access Key ID", Prefix: "AKIA", Severity: "CRITICAL", Validator: regexp.MustCompile(`^AKIA[0-9A-Z]{16}$`)},
-	{ID: "aws-mfa-key", Description: "AWS MFA Device Serial", Prefix: "ABIA", Severity: "CRITICAL"},
-	{ID: "aws-sts", Description: "AWS STS Temporary Access Key", Prefix: "ASIA", Severity: "CRITICAL"},
+	{ID: "aws-mfa-key", Description: "AWS MFA Device Serial", Prefix: "ABIA", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ABIA[0-9A-Z]{16}$`)},
+	{ID: "aws-sts", Description: "AWS STS Temporary Access Key", Prefix: "ASIA", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ASIA[0-9A-Z]{16}$`)},
 
 	// ── Google Cloud ──────────────────────────────────────────────────────────
 	{ID: "gcp-service-account", Description: "GCP Service Account Key (JSON)", Prefix: "\"type\": \"service_account\"", Severity: "CRITICAL"},
