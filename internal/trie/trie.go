@@ -87,8 +87,7 @@ var BuiltinSignatures = []Signature{
 	// ── SendGrid ──────────────────────────────────────────────────────────────
 	{ID: "sendgrid-key", Description: "SendGrid API Key", Prefix: "SG.", Severity: "HIGH", Validator: regexp.MustCompile(`^SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}$`)},
 
-	// ── Mailgun ───────────────────────────────────────────────────────────────
-	{ID: "mailgun-key", Description: "Mailgun API Key", Prefix: "key-", Severity: "MEDIUM"},
+	{ID: "mailgun-key", Description: "Mailgun API Key", Prefix: "key-", Severity: "MEDIUM", Validator: regexp.MustCompile(`(?i)^key-[0-9a-f]{32}$`)},
 
 	// ── NPM ───────────────────────────────────────────────────────────────────
 	{ID: "npm-token", Description: "npm Automation/Publish Token", Prefix: "npm_", Severity: "HIGH"},

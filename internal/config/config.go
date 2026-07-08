@@ -99,6 +99,8 @@ func defaultConfig() Config {
 			"*.lock",
 			"go.sum",
 			"package-lock.json",
+			"**/locales/**",
+			"**/i18n/**",
 		},
 		ExcludeExtensions: []string{
 			".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg",
@@ -107,6 +109,7 @@ func defaultConfig() Config {
 			".zip", ".tar", ".gz", ".bz2", ".xz", ".7z",
 			".pdf", ".doc", ".docx", ".xls", ".xlsx",
 			".exe", ".dll", ".so", ".dylib", ".a", ".o",
+			".css", ".scss", ".csv", ".hex",
 		},
 		AllowlistPatterns: []string{},
 		DisableTiers:      DisableTiersConfig{},

@@ -45,6 +45,7 @@ var safeFileSegments = map[string]bool{
 // safeFileSuffixes are filename substrings that indicate the file is a test or doc.
 var safeFileSuffixes = []string{
 	"_test.go", "_spec.rb", ".test.js", ".spec.js", ".test.ts", ".spec.ts",
+	".test.tsx", ".spec.tsx", ".test.jsx", ".spec.jsx",
 	"readme", ".md", ".rst",
 }
 
@@ -182,6 +183,16 @@ func Classify(filePath, lineContent, token string) Decision {
 		return SafeVariableName
 	}
 
+	// ── Check 9: Self-assignment or identical LHS/RHS value ─────────────────
+	// If the cleaned variable name is identical to the cleaned token value,
+	// then it is a self-assignment/default mapping (e.g. `auth_token: "auth_token"` or `password = "password"`),
+	// not a real secret.
+	cleanLHS := cleanIdentifier(varName)
+	cleanToken := cleanIdentifier(token)
+	if cleanLHS != "" && cleanLHS == cleanToken {
+		return SafeVariableName
+	}
+
 	return Real
 }
 
@@ -225,7 +236,7 @@ func IsSuppressed(d Decision) bool {
 func extractVarName(line, token string) string {
 	idx := strings.Index(line, token)
 	if idx < 0 {
-		return line
+		return ""
 	}
 
 	for i := idx - 1; i >= 0; i-- {
@@ -249,7 +260,7 @@ func extractVarName(line, token string) string {
 			return ""
 		}
 	}
-	return line
+	return ""
 }
 
 // isAllAlpha returns true when s contains only ASCII letters.
@@ -260,4 +271,16 @@ func isAllAlpha(s string) bool {
 		}
 	}
 	return true
+}
+
+// cleanIdentifier returns a lowercased version of s containing only letters and digits.
+func cleanIdentifier(s string) string {
+	s = strings.ToLower(s)
+	var sb strings.Builder
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			sb.WriteRune(r)
+		}
+	}
+	return sb.String()
 }

@@ -111,6 +111,9 @@ func New(automaton *trie.Automaton, opts Options) *Scanner {
 // isDuplicateMatch checks if a new Finding's token already exists in the matches slice.
 func (s *Scanner) isDuplicateMatch(matches []Finding, newMatch Finding) bool {
 	for _, m := range matches {
+		if m.FilePath == newMatch.FilePath && m.Line == newMatch.Line && m.SignatureID == newMatch.SignatureID {
+			return true
+		}
 		if newMatch.DetectionTier == TierEntropy || m.DetectionTier == TierEntropy {
 			if strings.Contains(newMatch.Token, m.Token) || strings.Contains(m.Token, newMatch.Token) {
 				return true
@@ -213,6 +216,7 @@ var b64Pool = sync.Pool{
 // filePath is used only for Tier 3 context decisions (test-file suppression).
 func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 	var findings []Finding
+	isSource := isSourceCodeFile(filePath)
 
 	// Retrieve a reusable decoding buffer from the pool
 	decBufPtr := b64Pool.Get().(*[]byte)
@@ -344,7 +348,16 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			matches := s.automaton.Search(lineTrim)
 			hasMatches := len(matches) > 0
 			for _, m := range matches {
-				token := extractTokenFromOffset(lineTrim, m.Sig, m.Offset)
+				if strings.HasPrefix(m.Sig.ID, "generic-") {
+					startIdx := m.Offset - len(m.Sig.Prefix) + 1
+					if startIdx > 0 {
+						prevChar := lineTrim[startIdx-1]
+						if (prevChar >= 'a' && prevChar <= 'z') || (prevChar >= 'A' && prevChar <= 'Z') || (prevChar >= '0' && prevChar <= '9') {
+							continue // Skip matches that are part of a larger word like rtoken
+						}
+					}
+				}
+				token := extractTokenFromOffset(lineTrim, m.Sig, m.Offset, isSource)
 				if token == "" {
 					continue
 				}
@@ -401,7 +414,16 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			if !hasMatches && cLen > 0 && cLen < vLen {
 				compMatches := s.automaton.Search(compVal)
 				for _, m := range compMatches {
-					token := extractTokenFromOffset(compVal, m.Sig, m.Offset)
+					if strings.HasPrefix(m.Sig.ID, "generic-") {
+						startIdx := m.Offset - len(m.Sig.Prefix) + 1
+						if startIdx > 0 {
+							prevChar := compVal[startIdx-1]
+							if (prevChar >= 'a' && prevChar <= 'z') || (prevChar >= 'A' && prevChar <= 'Z') || (prevChar >= '0' && prevChar <= '9') {
+								continue
+							}
+						}
+					}
+					token := extractTokenFromOffset(compVal, m.Sig, m.Offset, isSource)
 					if token == "" {
 						continue
 					}
@@ -473,7 +495,16 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 					if !s.opts.DisableTrie && s.automaton != nil {
 						decMatches := s.automaton.Search(decodedVal)
 						for _, m := range decMatches {
-							token := extractTokenFromOffset(decodedVal, m.Sig, m.Offset)
+							if strings.HasPrefix(m.Sig.ID, "generic-") {
+								startIdx := m.Offset - len(m.Sig.Prefix) + 1
+								if startIdx > 0 {
+									prevChar := decodedVal[startIdx-1]
+									if (prevChar >= 'a' && prevChar <= 'z') || (prevChar >= 'A' && prevChar <= 'Z') || (prevChar >= '0' && prevChar <= '9') {
+										continue
+									}
+								}
+							}
+							token := extractTokenFromOffset(decodedVal, m.Sig, m.Offset, isSource)
 							if token == "" {
 								continue
 							}
@@ -531,6 +562,10 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 							decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token)
 						}
 						if decision == sentinelcontext.Real {
+							idx := strings.Index(string(rawLine), h.Token)
+							if idx > 0 && rawLine[idx-1] == '@' {
+								continue
+							}
 							newMatch := Finding{
 								FilePath:      filePath,
 								Line:          lineNum,
@@ -669,13 +704,34 @@ func MatchesExcludePath(filePath string, patterns []string) bool {
 // matchesPathComponent checks whether pattern matches any directory segment or
 // suffix of filePath, enabling patterns like "vendor/**" to work correctly.
 func matchesPathComponent(filePath, pattern string) bool {
-	// Strip trailing /** for simpler matching.
+	filePath = strings.ReplaceAll(filePath, "\\", "/")
+	pattern = strings.ReplaceAll(pattern, "\\", "/")
+
 	trimmedPattern := strings.TrimSuffix(pattern, "/**")
 	trimmedPattern = strings.TrimSuffix(trimmedPattern, "/*")
+	trimmedPattern = strings.TrimPrefix(trimmedPattern, "**/")
 
-	return strings.HasPrefix(filePath, trimmedPattern+"/") ||
-		strings.HasPrefix(filePath, trimmedPattern+"\\") ||
-		filePath == trimmedPattern
+	patternSegs := strings.Split(trimmedPattern, "/")
+	fileSegs := strings.Split(filePath, "/")
+
+	if len(patternSegs) == 0 || len(fileSegs) == 0 || patternSegs[0] == "" {
+		return false
+	}
+
+	for i := 0; i <= len(fileSegs)-len(patternSegs); i++ {
+		match := true
+		for j := 0; j < len(patternSegs); j++ {
+			matched, err := filepath.Match(patternSegs[j], fileSegs[i+j])
+			if err != nil || !matched {
+				match = false
+				break
+			}
+		}
+		if match {
+			return true
+		}
+	}
+	return false
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -864,9 +920,7 @@ func allQuotedLiterals(s []byte) []byte {
 	return bytes.Join(parts, []byte(" "))
 }
 
-// extractTokenFromOffset isolates the secret token from the string given the exact offset
-// where the pattern prefix ends.
-func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int) string {
+func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourceFile bool) string {
 	prefix := sig.Prefix
 	start := offset - len(prefix) + 1
 	if start < 0 || offset >= len(val) {
@@ -878,6 +932,25 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int) string 
 		after = bytes.TrimSpace(val[offset+1:])
 	} else {
 		after = bytes.TrimSpace(val[start:])
+	}
+
+	// If it is a generic keyword assignment in a source file, the value must be quoted.
+	// That is, the first non-whitespace character after the assignment operator (= or :) must be a quote.
+	if sig.IsAssignmentOrKeyword && isSourceFile && strings.HasPrefix(sig.ID, "generic-") {
+		idx := bytes.IndexAny(after, "=:")
+		if idx != -1 && idx+1 < len(after) {
+			trimmed := bytes.TrimLeft(after[idx+1:], " \t\r\n")
+			if len(trimmed) > 0 {
+				firstChar := trimmed[0]
+				if firstChar != '"' && firstChar != '\'' && firstChar != '`' {
+					return "" // Not a quoted string literal in a source file!
+				}
+			} else {
+				return ""
+			}
+		} else {
+			return ""
+		}
 	}
 
 	// Strict bypass for PEM headers (don't break on spaces, keep dashes)
@@ -1115,4 +1188,14 @@ func aggregateBlobs(findings []Finding) []Finding {
 	flushBlob()
 
 	return result
+}
+
+// isSourceCodeFile returns true if the filePath has an extension of a programming language source file.
+func isSourceCodeFile(filePath string) bool {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	switch ext {
+	case ".go", ".rb", ".js", ".ts", ".jsx", ".tsx", ".py", ".java", ".scala", ".kt", ".c", ".cpp", ".h", ".cs", ".php", ".pl", ".sh", ".bash", ".zsh":
+		return true
+	}
+	return false
 }
