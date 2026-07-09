@@ -124,7 +124,7 @@ Measured on real-world repositories with Sentinel against the two most popular a
 
 | Repository | Tool | Execution Time | Peak RAM | Findings |
 |:---|:---|:---|:---|:---|
-| sample\_secrets | **Sentinel** | **140 ms** | **11.2 MB** | **8** |
+| sample\_secrets | **Sentinel** | **140 ms** | **11.2 MB** | **7** |
 | | Gitleaks v8.30.1 | 160 ms | 16.0 MB | 5 |
 | | TruffleHog v3.95.7 | 9.05 s | 155.7 MB | 3 |
 | truffleHogRegexes | **Sentinel** | **60 ms** | **11.6 MB** | **5** |
@@ -728,6 +728,9 @@ Tier 3 automatically eliminates the vast majority of false positives. For persis
 |--------|------------|
 | `sentinel:ignore` comment | One-off suppression for a specific line |
 | Safe variable name (`dummy_`, `fake_`, `mock_`) | Test or documentation values that look like secrets |
+| **Automatic Mock Value Filter** | Automatically ignores generic token rules if values contain mock/fake/test/dummy |
+| **Key File Entropy Bypass** | Skips raw line-by-line entropy checks on key extensions (`.pem`, `.key`, `.rsa`, `.crt`, `.pub`) |
+| **Function Call Protection** | Automatically filters out code function calls and methods containing parentheses |
 | `allowlist_patterns` in config | Known safe tokens used repeatedly across the codebase |
 | Move to test file path | Values in `tests/`, `testdata/`, `*_test.go`, `.md` are suppressed automatically |
 | `${ENV_VAR}` reference syntax | Replaced at runtime — not a hardcoded secret |

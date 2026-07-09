@@ -128,7 +128,7 @@ func (d Decision) String() string {
 //   - filePath: the repo-relative path of the file being scanned
 //   - lineContent: the full text of the line on which the secret was found
 //   - token: the specific token that triggered the detector
-func Classify(filePath, lineContent, token string) Decision {
+func Classify(filePath, lineContent, token, sigID string) Decision {
 	// ── Check 1: Safe file path ──────────────────────────────────────────────
 	if IsTestFilePath(filePath) {
 		return SafeTestFile
@@ -186,11 +186,39 @@ func Classify(filePath, lineContent, token string) Decision {
 	// ── Check 9: Self-assignment or identical LHS/RHS value ─────────────────
 	// If the cleaned variable name is identical to the cleaned token value,
 	// then it is a self-assignment/default mapping (e.g. `auth_token: "auth_token"` or `password = "password"`),
-	// not a real secret.
+	// not a real secret. Also support common token variable suffix patterns like const foo_token = "foo".
 	cleanLHS := cleanIdentifier(varName)
 	cleanToken := cleanIdentifier(token)
-	if cleanLHS != "" && cleanLHS == cleanToken {
+	if cleanLHS != "" {
+		if cleanLHS == cleanToken ||
+			cleanLHS == cleanToken+"token" ||
+			cleanLHS == cleanToken+"key" ||
+			cleanLHS == cleanToken+"secret" ||
+			cleanLHS == cleanToken+"password" {
+			return SafeVariableName
+		}
+	}
+
+	// ── Check 10: Control flow / Conditional expressions ──────────────────────
+	// Reject lines containing Rust "if let " or Go "if " conditional checks,
+	// which are code logic rather than hardcoded credentials.
+	lowerLine := strings.ToLower(lineContent)
+	if strings.Contains(lowerLine, "if let ") || strings.HasPrefix(strings.TrimSpace(lowerLine), "if ") {
 		return SafeVariableName
+	}
+
+	// ── Check 11: Mock/Test/Fake token values for generic rules ───────────────
+	// Reject generic token values that explicitly contain "mock", "test", "fake",
+	// or other test-fixture keywords.
+	if strings.HasPrefix(sigID, "generic-") {
+		lowerToken := strings.ToLower(token)
+		if strings.Contains(lowerToken, "mock") || strings.Contains(lowerToken, "fake") ||
+			strings.Contains(lowerToken, "placeholder") || strings.Contains(lowerToken, "dummy") ||
+			strings.Contains(lowerToken, "example") || strings.Contains(lowerToken, "test-token") ||
+			strings.Contains(lowerToken, "test_token") || strings.Contains(lowerToken, "fake-token") ||
+			strings.Contains(lowerToken, "fake_token") {
+			return SafeVariableName
+		}
 	}
 
 	return Real
@@ -212,9 +240,20 @@ func IsTestFilePath(path string) bool {
 	lower = strings.ReplaceAll(lower, "\\", "/")
 	segments := strings.Split(lower, "/")
 
-	for _, seg := range segments {
+	for i, seg := range segments {
 		if safeFileSegments[seg] {
 			return true
+		}
+		// Match directory names containing mock, fixture, testdata (e.g. mock-policy-server)
+		if strings.Contains(seg, "mock") || strings.Contains(seg, "fixture") || strings.Contains(seg, "testdata") {
+			return true
+		}
+		// Match segment containing "test" (e.g. testWorkspace) but avoid matching package names containing test (e.g. "testing")
+		// ONLY check this for directory segments (not the last segment/filename)!
+		if i < len(segments)-1 {
+			if strings.Contains(seg, "test") && seg != "testing" {
+				return true
+			}
 		}
 	}
 	return false
@@ -234,32 +273,62 @@ func IsSuppressed(d Decision) bool {
 // extractVarName returns the portion of a line that represents the variable
 // name immediately preceding the token.
 func extractVarName(line, token string) string {
-	idx := strings.Index(line, token)
+	idx := strings.LastIndex(line, token)
 	if idx < 0 {
 		return ""
 	}
 
+	// Search backwards from the token's start to find the closest assignment operator
+	opIdx := -1
 	for i := idx - 1; i >= 0; i-- {
 		if line[i] == '=' || line[i] == ':' {
-			// Find the closest alphanumeric identifier to the left
-			end := -1
-			for j := i - 1; j >= 0; j-- {
-				isAlphaNum := (line[j] >= 'a' && line[j] <= 'z') ||
-					(line[j] >= 'A' && line[j] <= 'Z') ||
-					(line[j] >= '0' && line[j] <= '9') ||
-					line[j] == '_' || line[j] == '-'
-				if isAlphaNum && end == -1 {
-					end = j
-				} else if !isAlphaNum && end != -1 {
-					return line[j+1 : end+1]
+			// Check if it is a double comparison like == or !=
+			if line[i] == '=' {
+				if i > 0 && (line[i-1] == '=' || line[i-1] == '!' || line[i-1] == '<' || line[i-1] == '>') {
+					continue
+				}
+				if i+1 < len(line) && line[i+1] == '=' {
+					continue
 				}
 			}
-			if end != -1 {
-				return line[0 : end+1]
-			}
-			return ""
+			opIdx = i
+			break
 		}
 	}
+
+	if opIdx >= 0 {
+		// LHS is everything to the left of the operator on that line
+		lhs := strings.TrimSpace(line[:opIdx])
+		
+		// If the operator was :=, make sure we strip the colon if it wasn't already stripped
+		if line[opIdx] == '=' && opIdx > 0 && line[opIdx-1] == ':' {
+			lhs = strings.TrimSpace(line[:opIdx-1])
+		}
+
+		// Clean up common language keywords/declaration prefixes
+		for _, prefix := range []string{"let ", "const ", "var ", "local ", "ref ", "ref", "mut "} {
+			if strings.HasPrefix(strings.ToLower(lhs), prefix) {
+				lhs = lhs[len(prefix):]
+			}
+		}
+		
+		lhs = strings.TrimSpace(lhs)
+		end := -1
+		for i := len(lhs) - 1; i >= 0; i-- {
+			c := lhs[i]
+			isAlphaNum := (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-'
+			if isAlphaNum && end == -1 {
+				end = i
+			} else if !isAlphaNum && end != -1 {
+				return lhs[i+1 : end+1]
+			}
+		}
+		if end != -1 {
+			return lhs[:end+1]
+		}
+		return lhs
+	}
+
 	return ""
 }
 

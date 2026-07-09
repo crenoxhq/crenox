@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Consolidated Generic Signature Rules:** Consolidated the redundant JSON/YAML and CLI variable matching rules down to 4 unified, keyword-only signatures (`password`, `secret`, `api_key`, `token`) matching standard coding patterns.
 - **Sliding Path Globbing:** Upgraded path exclusion matching to slide over file path segments, enabling recursive matching of directory wildcards like `**/locales/**` and `**/i18n/**`.
 - **Expanded Test Coverage:** Expanded unit test coverage of the core packages to **88.7%** by testing configuration validation, reporter rendering formats, binary detection edge cases, and log formats.
+- **Smart Directory test/mock path globbing:** Upgraded `IsTestFilePath` context filter to recursively match directory names containing `test`, `mock`, `fixture`, and `testdata` as substrings (e.g. `mock-policy-server`, `testWorkspace`), extending context-aware false positive suppression to multi-language test folder structures.
+- **Context-aware Mock/Test/Fake value filter (Check 11):** Implemented a heuristic check in `Classify` to automatically suppress generic rules (e.g. `generic-token-key`, `generic-password-key`) if the token value contains mock, test, dummy, or fake keywords (e.g. `test-token`, `mock_value`, `fake-token`), while preserving specific signatures (e.g. `aws-access-key`, `stripe-live-secret`) used in test assertions.
+- **BIP-39 Mnemonic context-aware filtering:** Integrated `IsTestFilePath` check into the BIP-39 mnemonic recovery seed scanner, preventing dummy/mock recovery phrases in test fixtures from being flagged.
 
 ### Fixed
 - **Recursive Lock File Exclusion:** Upgraded exclude path glob matcher to run filename matching against the path's base name, ensuring files like `*.lock` and `go.sum` are correctly excluded from subdirectories recursively.
@@ -29,6 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Git Repo Validation:** Ensured Sentinel aborts clean-exits on non-git target paths during pre-commit scans.
 - **Updater & Uninstall Endpoints:** Fixed hardcoded update and uninstall utility URLs to point to version 2 API targets.
 - **Unit Test Alignment:** Updated test suites (`commands_test.go` and `scanner_test.go`) and documentation to align with the new `64` signature rules count.
+- **Backward-Searching LHS variable isolation:** Upgraded `extractVarName` to search backwards from the token's position, linking tokens to their precise closest assignment operators (`=`, `:`, `:=`) and isolating the correct LHS variable name in complex lines with multiple assignments (e.g. minified JS files).
+- **Parentheses detection in token extraction:** Hardened `extractTokenFromOffset` to reject fields containing parentheses `(` or `)` before trimming, preventing function calls (e.g. `mint_connection_token()`) from being erroneously matched by generic prefix rules.
+- **Strict key-extension entropy bypass:** Excluded entropy analysis (Tier 2) on files with cryptographically key/certificate extensions (`.pem`, `.key`, `.rsa`, `.pub`, `.crt`), preventing line-by-line redundant high-entropy base64 alerts on private key contents already matched by `pem-private-key` signature rules.
+- **Variable suffix self-assignment suppression (Check 9):** Extended the self-assignment suppression check to recognize variable suffix naming patterns (e.g. `const foo_token = "foo"` or `const bar_key = "bar"`), eliminating false positive alerts on common name-based string literals.
+- **urn: URI scheme exclusion:** Added check to `isPlausibleSecretToken` to reject tokens starting with `urn:` prefix, preventing OAuth token-type URIs from triggering generic rules.
+- **Strict npm-token regex validator:** Hardened the `npm-token` signature in Trie rules with a strict regular expression validator requiring `npm_` to be followed by at least 36 alphanumeric characters, eliminating false positives on icon file names (e.g. `npm_icon.png`, `npm_ignored.png`).
+- **Component Governance and Blame file suppression:** Added Microsoft Component Governance manifests (`cgmanifest.json`), Git blame suppression files (`.git-blame-ignore-revs`), and build manifests (`product.json`) to `isKnownSafeFile` exclusions to filter out SHA-256/512 hashes.
 
 ## [2.0.5] - 2026-07-07
 

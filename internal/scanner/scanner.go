@@ -215,8 +215,13 @@ var b64Pool = sync.Pool{
 //
 // filePath is used only for Tier 3 context decisions (test-file suppression).
 func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
+	// Fast-path: skip files that are known to never contain production secrets.
+	if isKnownSafeFile(filePath) {
+		return nil
+	}
 	var findings []Finding
 	isSource := isSourceCodeFile(filePath)
+	ext := strings.ToLower(filepath.Ext(filePath))
 
 	// Retrieve a reusable decoding buffer from the pool
 	decBufPtr := b64Pool.Get().(*[]byte)
@@ -290,7 +295,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		// "password=?", and variable names like "ACAccountSID" from being
 		// treated as secret values.
 
-		val, _ := extractSecretValue(lineTrim)
+		val, isAssignment := extractSecretValue(lineTrim)
 		// We do not 'continue' here if val == nil, because we still want to run
 		// the Tier 1 Aho-Corasick automaton on the full line to catch leaks
 		// dumped directly in logs, text files, or raw JSON.
@@ -327,6 +332,9 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			// 12, 15, 18, 21, and 24-word BIP-39 crypto wallet recovery phrases.
 			if spaceCount == 11 || spaceCount == 14 || spaceCount == 17 || spaceCount == 20 || spaceCount == 23 {
 				if isStrictBip39Mnemonic(string(targetStr)) {
+					if !s.opts.DisableContext && sentinelcontext.IsTestFilePath(filePath) {
+						continue
+					}
 					findings = append(findings, Finding{
 						FilePath:      filePath,
 						Line:          lineNum,
@@ -348,12 +356,15 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			matches := s.automaton.Search(lineTrim)
 			hasMatches := len(matches) > 0
 			for _, m := range matches {
-				if strings.HasPrefix(m.Sig.ID, "generic-") {
+				// Whole-word boundary check: skip matches embedded inside a larger
+				// alphanumeric identifier (e.g. "tcf_exts_for_each_action" triggering
+				// the cloudflare cf_ rule). Applied to ALL rules, not just generic-.
+				{
 					startIdx := m.Offset - len(m.Sig.Prefix) + 1
 					if startIdx > 0 {
 						prevChar := lineTrim[startIdx-1]
 						if (prevChar >= 'a' && prevChar <= 'z') || (prevChar >= 'A' && prevChar <= 'Z') || (prevChar >= '0' && prevChar <= '9') {
-							continue // Skip matches that are part of a larger word like rtoken
+							continue
 						}
 					}
 				}
@@ -362,7 +373,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 					continue
 				}
 
-				if !isPlausibleSecretToken(token, m.Sig.Prefix, s.opts.MinSecretLength) {
+				if !isPlausibleSecretToken(token, m.Sig.Prefix, m.Sig.ID, s.opts.MinSecretLength) {
 					continue
 				}
 				if m.Sig.Validator != nil && !m.Sig.Validator.MatchString(token) {
@@ -373,7 +384,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 				}
 				decision := sentinelcontext.Real
 				if !s.opts.DisableContext {
-					decision = sentinelcontext.Classify(filePath, string(rawLine), token)
+					decision = sentinelcontext.Classify(filePath, string(rawLine), token, m.Sig.ID)
 				}
 				if decision == sentinelcontext.Real {
 					if s.isAllowed(token) {
@@ -414,7 +425,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			if !hasMatches && cLen > 0 && cLen < vLen {
 				compMatches := s.automaton.Search(compVal)
 				for _, m := range compMatches {
-					if strings.HasPrefix(m.Sig.ID, "generic-") {
+					{
 						startIdx := m.Offset - len(m.Sig.Prefix) + 1
 						if startIdx > 0 {
 							prevChar := compVal[startIdx-1]
@@ -428,7 +439,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 						continue
 					}
 
-					if !isPlausibleSecretToken(token, m.Sig.Prefix, s.opts.MinSecretLength) {
+					if !isPlausibleSecretToken(token, m.Sig.Prefix, m.Sig.ID, s.opts.MinSecretLength) {
 						continue
 					}
 					if m.Sig.Validator != nil && !m.Sig.Validator.MatchString(token) {
@@ -442,7 +453,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 					}
 					decision := sentinelcontext.Real
 					if !s.opts.DisableContext {
-						decision = sentinelcontext.Classify(filePath, string(rawLine), token)
+						decision = sentinelcontext.Classify(filePath, string(rawLine), token, m.Sig.ID)
 					}
 					if decision == sentinelcontext.Real {
 						newMatch := Finding{
@@ -495,7 +506,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 					if !s.opts.DisableTrie && s.automaton != nil {
 						decMatches := s.automaton.Search(decodedVal)
 						for _, m := range decMatches {
-							if strings.HasPrefix(m.Sig.ID, "generic-") {
+							{
 								startIdx := m.Offset - len(m.Sig.Prefix) + 1
 								if startIdx > 0 {
 									prevChar := decodedVal[startIdx-1]
@@ -508,7 +519,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 							if token == "" {
 								continue
 							}
-							if !isPlausibleSecretToken(token, m.Sig.Prefix, s.opts.MinSecretLength) {
+							if !isPlausibleSecretToken(token, m.Sig.Prefix, m.Sig.ID, s.opts.MinSecretLength) {
 								continue
 							}
 							if m.Sig.Validator != nil && !m.Sig.Validator.MatchString(token) {
@@ -522,7 +533,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 							}
 							decision := sentinelcontext.Real
 							if !s.opts.DisableContext {
-								decision = sentinelcontext.Classify(filePath, string(rawLine), token)
+								decision = sentinelcontext.Classify(filePath, string(rawLine), token, m.Sig.ID)
 							}
 							if decision == sentinelcontext.Real {
 								newMatch := Finding{
@@ -547,7 +558,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			}
 		}
 
-		if !s.opts.DisableEntropy {
+		if !s.opts.DisableEntropy && ext != ".pem" && ext != ".key" && ext != ".rsa" && ext != ".crt" && ext != ".pub" {
 			// Entropy tier runs when the value has no spaces (looks like a single
 			// dense token)
 			if !hasSpace {
@@ -557,14 +568,124 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 						if s.isAllowed(h.Token) {
 							continue
 						}
+						if !isPlausibleSecretToken(h.Token, "", "", s.opts.MinSecretLength) {
+							continue
+						}
+						// In source code files with no assignment context, base64 entropy hits
+						// almost always come from type names, byte-sequence docs, or generated
+						// constants — not real secrets. Require an actual assignment (val != nil).
+						if isSource && !isAssignment && h.Kind == "base64" {
+							continue
+						}
 						decision := sentinelcontext.Real
 						if !s.opts.DisableContext {
-							decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token)
+							decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token, h.Kind)
 						}
 						if decision == sentinelcontext.Real {
 							idx := strings.Index(string(rawLine), h.Token)
 							if idx > 0 && rawLine[idx-1] == '@' {
 								continue
+							}
+							// Skip SHA-256 / OCI container digest lines (e.g. sha256:<hex>)
+							if h.Kind == "hex" && strings.Contains(string(rawLine), "sha256:") {
+								continue
+							}
+							// Skip hashes of length 40 or 64 that appear in code/configuration lines
+							// containing metadata keywords (e.g. git commit SHAs, file checksums).
+							if h.Kind == "hex" && (len(h.Token) == 40 || len(h.Token) == 64) {
+								rl := strings.ToLower(string(rawLine))
+								if strings.Contains(rl, "hash") || strings.Contains(rl, "sha") ||
+									strings.Contains(rl, "digest") || strings.Contains(rl, "commit") ||
+									strings.Contains(rl, "parent") || strings.Contains(rl, "rev") ||
+									strings.Contains(rl, "fingerprint") || strings.Contains(rl, "checksum") ||
+									strings.Contains(rl, "manifest") {
+									continue
+								}
+							}
+							// Skip OAuth client IDs / App IDs from being flagged as hex entropy secrets.
+							if h.Kind == "hex" {
+								rl := strings.ToLower(string(rawLine))
+								if strings.Contains(rl, "client_id") || strings.Contains(rl, "client-id") ||
+									strings.Contains(rl, "clientid") || strings.Contains(rl, "appid") ||
+									strings.Contains(rl, "app_id") {
+									continue
+								}
+							}
+							// Skip checksum verification lines in Dockerfiles/shell scripts
+							// (e.g. "echo '<hash>  file' | sha256sum -c" or "--sha256 <hash>")
+							if h.Kind == "hex" {
+								rl := strings.ToLower(string(rawLine))
+								if strings.Contains(rl, "sha256sum") || strings.Contains(rl, "sha512sum") ||
+									strings.Contains(rl, "--sha256") || strings.Contains(rl, "--checksum") ||
+									strings.Contains(rl, "checksum:") || strings.Contains(rl, "integrity:") {
+									continue
+								}
+							}
+							// Skip explicit programmatic hex decode constants (e.g. hex.DecodeString("..."))
+							if h.Kind == "hex" && (strings.Contains(string(rawLine), "hex.DecodeString(") || strings.Contains(string(rawLine), "hex.Decode(")) {
+								continue
+							}
+							// Skip base64 tokens containing dots: real base64 never includes dots,
+							// but Go/C qualified names like ssa.OpARM64LoweredAtomicExchange32 do.
+							if h.Kind == "base64" && strings.ContainsRune(h.Token, '.') {
+								continue
+							}
+							// Skip CamelCase identifiers (Go/Java type/method names).
+							// Requires BOTH uppercase letters AND 4+ consecutive lowercase:
+							// pure-lowercase secrets (e.g. "supersecretpassword") are preserved.
+							if h.Kind == "base64" {
+								hasUpper := false
+								for _, c := range h.Token {
+									if c >= 'A' && c <= 'Z' {
+										hasUpper = true
+										break
+									}
+								}
+								if hasUpper {
+									maxLower, cur := 0, 0
+									for _, c := range h.Token {
+										if c >= 'a' && c <= 'z' {
+											cur++
+											if cur > maxLower {
+												maxLower = cur
+											}
+										} else {
+											cur = 0
+										}
+									}
+									if maxLower >= 4 {
+										continue
+									}
+								}
+							}
+							// Skip pure-decimal integer constants (e.g. math.MaxUint = 18446744073709551615)
+							if h.Kind == "hex" {
+								onlyDecimal := true
+								for _, c := range h.Token {
+									if c < '0' || c > '9' {
+										onlyDecimal = false
+										break
+									}
+								}
+								if onlyDecimal {
+									continue
+								}
+							}
+							// Skip Linux kernel sysfs documentation paths (/sys/bus/..., /sys/class/...)
+							if strings.HasPrefix(string(compVal), "/sys/") {
+								continue
+							}
+							// Skip JSON schema $ref paths and operationId strings (OpenAPI specs)
+							if strings.Contains(string(rawLine), `"$ref":`) || strings.Contains(string(rawLine), `"operationId":`) {
+								continue
+							}
+							// Skip cryptographic signature/digest/checksum/fingerprint JSON fields
+							if h.Kind == "hex" {
+								ll := strings.ToLower(string(rawLine))
+								if strings.Contains(ll, `"signature":`) || strings.Contains(ll, `"digest":`) ||
+									strings.Contains(ll, `"checksum":`) || strings.Contains(ll, `"fingerprint":`) {
+									continue
+								}
 							}
 							newMatch := Finding{
 								FilePath:      filePath,
@@ -607,7 +728,7 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 									}
 									decision := sentinelcontext.Real
 									if !s.opts.DisableContext {
-										decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token)
+										decision = sentinelcontext.Classify(filePath, string(rawLine), h.Token, h.Kind)
 									}
 									if decision == sentinelcontext.Real {
 										newMatch := Finding{
@@ -664,6 +785,46 @@ func IsBinary(content []byte) bool {
 		sample = sample[:8192]
 	}
 	return bytes.IndexByte(sample, 0x00) != -1
+}
+
+// isKnownSafeFile returns true for file types that are architecturally
+// incapable of containing production secrets. These include security-tool
+// suppression configs, generated code, and package documentation.
+func isKnownSafeFile(filePath string) bool {
+	base := strings.ToLower(filepath.Base(filePath))
+	ext := strings.ToLower(filepath.Ext(filePath))
+
+	// Microsoft Guardian / security scanner suppression files.
+	// They contain SHA-256 hashes of known FPs, not secrets.
+	if ext == ".gdnsuppress" || ext == ".snyk" {
+		return true
+	}
+	// Go package-level documentation files: contain instruction encoding
+	// tables and CPU register examples in hex, never production secrets.
+	if base == "doc.go" {
+		return true
+	}
+	// Protocol Buffer generated code — machine-written, no human secrets.
+	if strings.HasSuffix(base, ".pb.go") || strings.HasSuffix(base, ".pb.gw.go") {
+		return true
+	}
+	// Controller-runtime / Kubernetes code-gen output.
+	if strings.HasPrefix(base, "zz_generated") {
+		return true
+	}
+	// Microsoft Component Governance manifests contain only SHA512 package hashes.
+	if base == "cgmanifest.json" {
+		return true
+	}
+	// Git blame suppression files contain only commit SHA hashes, never secrets.
+	if base == ".git-blame-ignore-revs" {
+		return true
+	}
+	// product.json and similar build manifests with reproducibility hashes.
+	if base == "product.json" {
+		return true
+	}
+	return false
 }
 
 // HasExcludedExtension returns true when the file's extension is in the
@@ -1001,6 +1162,9 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourc
 		firstField = after[:endIdx]
 	}
 
+	if bytes.ContainsAny(firstField, "()") {
+		return ""
+	}
 	cleaned := cleanTokenBytes(firstField)
 	if len(cleaned) == 0 {
 		return ""
@@ -1058,15 +1222,49 @@ func isStrictBip39Mnemonic(val string) bool {
 // "AC", "SK", "SG."), the suffix (token minus prefix) must be long enough to
 // qualify as a secret and must not look like a plain CamelCase/PascalCase
 // Go identifier (all ASCII letters and digits with no special chars).
-func isPlausibleSecretToken(token, prefix string, minLen int) bool {
+func isPlausibleSecretToken(token, prefix, sigID string, minLen int) bool {
 	if len(token) > 400 {
 		return false
 	}
-	if strings.HasPrefix(token, "http://") || strings.HasPrefix(token, "https://") || strings.HasPrefix(token, "//") || strings.HasPrefix(token, "www.") {
+	if strings.HasPrefix(token, "http://") || strings.HasPrefix(token, "https://") || strings.HasPrefix(token, "//") || strings.HasPrefix(token, "www.") || strings.HasPrefix(token, "urn:") {
 		return false
 	}
 	if len(token) < minLen/2 {
 		return false
+	}
+	// Stricter checks for generic rules to eliminate variable name/type/expression leaks
+	if strings.HasPrefix(sigID, "generic-") {
+		if strings.ContainsAny(token, "${}<>()[]*;") || strings.Contains(token, "::") || strings.Contains(token, "->") {
+			return false
+		}
+		// If it's a property path (contains dot) and it's from a generic rule, reject it
+		if strings.Contains(token, ".") {
+			return false
+		}
+	}
+	// Reject function-call expressions (contain parentheses).
+	// Real secrets never contain ( or ) — these are code identifiers or calls.
+	if strings.ContainsAny(token, "()") {
+		return false
+	}
+	// Reject Rust/C++ path expressions containing the :: separator.
+	if strings.Contains(token, "::") {
+		return false
+	}
+	// Reject TextMate grammar scope names: all-lowercase dotted words like
+	// "entity.name.type.class" found in editor theme definitions.
+	// Real secrets always contain uppercase letters, digits, or special chars.
+	if strings.Contains(token, ".") {
+		isGrammarScope := true
+		for _, r := range token {
+			if !((r >= 'a' && r <= 'z') || r == '.' || r == '-') {
+				isGrammarScope = false
+				break
+			}
+		}
+		if isGrammarScope {
+			return false
+		}
 	}
 	// Reject tokens that contain obvious regex syntax (False Positive reduction)
 	if strings.Contains(token, "[") && strings.Contains(token, "]") {
@@ -1085,7 +1283,7 @@ func isPlausibleSecretToken(token, prefix string, minLen int) bool {
 	}
 	// Removed bare PEM header rejection because the test expects it and it's needed for single-line matching.
 	// For short prefixes, apply stricter checks.
-	if len(prefix) <= 3 {
+	if len(prefix) > 0 && len(prefix) <= 3 {
 		suffix := token
 		if strings.HasPrefix(strings.ToLower(token), strings.ToLower(prefix)) {
 			suffix = token[len(prefix):]

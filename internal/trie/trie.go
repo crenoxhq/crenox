@@ -90,7 +90,10 @@ var BuiltinSignatures = []Signature{
 	{ID: "mailgun-key", Description: "Mailgun API Key", Prefix: "key-", Severity: "MEDIUM", Validator: regexp.MustCompile(`(?i)^key-[0-9a-f]{32}$`)},
 
 	// ── NPM ───────────────────────────────────────────────────────────────────
-	{ID: "npm-token", Description: "npm Automation/Publish Token", Prefix: "npm_", Severity: "HIGH"},
+	// Real npm automation/publish tokens: npm_ followed by 36+ alphanumeric chars.
+	// Icon filenames like npm_icon.png, npm_ignored.png are rejected by the short length.
+	{ID: "npm-token", Description: "npm Automation/Publish Token", Prefix: "npm_", Severity: "HIGH",
+		Validator: regexp.MustCompile(`^npm_[a-zA-Z0-9]{36,}$`)},
 
 	// ── JWT ───────────────────────────────────────────────────────────────────
 	// eyJ is the base64url encoding of '{"' — the start of every JWT header.
@@ -121,7 +124,10 @@ var BuiltinSignatures = []Signature{
 	{ID: "vercel-token", Description: "Vercel API Token", Prefix: "vercel_", Severity: "HIGH"},
 
 	// ── Cloudflare ────────────────────────────────────────────────────────────
-	{ID: "cloudflare-api-token", Description: "Cloudflare API Token", Prefix: "CF_", Severity: "MEDIUM"},
+	// Real Cloudflare API tokens always contain at least one lowercase letter.
+	// ALL_UPPERCASE C macros (e.g. IMAGE_GUARD_CF_FUNCTION_TABLE_PRESENT) are rejected.
+	{ID: "cloudflare-api-token", Description: "Cloudflare API Token", Prefix: "CF_", Severity: "MEDIUM",
+		Validator: regexp.MustCompile(`[a-z]`)},
 
 	// ── DigitalOcean ─────────────────────────────────────────────────────────
 	{ID: "digitalocean-token", Description: "DigitalOcean Personal Access Token", Prefix: "dop_v1_", Severity: "CRITICAL"},
