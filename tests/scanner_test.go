@@ -864,3 +864,28 @@ func TestScanner_Npmrc_Detected(t *testing.T) {
 		t.Errorf("expected second token to be 00000000-0000-0000-0000-000000000000, got %s", findings[1].Token)
 	}
 }
+
+func TestScanner_FalsePositive_Refinement(t *testing.T) {
+	s := defaultScanner()
+
+	// 1. Google Fonts URL - should NOT trigger basic auth URL
+	fontsLine := []byte(`href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Tajawal:wght@300;400;500;7"`)
+	findings := s.ScanContent("layout.tsx", fontsLine)
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings for Google Fonts URL, got %d: %+v", len(findings), findings)
+	}
+
+	// 2. Absolute/Relative file paths - should NOT trigger entropy base64
+	pathLine := []byte(`img = Image.open("/root/.gemini/antigravity-cli/brain/f3f6bec7-7a51-4e32-a36d-228dae857f06/feather_green_screen_17824542_9png")`)
+	findings = s.ScanContent("remove_green.py", pathLine)
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings for absolute file path, got %d: %+v", len(findings), findings)
+	}
+
+	// 3. XSRF/CSRF mock tokens - should NOT trigger token pattern
+	csrfLine := []byte(`"Cookie": "xsrf_token=PlEcin8s5H600toD4Swngg; sc-cookies-accepted=true;"`)
+	findings = s.ScanContent("removed_sites.json", csrfLine)
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings for XSRF token, got %d: %+v", len(findings), findings)
+	}
+}

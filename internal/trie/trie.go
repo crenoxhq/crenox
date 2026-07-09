@@ -169,14 +169,14 @@ var BuiltinSignatures = []Signature{
 	{ID: "gitlab-runner-token", Description: "GitLab Runner Token", Prefix: "glrt-", Severity: "HIGH", Validator: regexp.MustCompile(`^glrt-[A-Za-z0-9-_]{20}$`)},
 	{ID: "square-access-token", Description: "Square Access Token", Prefix: "sq0atp-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sq0atp-[A-Za-z0-9-_]{22}$`)},
 	{ID: "putty-private-key", Description: "PuTTY Private Key", Prefix: "PuTTY-User-Key-File-", Severity: "CRITICAL"},
-	{ID: "postgres-dsn", Description: "Postgres Connection String with Password", Prefix: "postgres://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^postgres(?:ql)?://[^:\s]+:[^@\s]+@`)},
-	{ID: "postgresql-dsn", Description: "Postgres Connection String with Password", Prefix: "postgresql://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^postgres(?:ql)?://[^:\s]+:[^@\s]+@`)},
-	{ID: "redis-dsn", Description: "Redis Connection String with Password", Prefix: "redis://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^redis://[^:\s]*:[^@\s]+@`)},
-	{ID: "mysql-dsn", Description: "MySQL Connection String with Password", Prefix: "mysql://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^mysql://[^:\s]+:[^@\s]+@`)},
-	{ID: "amqp-dsn", Description: "AMQP Connection String with Password", Prefix: "amqp://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^amqps?://[^:\s]+:[^@\s]+@`)},
-	{ID: "amqps-dsn", Description: "AMQP Connection String with Password", Prefix: "amqps://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^amqps?://[^:\s]+:[^@\s]+@`)},
-	{ID: "url-basic-auth", Description: "URL with Basic Auth Credentials", Prefix: "https://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^https?://[^:\s]+:[^@\s]+@[a-zA-Z0-9.-]+`)},
-	{ID: "url-basic-auth-http", Description: "URL with Basic Auth Credentials", Prefix: "http://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^https?://[^:\s]+:[^@\s]+@[a-zA-Z0-9.-]+`)},
+	{ID: "postgres-dsn", Description: "Postgres Connection String with Password", Prefix: "postgres://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^postgres(?:ql)?://[^:\s/?#]+:[^@\s/?#]+@`)},
+	{ID: "postgresql-dsn", Description: "Postgres Connection String with Password", Prefix: "postgresql://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^postgres(?:ql)?://[^:\s/?#]+:[^@\s/?#]+@`)},
+	{ID: "redis-dsn", Description: "Redis Connection String with Password", Prefix: "redis://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^redis://[^:\s/?#]*:[^@\s/?#]+@`)},
+	{ID: "mysql-dsn", Description: "MySQL Connection String with Password", Prefix: "mysql://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^mysql://[^:\s/?#]+:[^@\s/?#]+@`)},
+	{ID: "amqp-dsn", Description: "AMQP Connection String with Password", Prefix: "amqp://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^amqps?://[^:\s/?#]+:[^@\s/?#]+@`)},
+	{ID: "amqps-dsn", Description: "AMQP Connection String with Password", Prefix: "amqps://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^amqps?://[^:\s/?#]+:[^@\s/?#]+@`)},
+	{ID: "url-basic-auth", Description: "URL with Basic Auth Credentials", Prefix: "https://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^https?://[^:\s/?#]+:[^@\s/?#]+@[a-zA-Z0-9.-]+`)},
+	{ID: "url-basic-auth-http", Description: "URL with Basic Auth Credentials", Prefix: "http://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^https?://[^:\s/?#]+:[^@\s/?#]+@[a-zA-Z0-9.-]+`)},
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

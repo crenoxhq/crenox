@@ -100,6 +100,9 @@ const (
 
 	// SafeVersionString indicates the token looks like a version number — suppressed.
 	SafeVersionString
+
+	// SafeFilePath indicates the token looks like a file path — suppressed.
+	SafeFilePath
 )
 
 // String returns a human-readable label for a Decision.
@@ -119,6 +122,8 @@ func (d Decision) String() string {
 		return "safe:uuid"
 	case SafeVersionString:
 		return "safe:version"
+	case SafeFilePath:
+		return "safe:file-path"
 	default:
 		return "unknown"
 	}
@@ -255,6 +260,32 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 		if isSequential(token) {
 			return SafeVersionString
 		}
+	}
+
+	// ── Check 14: File path pattern suppression ──────────────────────────────
+	lowerToken := strings.ToLower(token)
+	if strings.HasPrefix(lowerToken, "/root/") || strings.HasPrefix(lowerToken, "/home/") ||
+		strings.HasPrefix(lowerToken, "/usr/") || strings.HasPrefix(lowerToken, "/tmp/") ||
+		strings.HasPrefix(lowerToken, "/etc/") || strings.HasPrefix(lowerToken, "/var/") ||
+		strings.HasPrefix(lowerToken, "/opt/") || strings.HasPrefix(lowerToken, "/bin/") ||
+		strings.HasPrefix(lowerToken, "/lib/") || regexp.MustCompile(`^[a-zA-Z]:\\`).MatchString(token) {
+		return SafeFilePath
+	}
+	if (strings.Count(token, "/") >= 2 || strings.Count(token, "\\") >= 2) &&
+		(strings.HasSuffix(lowerToken, "png") || strings.HasSuffix(lowerToken, "jpg") ||
+			strings.HasSuffix(lowerToken, "jpeg") || strings.HasSuffix(lowerToken, "gif") ||
+			strings.HasSuffix(lowerToken, "svg") || strings.HasSuffix(lowerToken, "json") ||
+			strings.HasSuffix(lowerToken, "yaml") || strings.HasSuffix(lowerToken, "yml") ||
+			strings.HasSuffix(lowerToken, "txt") || strings.HasSuffix(lowerToken, "html") ||
+			strings.HasSuffix(lowerToken, "css") || strings.HasSuffix(lowerToken, "js") ||
+			strings.HasSuffix(lowerToken, "ts") || strings.HasSuffix(lowerToken, "py") ||
+			strings.HasSuffix(lowerToken, "sh") || strings.HasSuffix(lowerToken, "go")) {
+		return SafeFilePath
+	}
+
+	// ── Check 15: XSRF/CSRF token suppression ────────────────────────────────
+	if strings.Contains(lowerVarName, "xsrf") || strings.Contains(lowerVarName, "csrf") {
+		return SafeVariableName
 	}
 
 	return Real
