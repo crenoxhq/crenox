@@ -582,7 +582,13 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 			}
 		}
 
-		if !s.opts.DisableEntropy && ext != ".pem" && ext != ".rsa" && ext != ".crt" && ext != ".pub" {
+		isEntropyExcluded := ext == ".pem" || ext == ".rsa" || ext == ".crt" || ext == ".pub" ||
+			ext == ".json" || ext == ".nix" || ext == ".lock" || ext == ".sum" ||
+			ext == ".xml" || ext == ".html" || ext == ".md" || ext == ".txt" ||
+			ext == ".editorconfig" || strings.Contains(filePath, "package-lock.json") ||
+			strings.Contains(filePath, "yarn.lock") || strings.Contains(filePath, "pnpm-lock.yaml")
+
+		if !s.opts.DisableEntropy && !isEntropyExcluded {
 			// Entropy tier runs when the value has no spaces (looks like a single
 			// dense token)
 			if !hasSpace {
