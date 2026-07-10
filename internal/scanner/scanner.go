@@ -1332,9 +1332,9 @@ func isPlausibleSecretToken(token, prefix, sigID string, minLen int) bool {
 		return false
 	}
 
-	// 1. Reject function-call expressions (contain parentheses).
-	// Real secrets never contain ( or ) — these are code identifiers or calls.
-	if strings.ContainsAny(token, "()") {
+	// 1. Reject function-call expressions (contain parentheses) and placeholders.
+	// Real secrets never contain ( or ) or { or }.
+	if strings.ContainsAny(token, "(){}") {
 		return false
 	}
 
@@ -1347,7 +1347,7 @@ func isPlausibleSecretToken(token, prefix, sigID string, minLen int) bool {
 	// 3. Stricter checks for generic rules to eliminate variable name/type/expression leaks
 	if strings.HasPrefix(sigID, "generic-") {
 		// Reject tokens with logic operators, colons, or spaces
-		if strings.ContainsAny(token, "${}<>[]*;|&+=\"!? :") || strings.Contains(token, "->") {
+		if strings.ContainsAny(token, "$[]*;|&+=\"!? :") || strings.Contains(token, "->") {
 			return false
 		}
 		// If it's a property path (contains dot) and it's from a generic rule, reject it
