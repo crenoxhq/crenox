@@ -63,8 +63,6 @@ jobs:
           - { goos: darwin,  goarch: amd64 }
           - { goos: darwin,  goarch: arm64 }
           - { goos: windows, goarch: amd64 }
-          - { goos: android, goarch: arm64 }
-          - { goos: android, goarch: arm   }
 
     steps:
       - uses: actions/checkout@v4
@@ -100,6 +98,16 @@ jobs:
           go build -trimpath -ldflags "${LDFLAGS}" \
             -o dist/sentinel-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ steps.suffix.outputs.suffix }} \
             ./cmd/sentinel
+
+      - name: Duplicate for Android/Termux
+        if: matrix.goos == 'linux' && (matrix.goarch == 'arm64' || matrix.goarch == 'arm')
+        run: |
+          cd dist
+          for f in sentinel-*-linux-${{ matrix.goarch }}; do
+            if [ -f "$f" ]; then
+              cp "$f" "${f/-linux-/-android-}"
+            fi
+          done
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

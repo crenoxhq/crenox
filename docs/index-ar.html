@@ -67,7 +67,7 @@
 
     <!-- Minimal Header Navigation -->
     <nav class="nav-bar">
-        <div class="container nav-wrapper">
+        <div class="container-nav nav-wrapper">
             <a href="#" class="nav-logo">
                 <svg class="logo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <span class="logo-text">Sentinel</span>
@@ -210,13 +210,7 @@
             <h2>التثبيت والدمج المحلي</h2>
             <p>يتم تجميع سنتينل كملف ثنائي مستقل للعمل مباشرة على أنظمة Linux و macOS وأجهزة Android عبر بيئة Termux دون الحاجة لتثبيت لغة Go أو أي اعتماديات برمجية أخرى.</p>
 
-            <h3>الخيار أ: مدير حزم أندرويد (Termux)</h3>
-            <p>إذا كنت تستخدم أندرويد عبر بيئة Termux، يمكنك تثبيت الأداة مباشرة عبر مستودع مستخدمي Termux (TUR):</p>
-            <pre class="font-mono">
-pkg install tur-repo
-pkg install sentinel</pre>
-
-            <h3>الخيار ب: الملفات الثنائية الجاهزة (موصى به)</h3>
+            <h3>الخيار أ: الملفات الثنائية الجاهزة (موصى به)</h3>
             <p>أسرع طريقة لتثبيت الأداة مباشرة على نظامك دون الحاجة لبناء الملف من المصدر. مناسبة لكافة معمارات المعالجات في Linux و macOS و Android (مثل <code>android-arm64</code> أو <code>linux-amd64</code>):</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك
@@ -230,6 +224,12 @@ mv sentinel $PREFIX/bin/
 
 # 4. التحقق من نجاح التثبيت
 sentinel version</pre>
+
+            <h3>الخيار ب: مدير حزم أندرويد (Termux)</h3>
+            <p>إذا كنت تستخدم أندرويد عبر بيئة Termux، يمكنك تثبيت الأداة مباشرة عبر مستودع مستخدمي Termux (TUR):</p>
+            <pre class="font-mono">
+pkg install tur-repo
+pkg install sentinel</pre>
 
             <h3>الخيار ج: مثبت حزم لغة Go</h3>
             <p>إذا كان لديك بيئة Go مهيأة في مسار نظامك، يمكنك تنزيل وبناء الأداة مباشرة بالأمر التالي:</p>
@@ -386,7 +386,7 @@ allowlist_patterns:
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container footer-wrapper">
+        <div class="container-nav footer-wrapper">
             <p class="footer-copy">&copy; 2026 Sentinel. مرخص تحت رخصة AGPLv3 الحرة.</p>
             <div class="footer-links">
                 <a href="https://github.com/sentinel-cli/sentinel" target="_blank" class="footer-link">مستودع الكود البرمجي</a>

@@ -67,7 +67,7 @@
 
     <!-- Minimal Header Navigation -->
     <nav class="nav-bar">
-        <div class="container nav-wrapper">
+        <div class="container-nav nav-wrapper">
             <a href="#" class="nav-logo">
                 <svg class="logo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <span class="logo-text">Sentinel</span>
@@ -210,13 +210,7 @@
             <h2>Deployment and local setup</h2>
             <p>Sentinel is statically compiled to run natively across Linux, macOS, and Android/Termux. It does not require Go, Python, or additional runtime setups on the workstation.</p>
 
-            <h3>Option A: Package Manager (Android / Termux)</h3>
-            <p>If you are on Android/Termux, you can install Sentinel directly via the Termux User Repository (TUR):</p>
-            <pre class="font-mono">
-pkg install tur-repo
-pkg install sentinel</pre>
-
-            <h3>Option B: Pre-compiled Binaries (Recommended)</h3>
+            <h3>Option A: Pre-compiled Binaries (Recommended)</h3>
             <p>The fastest way to install Sentinel without dependencies. Perfect for Linux, macOS, and standalone Android setups. Download the corresponding architecture from our releases (e.g. <code>android-arm64</code>, <code>android-arm</code>, <code>linux-amd64</code>):</p>
             <pre class="font-mono">
 # 1. Download the target binary
@@ -230,6 +224,12 @@ mv sentinel $PREFIX/bin/
 
 # 4. Verify deployment
 sentinel version</pre>
+
+            <h3>Option B: Package Manager (Android / Termux)</h3>
+            <p>If you are on Android/Termux, you can install Sentinel directly via the Termux User Repository (TUR):</p>
+            <pre class="font-mono">
+pkg install tur-repo
+pkg install sentinel</pre>
 
             <h3>Option C: Go package installer</h3>
             <p>If you have Go installed on your path, fetch and compile the latest release directly:</p>
@@ -386,7 +386,7 @@ allowlist_patterns:
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container footer-wrapper">
+        <div class="container-nav footer-wrapper">
             <p class="footer-copy">&copy; 2026 Sentinel. Released under the AGPLv3 License.</p>
             <div class="footer-links">
                 <a href="https://github.com/sentinel-cli/sentinel" target="_blank" class="footer-link">GitHub Repository</a>
