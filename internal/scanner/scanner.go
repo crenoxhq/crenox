@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -215,11 +216,25 @@ var b64Pool = sync.Pool{
 	},
 }
 
+// scanBufPool caches the large 8 MB streaming buffers to avoid heap thrashing and reduce peak RSS.
+var scanBufPool = sync.Pool{
+	New: func() interface{} {
+		buf := make([]byte, 8*1024*1024) // 8 MB
+		return &buf
+	},
+}
+
 // ScanContent runs the full three-tier pipeline against the given raw content
 // and returns all confirmed Findings.
 //
 // filePath is used only for Tier 3 context decisions (test-file suppression).
 func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
+	return s.ScanReader(filePath, bytes.NewReader(content))
+}
+
+// ScanReader runs the full three-tier pipeline against content streamed from an io.Reader
+// and returns all confirmed Findings.
+func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 	// Fast-path: skip files that are known to never contain production secrets.
 	if isKnownSafeFile(filePath) {
 		return nil
@@ -243,24 +258,69 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 	decBuf := *decBufPtr
 	defer b64Pool.Put(decBufPtr)
 
+	// Retrieve a reusable 8 MB streaming buffer from the pool
+	bufPtr := scanBufPool.Get().(*[]byte)
+	buf := *bufPtr
+	defer scanBufPool.Put(bufPtr)
+
 	// We don't need a global map anymore since we process line by line.
 	lineNum := 0
-	start := 0
 	skipNextLine := false
 	var prevLineTrim []byte // track the previous trimmed line for multiline macro context
-	for start < len(content) {
-		lineNum++
-		end := bytes.IndexByte(content[start:], '\n')
-		var rawLine []byte
-		if end == -1 {
-			rawLine = content[start:]
-			start = len(content)
-		} else {
-			rawLine = content[start : start+end]
-			start = start + end + 1
+
+	leftover := []byte{}
+
+	for {
+		n, err := r.Read(buf)
+		if n == 0 {
+			if err == io.EOF {
+				break
+			}
+			break
 		}
 
-		lineTrim := bytes.TrimSpace(rawLine)
+		var chunk []byte
+		if len(leftover) > 0 {
+			chunk = make([]byte, len(leftover)+n)
+			copy(chunk, leftover)
+			copy(chunk[len(leftover):], buf[:n])
+			leftover = leftover[:0]
+		} else {
+			chunk = buf[:n]
+		}
+
+		lastNL := bytes.LastIndexByte(chunk, '\n')
+		var processChunk []byte
+		if err == io.EOF || n < len(buf) {
+			processChunk = chunk
+			leftover = leftover[:0]
+		} else if lastNL == -1 {
+			leftover = append(leftover, chunk...)
+			continue
+		} else {
+			processChunk = chunk[:lastNL]
+			leftover = append(leftover, chunk[lastNL+1:]...)
+		}
+
+		start := 0
+		for start < len(processChunk) {
+			lineNum++
+			end := bytes.IndexByte(processChunk[start:], '\n')
+			var rawLine []byte
+			if end == -1 {
+				rawLine = processChunk[start:]
+				start = len(processChunk)
+			} else {
+				rawLine = processChunk[start : start+end]
+				start = start + end + 1
+			}
+
+			// Strip trailing '\r' if present
+			if len(rawLine) > 0 && rawLine[len(rawLine)-1] == '\r' {
+				rawLine = rawLine[:len(rawLine)-1]
+			}
+
+			lineTrim := bytes.TrimSpace(rawLine)
 
 		// ── Speed: skip extremely long lines (data-URLs, minified JS, base64 blobs)
 		// Lines > 4096 bytes cannot realistically contain a typed secret token.
@@ -375,7 +435,10 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 				// Whole-word boundary check: skip matches embedded inside a larger
 				// alphanumeric identifier (e.g. "tcf_exts_for_each_action" triggering
 				// the cloudflare cf_ rule). Applied to ALL rules, not just generic-.
-				{
+				// Exception: prefixes that start with '_' are intentional suffix-
+				// matchers (e.g. _GITHUB_TOKEN to catch JEKYLL_GITHUB_TOKEN), so we
+				// skip the boundary check for those.
+				if len(m.Sig.Prefix) == 0 || m.Sig.Prefix[0] != '_' {
 					startIdx := m.Offset - len(m.Sig.Prefix) + 1
 					if startIdx > 0 {
 						prevChar := lineTrim[startIdx-1]
@@ -812,6 +875,10 @@ func (s *Scanner) ScanContent(filePath string, content []byte) []Finding {
 		}
 		// Update prevLineTrim for the next iteration (multiline macro context)
 		prevLineTrim = append(prevLineTrim[:0], lineTrim...)
+		}
+		if err != nil {
+			break
+		}
 	}
 
 	// ── Apply Allowlist Patterns ────────────────────────────────────────────
@@ -1200,6 +1267,14 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourc
 		hasQuote = true
 		quoteCh = after[0]
 		after = after[1:]
+		// For JSON-format "KEY": "value", after stripping the key-name's closing
+		// quote we land on ": \"value\"". Skip any separators/whitespace and
+		// consume the value's own opening quote so we land on the raw secret.
+		if trimmed := bytes.TrimLeft(after, "=:, \t\n\r"); len(trimmed) > 0 &&
+			(trimmed[0] == '"' || trimmed[0] == '\'' || trimmed[0] == '`') {
+			quoteCh = trimmed[0]
+			after = trimmed[1:]
+		}
 	}
 
 	// Early return for GitHub Actions / Jinja / Helm expressions like ${{...}} or {{...}}

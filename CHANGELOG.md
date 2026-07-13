@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.7] - 2026-07-13
+
+### Added
+- **Heroku & Rails Signatures:** Added built-in rules for Heroku API keys, Heroku OAuth tokens, and Rails `secret_key_base` (including colon assignments).
+- **Environment Variable Suffix Rules:** Added `_GITHUB_TOKEN` to capture suffix variables like `JEKYLL_GITHUB_TOKEN` or `CI_GITHUB_TOKEN` while bypassing standard word-boundary exclusions.
+
+### Fixed
+- **JSON Key Value Extraction:** Correctly isolates secrets inside JSON structure assignments (`"KEY": "value"`), preventing quote and separator boundary truncation.
+- **Odd-length Hex Filtering:** Relaxed the odd-length hex check in the entropy engine for strings >= 32 characters, ensuring long Rails and OAuth tokens are parsed and analyzed.
+
+### Performance
+- **Buffer Recycling Pool (`sync.Pool`):** Introduced a global recycling pool for the 8 MB streaming buffers used in `ScanReader`, reducing peak RSS RAM usage from **285 MB down to 22 MB** during scans, and improving execution speed by over **15x** by removing Go garbage collection pauses.
+
 ## [2.0.6] - 2026-07-10
 
 ### Added

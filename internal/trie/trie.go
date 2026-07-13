@@ -163,6 +163,26 @@ var BuiltinSignatures = []Signature{
 	{ID: "npm-auth-key", Description: "npm registry authentication credential", Prefix: "_auth", Severity: "HIGH",
 		Validator: regexp.MustCompile(`^[A-Za-z0-9+/=]{8,}={0,2}$`)},
 
+	// ── Heroku ────────────────────────────────────────────────────────────────
+	{ID: "heroku-api-key", Description: "Heroku API Key", Prefix: "HEROKU_API_KEY", Severity: "HIGH",
+		Validator: regexp.MustCompile(`(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{32}`)},
+	{ID: "heroku-oauth-token", Description: "Heroku OAuth Token", Prefix: "heroku_oauth_token", Severity: "HIGH",
+		Validator: regexp.MustCompile(`(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`)},
+
+	// ── GitHub environment tokens ─────────────────────────────────────────────
+	// GITHUB_TOKEN matches standalone: export GITHUB_TOKEN="..."
+	// _GITHUB_TOKEN matches as a suffix: JEKYLL_GITHUB_TOKEN, CI_GITHUB_TOKEN, etc.
+	{ID: "github-env-token", Description: "GitHub Token (via environment variable)", Prefix: "GITHUB_TOKEN", Severity: "CRITICAL",
+		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghs_|ghr_|github_pat_)[a-zA-Z0-9]{20,}|[a-f0-9]{40}`)},
+	{ID: "github-env-token-suffix", Description: "GitHub Token (env var suffix, e.g. JEKYLL_GITHUB_TOKEN)", Prefix: "_GITHUB_TOKEN", Severity: "HIGH",
+		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghs_|ghr_|github_pat_)[a-zA-Z0-9]{20,}|[a-f0-9]{40}`)},
+
+	// ── Framework / Ruby / Rails secret keys ─────────────────────────────────
+	{ID: "rails-secret-key-base", Description: "Rails secret_key_base", Prefix: "secret_key_base", Severity: "HIGH",
+		Validator: regexp.MustCompile(`(?i)[a-f0-9]{60,}`)},
+	{ID: "rails-secret-key-base-colon", Description: "Rails secret_key_base (colon assignment)", Prefix: "secret_key_base:", Severity: "HIGH",
+		Validator: regexp.MustCompile(`(?i)[a-f0-9]{60,}`)},
+
 	// ── Framework specific secret keys ────────────────────────────────────────
 	{ID: "django-secret-key", Description: "Django SECRET_KEY assignment", Prefix: "SECRET_KEY =", Severity: "HIGH"},
 	{ID: "wordpress-auth-key", Description: "WordPress AUTH_KEY definition", Prefix: "AUTH_KEY", Severity: "HIGH"},
@@ -335,7 +355,8 @@ func isAssignmentOrKeyword(s string) bool {
 	if upper == "PASSWORD" || upper == "SECRET" || upper == "API_KEY" || upper == "TOKEN" || upper == "AUTH" {
 		return true
 	}
-	if strings.Contains(upper, "PASSWORD") || strings.Contains(upper, "SECRET") || strings.Contains(upper, "TOKEN") || strings.Contains(upper, "AUTH") {
+	if strings.Contains(upper, "PASSWORD") || strings.Contains(upper, "SECRET") || strings.Contains(upper, "TOKEN") ||
+		strings.Contains(upper, "AUTH") || strings.Contains(upper, "HEROKU") || strings.Contains(upper, "GITHUB") {
 		return true
 	}
 	for i := 0; i < len(s); i++ {

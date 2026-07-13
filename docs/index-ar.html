@@ -38,7 +38,7 @@
       "description": "An enterprise-grade, zero-dependency Git pre-commit secret detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "DeveloperApplication",
-      "softwareVersion": "2.0.6",
+      "softwareVersion": "2.0.7",
       "codeRepository": "https://github.com/sentinel-cli/sentinel",
       "license": "https://github.com/sentinel-cli/sentinel/blob/main/LICENSE",
       "offers": {
@@ -59,7 +59,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.0.6-fix">
+    <link rel="stylesheet" href="style.css?v=2.0.7">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
@@ -176,7 +176,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>سنتينل (v2.0.5)</th>
+                            <th>سنتينل (v2.0.7)</th>
                             <th>جيتليكس (v8.30.1)</th>
                             <th>ترافلهوغ (v3.95.7)</th>
                         </tr>
@@ -190,21 +190,21 @@
                         </tr>
                         <tr>
                             <td class="spec-label">ذاكرة محطة العمل (Peak RSS)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">11.2 - 11.6 MB</td>
-                            <td style="direction: ltr; text-align: right;">15.0 - 16.8 MB</td>
-                            <td style="direction: ltr; text-align: right;">152.9 - 155.7 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">11.3 - 11.9 MB</td>
+                            <td style="direction: ltr; text-align: right;">60.8 - 63.3 MB</td>
+                            <td style="direction: ltr; text-align: right;">204.7 - 207.3 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">فحص ملفات النظام المرحلية</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">30 - 40 ms</td>
-                            <td style="direction: ltr; text-align: right;">210 - 220 ms</td>
-                            <td style="direction: ltr; text-align: right;">7.13 - 11.41 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">31 - 40 ms</td>
+                            <td style="direction: ltr; text-align: right;">1.13 - 1.22 s</td>
+                            <td style="direction: ltr; text-align: right;">6.69 - 7.39 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">الفحص التاريخي (سجل Git)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">60 - 140 ms</td>
-                            <td style="direction: ltr; text-align: right;">160 - 260 ms</td>
-                            <td style="direction: ltr; text-align: right;">6.32 - 9.05 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">52 - 58 ms</td>
+                            <td style="direction: ltr; text-align: right;">1.26 - 1.27 s</td>
+                            <td style="direction: ltr; text-align: right;">6.79 - 7.26 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">الاعتمادية الخارجية للملف</td>
@@ -229,7 +229,7 @@
             <p>أسرع طريقة لتثبيت الأداة مباشرة على نظامك دون الحاجة لبناء الملف من المصدر. مناسبة لكافة معمارات المعالجات في Linux و macOS و Android (مثل <code>android-arm64</code> أو <code>linux-amd64</code>):</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك
-wget https://github.com/sentinel-cli/sentinel/releases/download/v2.0.6/sentinel-v2.0.6-android-arm64 -O sentinel
+wget https://github.com/sentinel-cli/sentinel/releases/download/v2.0.7/sentinel-v2.0.7-android-arm64 -O sentinel
 
 # 2. منح صلاحيات التشغيل للملف
 chmod +x sentinel
@@ -336,6 +336,12 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">13 يوليو 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/sentinel-cli/sentinel" target="_blank" style="color: inherit; text-decoration: none;">إعادة تدوير الذاكرة: تقييد استهلاك الذاكرة المؤقتة عبر sync.Pool</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">كيف يقدم الإصدار 2.0.7 محرك فحص متدفق عبر قنوات 8 ميجابايت مع تخزين مؤقت عام للذاكرة المستعملة. أدى ذلك إلى تقييد حجم الذاكرة المستهلكة RSS بحدود عدد خيوط المعالجة المتزامنة فقط، متفادياً تراكم حجز الذاكرة ومقلصاً ذروة RAM بمقدار 13 ضعفاً.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">7 يوليو 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/sentinel-cli/sentinel" target="_blank" style="color: inherit; text-decoration: none;">محرك الـ DFA المسطح: القضاء على حجز الذاكرة في المسار الساخن</a></h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">كيف نجح الإصدار 2.0.5 في تمثيل خوارزمية Aho-Corasick عبر جدول DFA مسطح ومتصل ومفهرس بالأعداد الصحيحة. أدى ذلك لتقليص ذاكرة Trie النشطة إلى 500 كيلوبايت، وتخفيض ذروة استهلاك ذاكرة النظام RSS إلى الحدود الدنيا لبيئة عمل Go (~11 ميجابايت) مع انعدام تام لحجز الذاكرة المؤقتة (Heap Allocations) أثناء الفحص.</p>
@@ -411,7 +417,7 @@ allowlist_patterns:
     </footer>
 
     <!-- JavaScript -->
-    <script src="app.js?v=2.0.6-fix"></script>
+    <script src="app.js?v=2.0.7"></script>
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>

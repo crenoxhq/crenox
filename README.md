@@ -109,28 +109,28 @@ Measured on real-world repositories with Sentinel against the two most popular a
 <details>
 <summary>Filesystem Scan Results (Standard Mode)</summary>
 
-| Repository | Tool | Execution Time | Peak RAM | CPU% | Findings |
-|:---|:---|:---|:---|:---|:---|
-| sample\_secrets | **Sentinel** | **171 ms** | **11.1 MB** | **32%** | **2** |
-| | Gitleaks v8.30.1 | 324 ms | 37.1 MB | 66% | 1 |
-| | TruffleHog v3.95.8 | 7.39 s | 204.7 MB | 98% | 2 |
-| truffleHogRegexes | **Sentinel** | **268 ms** | **11.5 MB** | **23%** | **3** |
-| | Gitleaks v8.30.1 | 452 ms | 37.7 MB | 73% | 1 |
-| | TruffleHog v3.95.8 | 6.69 s | 207.3 MB | 105% | 0 |
+| Repository | Tool | Execution Time | Peak RAM | Findings |
+|:---|:---|:---|:---|:---|
+| sample\_secrets | **Sentinel** | **31 ms** | **11.9 MB** | **2** |
+| | Gitleaks v8.30.1 | 1.13 s | 60.8 MB | 1 |
+| | TruffleHog v3.95.8 | 7.39 s | 204.7 MB | 2 |
+| truffleHogRegexes | **Sentinel** | **40 ms** | **11.9 MB** | **3** |
+| | Gitleaks v8.30.1 | 1.22 s | 61.1 MB | 1 |
+| | TruffleHog v3.95.8 | 6.69 s | 207.3 MB | 0 |
 
 </details>
 
 <details>
 <summary>Git History Scan Results (History Mode)</summary>
 
-| Repository | Tool | Execution Time | Peak RAM | CPU% | Findings |
-|:---|:---|:---|:---|:---|:---|
-| sample\_secrets | **Sentinel** | **395 ms** | **9.8 MB** | **22%** | **5** |
-| | Gitleaks v8.30.1 | 431 ms | 38.7 MB | 68% | 5 |
-| | TruffleHog v3.95.8 | 7.26 s | 206.2 MB | 99% | 2 |
-| truffleHogRegexes | **Sentinel** | **171 ms** | **10.1 MB** | **40%** | **5** |
-| | Gitleaks v8.30.1 | 248 ms | 39.7 MB | 142% | 8 |
-| | TruffleHog v3.95.8 | 6.79 s | 207.2 MB | 104% | 0 |
+| Repository | Tool | Execution Time | Peak RAM | Findings |
+|:---|:---|:---|:---|:---|
+| sample\_secrets | **Sentinel** | **52 ms** | **11.3 MB** | **2** |
+| | Gitleaks v8.30.1 | 1.27 s | 63.1 MB | 1 |
+| | TruffleHog v3.95.8 | 7.26 s | 206.2 MB | 2 |
+| truffleHogRegexes | **Sentinel** | **58 ms** | **11.7 MB** | **3** |
+| | Gitleaks v8.30.1 | 1.27 s | 63.3 MB | 1 |
+| | TruffleHog v3.95.8 | 6.79 s | 207.2 MB | 0 |
 
 </details>
 
@@ -138,8 +138,8 @@ Measured on real-world repositories with Sentinel against the two most popular a
 
 | Metric | vs Gitleaks | vs TruffleHog |
 |--------|-------------|---------------|
-| **Speed** | **1.1x to 1.9x faster** | **18x to 43x faster** |
-| **Memory** | **3.3x to 3.9x less RAM** | **18x to 21x less RAM** |
+| **Speed** | **21x to 36x faster** | **110x to 230x faster** |
+| **Memory** | **5x to 5.4x less RAM** | **17x to 18x less RAM** |
 | **Recall (Accuracy)** | Finds obfuscated & encoded secrets ignored by others | Superior noise filtering (Zero false positives) |
 
 ---
@@ -183,8 +183,8 @@ Measured on real-world repositories with Sentinel against the two most popular a
    - File size cap: files > 10 MB skipped
          |
   [Tier 1 — Aho-Corasick Trie  —  internal/trie/trie.go]
-   Built once at startup via trie.Build() — allocation-free hot path
-   Case-insensitive O(n) scan per line
+   Built once at startup via trie.Build() — allocation-free DFA matching
+   Case-insensitive O(n) scan per line using sync.Pool-recycled 8 MB streaming buffers to cap memory usage
    BIP-39 mnemonic detection: 12/15/18/21/24 words validated against 2048-word dictionary
    Single-layer Base64 decoding: re-feeds decoded value through trie (catches K8s secrets)
    Blob aggregation: 3+ consecutive high-entropy lines → single CRITICAL finding
@@ -243,7 +243,7 @@ H(X) = - sum over i of P(xi) * log2(P(xi))
 
 Sentinel extracts two token classes per line:
 - **Base64 tokens** — runs of `A-Za-z0-9+/=_-`; entropy must exceed `entropy_threshold` (default 4.5).
-- **Hex tokens** — runs of `0-9a-fA-F`; must be even-length; threshold is scaled: `entropy_threshold × (4.0 / 6.0)`, floor 3.0.
+- **Hex tokens** — runs of `0-9a-fA-F`; must be even-length if short (< 32 characters) to filter out arbitrary non-secret hex strings; threshold is scaled: `entropy_threshold × (4.0 / 6.0)`, floor 3.0.
 
 Pre-filters applied before entropy computation: Java-style identifiers (all letters/dots/underscores) and all-identical-character tokens are discarded.
 
@@ -301,7 +301,8 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 
 | Category | Signatures |
 |----------|-----------|
-| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`) |
+| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), and suffix-matched environment tokens (`_GITHUB_TOKEN`) |
+| **Heroku** | API Key (`HEROKU_API_KEY`, regex-validated), OAuth Token (`heroku_oauth_token`) |
 | **GitLab** | Personal Access Token (`glpat-`), Pipeline Trigger (`glptt-`), Runner Registration (`GR1348941`), Runner Token (`glrt-`) |
 | **AWS** | Access Key ID (`AKIA`, validated `AKIA[0-9A-Z]{16}`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`) |
 | **Google Cloud** | Service Account JSON (`"type": "service_account"`), API Key (`AIzaSy`), OAuth Client ID (`.apps.googleusercontent.com`), OAuth Client Secret (`GOCSPX-`) |
@@ -326,7 +327,7 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 | **HuggingFace** | API Token (`hf_`) |
 | **Shopify** | Custom App (`shpca_`), Private App (`shppa_`), Access Token (`shpat_`) |
 | **Generic** | `password=` `secret=` `api_key=` `token=` `auth=` and their YAML/JSON colon variants |
-| **Django** | `SECRET_KEY =` |
+| **Django & Rails**| `SECRET_KEY =`, Rails `secret_key_base` (space and colon assignments) |
 | **WordPress** | `AUTH_KEY` `SECURE_AUTH_KEY` `LOGGED_IN_KEY` `NONCE_KEY` `AUTH_SALT` `SECURE_AUTH_SALT` `LOGGED_IN_SALT` `NONCE_SALT` |
 | **Crypto Wallets** | BIP-39 mnemonic (12/15/18/21/24 words, validated against 2048-word dictionary) |
 
@@ -379,7 +380,7 @@ pkg install sentinel
 **Via Pre-compiled Binary:**
 Download the corresponding `android-arm64` or `android-arm` binary from the [Releases page](https://github.com/sentinel-cli/sentinel/releases):
 ```bash
-# Replace <version>  e.g. v2.0.6
+# Replace <version>  e.g. v2.0.7
 wget https://github.com/sentinel-cli/sentinel/releases/download/<version>/sentinel-<version>-android-arm64 -O sentinel
 chmod +x sentinel
 mv sentinel $PREFIX/bin/
@@ -426,7 +427,7 @@ sentinel uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/sentinel-cli/sentinel
-    rev: v2.0.6 # Replace with the latest release version
+    rev: v2.0.7 # Replace with the latest release version
     hooks:
       - id: sentinel
 ```

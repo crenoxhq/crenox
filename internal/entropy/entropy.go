@@ -130,7 +130,10 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 				})
 
 				extractHexTokens(line, minLen, func(tok []byte) {
-					if len(tok)%2 != 0 {
+					// Reject odd-length hex only for SHORT tokens (< 32 chars).
+					// Long hex strings (≥ 32 chars) like Rails secret_key_base or
+					// GitHub oauth tokens are valid secrets regardless of parity.
+					if len(tok)%2 != 0 && len(tok) < 32 {
 						return
 					}
 					e := Shannon(tok)
