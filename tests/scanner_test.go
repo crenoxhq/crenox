@@ -440,6 +440,9 @@ func TestTierString(t *testing.T) {
 // TestScanner_PerformanceUnder50ms verifies the full pipeline runs under 50ms
 // for a 50 KB file that contains exactly one real secret and lots of noise.
 func TestScanner_PerformanceUnder50ms(t *testing.T) {
+	if os.Getenv("GITHUB_ACTIONS") != "" {
+		t.Skip("Skipping performance test in GitHub Actions due to -race detector overhead")
+	}
 	s := defaultScanner()
 
 	// Build ~50 KB of clean Go-like source with one secret buried in the middle.
