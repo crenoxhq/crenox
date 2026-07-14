@@ -4,14 +4,9 @@
 
 <div align="center">
 
-```text
-  ██████╗██████╗ ███████╗███╗   ██╗ ██████╗ ██╗  ██╗
- ██╔════╝██╔══██╗██╔════╝████╗  ██║██╔═══██╗╚██╗██╔╝
- ██║     ██████╔╝█████╗  ██╔██╗ ██║██║   ██║ ╚███╔╝ 
- ██║     ██╔══██╗██╔══╝  ██║╚██╗██║██║   ██║ ██╔██╗ 
- ╚██████╗██║  ██║███████╗██║ ╚████║╚██████╔╝██╔╝ ██╗
-  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝
-```
+<p align="center">
+  <img src="docs/logo.svg" alt="Crenox Banner" width="800" style="max-width: 100%;">
+</p>
 
 **Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
 
