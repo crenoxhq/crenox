@@ -1,14 +1,23 @@
-# Crenox — Ultra-Fast Git Secret Scanner & Pre-Commit Hook
-
-<!-- SEO: git secret scanner, pre-commit hook, gitleaks alternative, credentials detector, api key detection, go security tool, git-secrets alternative -->
-
 <div align="center">
 
-<p align="center">
-  <img src="docs/logo.svg" alt="Crenox Banner" width="800" style="max-width: 100%;">
-</p>
+```text
+ ┌─┐┬─┐┌─┐┌┐┌┌─┐┬ ┬
+ │  ├┬┘├┤ ││││ │└┬┘
+ └─┘┴└─└─┘┘└┘└─┘┴ ┴  SECURITY ENGINE (v2)
+```
 
 **Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
+
+</div>
+
+```text
+========================================================================
+[MODULE]       github.com/crenoxhq/crenox/v2
+[PIPELINE]     T1 (Flat-DFA Trie) ➔ T2 (Shannon Entropy) ➔ T3 (Context)
+[LATENCY]      Sub-20ms per commit validation (0 heap allocations)
+[STEALTH]      100% local execution — zero network telemetry
+========================================================================
+```
 
 [![Release](https://img.shields.io/github/v/release/crenoxhq/crenox?color=3c6382&logo=github&label=latest&v=4)](https://github.com/crenoxhq/crenox/releases)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Crenox-3c6382.svg?logo=github&v=4)](https://github.com/marketplace/actions/crenox-git-secrets-scanner)
