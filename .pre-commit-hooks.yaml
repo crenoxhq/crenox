@@ -1,6 +1,7 @@
 - id: crenox
   name: Crenox Secret Scanner
   description: A zero-dependency git pre-commit hook to detect secrets.
-  entry: crenox scan
+  entry: crenox run
   language: golang
+  pass_filenames: false
   types: [text]
