@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-MODULE="github.com/crenoxhq/crenox"
+MODULE="github.com/crenoxhq/crenox/v2"
 CMD_PATH="${MODULE}/cmd/crenox"
 BINARY="crenox"
 DIST_DIR="dist"
