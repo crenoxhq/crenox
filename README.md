@@ -5,12 +5,12 @@
 <div align="center">
 
 ```text
-  ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗
-  ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║
-  ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║
-  ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║
-  ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗
-  ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
+  ██████╗██████╗ ███████╗███╗   ██╗ ██████╗ ██╗  ██╗
+ ██╔════╝██╔══██╗██╔════╝████╗  ██║██╔═══██╗╚██╗██╔╝
+ ██║     ██████╔╝█████╗  ██╔██╗ ██║██║   ██║ ╚███╔╝ 
+ ██║     ██╔══██╗██╔══╝  ██║╚██╗██║██║   ██║ ██╔██╗ 
+ ╚██████╗██║  ██║███████╗██║ ╚████║╚██████╔╝██╔╝ ██╗
+  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝
 ```
 
 **Enterprise-grade Git pre-commit secret detector, Gitleaks alternative, and high-performance credentials scanner written in Go.**
@@ -76,7 +76,7 @@ That is all. No configuration file required. No runtime dependencies. Works on L
 ## Terminal Demo
 
 ```bash
-asciinema play https://crenoxhq.github.io/crenox/demo.cast
+asciinema play https://crenoxhq.vercel.app/demo.cast
 ```
 
 ![Crenox Demo](docs/demo.gif)
