@@ -38,7 +38,7 @@
       "description": "An enterprise-grade, zero-dependency Git pre-commit secret detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "DeveloperApplication",
-      "softwareVersion": "2.1.0",
+      "softwareVersion": "2.1.1",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -59,7 +59,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.1.0">
+    <link rel="stylesheet" href="style.css?v=2.1.1">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
@@ -97,7 +97,6 @@
                 <a href="#masterpieces" class="nav-link">Projects</a>
                 <a href="#blog" class="nav-link">Blog</a>
                 <a href="#community" class="nav-link">Community</a>
-                <a href="https://www.aljazeera.com/where/palestine" target="_blank" class="nav-link" style="font-weight: bold; color: var(--color-text-primary);">Gaza Facts</a>
                 <span class="nav-link" style="color: var(--color-text-muted); cursor: not-allowed;" title="Disclosures will be posted soon after patches are confirmed.">In the Wild (Soon)</span>
             </div>
         </div>
@@ -122,6 +121,10 @@
                     GitHub Codebase
                     <span class="btn-icon">↗</span>
                 </a>
+            </div>
+            
+            <div style="margin-top: 2rem; display: flex; align-items: center;">
+                <a href="https://www.producthunt.com/products/crenox-leak-secret-scanner?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-crenox-secret-scanner" target="_blank" rel="noopener noreferrer"><img alt="Crenox Secret Scanner - Ultra-fast, context-aware Git secret scanner in Go | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1196224&amp;theme=neutral&amp;t=1784131078630" style="width: 250px; height: 54px; border-radius: 6px;"></a>
             </div>
         </article>
 
@@ -176,35 +179,35 @@
                     <thead>
                         <tr>
                             <th>Audited Metric</th>
-                            <th>Crenox (<span class="latest-version">v2.1.0</span>)</th>
-                            <th>Gitleaks (v8.30.1)</th>
-                            <th>TruffleHog (v3.95.7)</th>
+                            <th>Crenox (<span class="latest-version">v2.1.1</span>)</th>
+                            <th>Gitleaks (v8.18.2)</th>
+                            <th>TruffleHog (v3.95.9)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="spec-label">Execution Footprint (Binary)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">11.6 MB</td>
-                            <td>42.5 MB</td>
-                            <td>185.0 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">7.2 MB</td>
+                            <td>6.4 MB</td>
+                            <td>29.0 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Workstation RAM (Peak RSS)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">11.3 - 11.9 MB</td>
-                            <td>60.8 - 63.3 MB</td>
-                            <td>204.7 - 207.3 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">10.3 - 11.6 MB</td>
+                            <td>15.1 - 17.9 MB</td>
+                            <td>207.6 - 210.9 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Staged Filesystem Scan</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">31 - 40 ms</td>
-                            <td>1.13 - 1.22 s</td>
-                            <td>6.69 - 7.39 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">17 - 25 ms</td>
+                            <td>124 - 181 ms</td>
+                            <td>5.68 - 6.61 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Historical Audit (Git Log)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">52 - 58 ms</td>
-                            <td>1.26 - 1.27 s</td>
-                            <td>6.79 - 7.26 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">30 - 33 ms</td>
+                            <td>158 - 176 ms</td>
+                            <td>5.98 - 6.55 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Dependency Overhead</td>
@@ -229,7 +232,7 @@
             <p>The fastest way to install Crenox without dependencies. Example for Linux/macOS systems:</p>
             <pre class="font-mono">
 # 1. Download the target binary (example for Linux AMD64)
-wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.0</span>/crenox-<span class="latest-version">v2.1.0</span>-linux-amd64 -O crenox
+wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.1</span>/crenox-<span class="latest-version">v2.1.1</span>-linux-amd64 -O crenox
 
 # 2. Add execution permissions
 chmod +x crenox
@@ -417,11 +420,11 @@ allowlist_patterns:
     </footer>
 
     <!-- JavaScript -->
-    <script src="app.js?v=2.1.0"></script>
+    <script src="app.js?v=2.1.1"></script>
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
-        AsciinemaPlayer.create("demo.cast", document.getElementById("terminal-demo"), {
+        AsciinemaPlayer.create("demo.cast?v=2.1.1", document.getElementById("terminal-demo"), {
             cols: 110,
             rows: 24,
             autoPlay: true,

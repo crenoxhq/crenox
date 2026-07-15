@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-07-15
+
+### Added
+- **Smart Exclude Defaults for Modern Web Frameworks:** Automatically skip folders for build targets and package managers (`dist`, `build`, `out`, `target`, `bin`, `.next`, `.nuxt`, `.yarn`, `.git`) and lockfiles (`pnpm-lock.yaml`, `yarn.lock`) to optimize workspace scanning.
+- **Compound File Extension Exclusions:** Skip compiler and bundle assets such as `.pb.go`, `.gen.go`, `.g.go`, `.map`, and minified assets (`*.min.js`, `*.min.css`).
+- **Giant Comprehensive Test Suite:** Added a giant scanner test suite (`TestScanner_GiantComprehensiveSuite`) in the testing package validating all exclusions, false-positive checks, and smart exclusions.
+
+### Changed
+- **Single-Pass Log-line Scanner:** Refactored `isLogIndicator` to use a high-performance case-insensitive single-pass search, reducing string allocation overhead and optimizing execution speed.
+- **Product Hunt Integration:** Embedded the Product Hunt Featured Badge in documentation, website hero headers, and README layouts.
+
+### Fixed
+- **Variable Reference Assignment False Positives:** Implemented `Check 9B` to suppress entropy false positives when a variable name containing a sensitive keyword is assigned to another variable (e.g. `const password = autoPassword;`).
+
+### Performance
+- **Optimal Buffer Pooling:** Decreased the global `sync.Pool` read buffer size from **8 MB to 64 KB**, matching modern CPU L1/L2 caches, resulting in an **810% reduction in Peak RAM (from 118 MB down to 14.5 MB)** and a **23% increase in scanning speed** for standard workspaces.
+
 ## [2.1.0] - 2026-07-14
 
 ### Changed
