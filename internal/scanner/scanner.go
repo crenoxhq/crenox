@@ -155,41 +155,36 @@ var fmtVerbRE = regexp.MustCompile(`^%[+\-# 0-9]*[vTtbcdoOqxXUeEfFgGsSpw]`)
 // isLogIndicator checks if a line clearly indicates structured log/trace output.
 // Replaces the extremely slow case-insensitive regex.
 func isLogIndicator(line []byte) bool {
-	// Fast-path: look for known substrings manually in a case-insensitive way
-	// "bearer ", "token: ", "auth: ", "authorization: "
+	if len(line) < 20 {
+		return false
+	}
+	// Single-pass case-insensitive key scanner (Zero-allocations)
+	// Since "bearer", "token", "auth" start with b, t, a, we check them directly.
 	for i := 0; i < len(line)-5; i++ {
-		// Quick check for the first character of each word (b, t, a)
-		c := line[i] | 0x20 // lowercase ascii
-		if c == 'b' && i+7 <= len(line) {
-			if (line[i+1]|0x20) == 'e' && (line[i+2]|0x20) == 'a' && (line[i+3]|0x20) == 'r' && (line[i+4]|0x20) == 'e' && (line[i+5]|0x20) == 'r' && (line[i+6] == ' ' || line[i+6] == '\t') {
-				// Word boundary check
-				if i == 0 || !isAlphaNum(line[i-1]) {
-					return true
-				}
+		c := line[i]
+		if c == 'b' || c == 'B' {
+			if i+6 <= len(line) &&
+				(line[i+1]|0x20) == 'e' &&
+				(line[i+2]|0x20) == 'a' &&
+				(line[i+3]|0x20) == 'r' &&
+				(line[i+4]|0x20) == 'e' &&
+				(line[i+5]|0x20) == 'r' {
+				return true
 			}
-		} else if c == 't' && i+7 <= len(line) {
-			if (line[i+1]|0x20) == 'o' && (line[i+2]|0x20) == 'k' && (line[i+3]|0x20) == 'e' && (line[i+4]|0x20) == 'n' && line[i+5] == ':' && (line[i+6] == ' ' || line[i+6] == '\t') {
-				if i == 0 || !isAlphaNum(line[i-1]) {
-					return true
-				}
+		} else if c == 't' || c == 'T' {
+			if i+5 <= len(line) &&
+				(line[i+1]|0x20) == 'o' &&
+				(line[i+2]|0x20) == 'k' &&
+				(line[i+3]|0x20) == 'e' &&
+				(line[i+4]|0x20) == 'n' {
+				return true
 			}
-		} else if c == 'a' && i+6 <= len(line) {
-			if (line[i+1]|0x20) == 'u' && (line[i+2]|0x20) == 't' && (line[i+3]|0x20) == 'h' && line[i+4] == ':' && (line[i+5] == ' ' || line[i+5] == '\t') {
-				if i == 0 || !isAlphaNum(line[i-1]) {
-					return true
-				}
-			}
-			// authorization:
-			if i+15 <= len(line) {
-				if (line[i+1]|0x20) == 'u' && (line[i+2]|0x20) == 't' && (line[i+3]|0x20) == 'h' &&
-					(line[i+4]|0x20) == 'o' && (line[i+5]|0x20) == 'r' && (line[i+6]|0x20) == 'i' &&
-					(line[i+7]|0x20) == 'z' && (line[i+8]|0x20) == 'a' && (line[i+9]|0x20) == 't' &&
-					(line[i+10]|0x20) == 'i' && (line[i+11]|0x20) == 'o' && (line[i+12]|0x20) == 'n' &&
-					line[i+13] == ':' && (line[i+14] == ' ' || line[i+14] == '\t') {
-					if i == 0 || !isAlphaNum(line[i-1]) {
-						return true
-					}
-				}
+		} else if c == 'a' || c == 'A' {
+			if i+4 <= len(line) &&
+				(line[i+1]|0x20) == 'u' &&
+				(line[i+2]|0x20) == 't' &&
+				(line[i+3]|0x20) == 'h' {
+				return true
 			}
 		}
 	}
@@ -216,10 +211,10 @@ var b64Pool = sync.Pool{
 	},
 }
 
-// scanBufPool caches the large 8 MB streaming buffers to avoid heap thrashing and reduce peak RSS.
+// scanBufPool caches the streaming buffers to avoid heap thrashing and reduce peak RSS.
 var scanBufPool = sync.Pool{
 	New: func() interface{} {
-		buf := make([]byte, 8*1024*1024) // 8 MB
+		buf := make([]byte, 64*1024) // 64 KB
 		return &buf
 	},
 }

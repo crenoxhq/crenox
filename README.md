@@ -83,7 +83,7 @@ That is all. No configuration file required. No runtime dependencies. Works on L
 asciinema play https://crenoxhq.github.io/crenox/demo.cast
 ```
 
-![Crenox Demo](docs/demo.gif?v=2.1.0)
+![Crenox Demo](docs/demo.gif?v=2.1.1)
 
 ---
 
@@ -116,12 +116,12 @@ Measured on real-world repositories with Crenox against the two most popular alt
 
 | Repository | Tool | Execution Time | Peak RAM | Findings |
 |:---|:---|:---|:---|:---|
-| sample\_secrets | **Crenox** | **31 ms** | **11.9 MB** | **2** |
-| | Gitleaks v8.30.1 | 1.13 s | 60.8 MB | 1 |
-| | TruffleHog v3.95.8 | 7.39 s | 204.7 MB | 2 |
-| truffleHogRegexes | **Crenox** | **40 ms** | **11.9 MB** | **3** |
-| | Gitleaks v8.30.1 | 1.22 s | 61.1 MB | 1 |
-| | TruffleHog v3.95.8 | 6.69 s | 207.3 MB | 0 |
+| sample\_secrets | **Crenox** | **17 ms** | **10.3 MB** | **2** |
+| | Gitleaks v8.18.2 | 181 ms | 15.2 MB | 1 |
+| | TruffleHog v3.95.9 | 5.68 s | 210.9 MB | 2 |
+| truffleHogRegexes | **Crenox** | **25 ms** | **11.6 MB** | **3** |
+| | Gitleaks v8.18.2 | 125 ms | 15.4 MB | 1 |
+| | TruffleHog v3.95.9 | 6.62 s | 210.9 MB | 0 |
 
 </details>
 
@@ -130,12 +130,12 @@ Measured on real-world repositories with Crenox against the two most popular alt
 
 | Repository | Tool | Execution Time | Peak RAM | Findings |
 |:---|:---|:---|:---|:---|
-| sample\_secrets | **Crenox** | **52 ms** | **11.3 MB** | **2** |
-| | Gitleaks v8.30.1 | 1.27 s | 63.1 MB | 1 |
-| | TruffleHog v3.95.8 | 7.26 s | 206.2 MB | 2 |
-| truffleHogRegexes | **Crenox** | **58 ms** | **11.7 MB** | **3** |
-| | Gitleaks v8.30.1 | 1.27 s | 63.3 MB | 1 |
-| | TruffleHog v3.95.8 | 6.79 s | 207.2 MB | 0 |
+| sample\_secrets | **Crenox** | **33 ms** | **10.3 MB** | **5** |
+| | Gitleaks v8.18.2 | 159 ms | 17.9 MB | 5 |
+| | TruffleHog v3.95.9 | 5.98 s | 207.6 MB | 2 |
+| truffleHogRegexes | **Crenox** | **31 ms** | **10.4 MB** | **5** |
+| | Gitleaks v8.18.2 | 176 ms | 15.9 MB | 6 |
+| | TruffleHog v3.95.9 | 6.56 s | 207.6 MB | 0 |
 
 </details>
 
@@ -143,8 +143,8 @@ Measured on real-world repositories with Crenox against the two most popular alt
 
 | Metric | vs Gitleaks | vs TruffleHog |
 |--------|-------------|---------------|
-| **Speed** | **21x to 36x faster** | **110x to 230x faster** |
-| **Memory** | **5x to 5.4x less RAM** | **17x to 18x less RAM** |
+| **Speed** | **5x to 10x faster** | **180x to 330x faster** |
+| **Memory** | **1.3x to 1.7x less RAM** | **18x to 20x less RAM** |
 | **Recall (Accuracy)** | Finds obfuscated & encoded secrets ignored by others | Superior noise filtering (Zero false positives) |
 
 ---
@@ -419,7 +419,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.0 # Replace with the latest release version
+    rev: v2.1.1 # Replace with the latest release version
     hooks:
       - id: crenox
 ```

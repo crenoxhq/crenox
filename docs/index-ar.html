@@ -38,7 +38,7 @@
       "description": "An enterprise-grade, zero-dependency Git pre-commit secret detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "DeveloperApplication",
-      "softwareVersion": "2.1.0",
+      "softwareVersion": "2.1.1",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -59,7 +59,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.1.0">
+    <link rel="stylesheet" href="style.css?v=2.1.1">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
@@ -179,35 +179,35 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.0</span>)</th>
-                            <th>جيتليكس (v8.30.1)</th>
-                            <th>ترافلهوغ (v3.95.7)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.1</span>)</th>
+                            <th>جيتليكس (v8.18.2)</th>
+                            <th>ترافلهوغ (v3.95.9)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="spec-label">حجم الملف الثنائي (المجمّع)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">11.6 MB</td>
-                            <td style="direction: ltr; text-align: right;">42.5 MB</td>
-                            <td style="direction: ltr; text-align: right;">185.0 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">7.2 MB</td>
+                            <td style="direction: ltr; text-align: right;">6.4 MB</td>
+                            <td style="direction: ltr; text-align: right;">29.0 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">ذاكرة محطة العمل (Peak RSS)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">11.3 - 11.9 MB</td>
-                            <td style="direction: ltr; text-align: right;">60.8 - 63.3 MB</td>
-                            <td style="direction: ltr; text-align: right;">204.7 - 207.3 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">10.3 - 11.6 MB</td>
+                            <td style="direction: ltr; text-align: right;">15.1 - 17.9 MB</td>
+                            <td style="direction: ltr; text-align: right;">207.6 - 210.9 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">فحص ملفات النظام المرحلية</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">31 - 40 ms</td>
-                            <td style="direction: ltr; text-align: right;">1.13 - 1.22 s</td>
-                            <td style="direction: ltr; text-align: right;">6.69 - 7.39 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">17 - 25 ms</td>
+                            <td style="direction: ltr; text-align: right;">124 - 181 ms</td>
+                            <td style="direction: ltr; text-align: right;">5.68 - 6.61 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">الفحص التاريخي (سجل Git)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">52 - 58 ms</td>
-                            <td style="direction: ltr; text-align: right;">1.26 - 1.27 s</td>
-                            <td style="direction: ltr; text-align: right;">6.79 - 7.26 s</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">30 - 33 ms</td>
+                            <td style="direction: ltr; text-align: right;">158 - 176 ms</td>
+                            <td style="direction: ltr; text-align: right;">5.98 - 6.55 s</td>
                         </tr>
                         <tr>
                             <td class="spec-label">الاعتمادية الخارجية للملف</td>
@@ -232,7 +232,7 @@
             <p>أسرع طريقة لتثبيت الأداة مباشرة على نظامك دون الحاجة لبناء الملف من المصدر. مثال للتثبيت على أنظمة Linux أو macOS:</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك (مثال لـ Linux AMD64)
-wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.0</span>/crenox-<span class="latest-version">v2.1.0</span>-linux-amd64 -O crenox
+wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.1</span>/crenox-<span class="latest-version">v2.1.1</span>-linux-amd64 -O crenox
 
 # 2. منح صلاحيات التشغيل للملف
 chmod +x crenox
@@ -420,11 +420,11 @@ allowlist_patterns:
     </footer>
 
     <!-- JavaScript -->
-    <script src="app.js?v=2.1.0"></script>
+    <script src="app.js?v=2.1.1"></script>
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
-        AsciinemaPlayer.create("demo.cast?v=2.1.0", document.getElementById("terminal-demo"), {
+        AsciinemaPlayer.create("demo.cast?v=2.1.1", document.getElementById("terminal-demo"), {
             cols: 110,
             rows: 24,
             autoPlay: true,
