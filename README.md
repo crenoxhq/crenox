@@ -825,16 +825,6 @@ Contributions are welcome. All contributors must agree to the **[Contributor Lic
 
 ---
 
-<details>
-<summary>Repository SEO Optimization (Developer Reference)</summary>
-
-To ensure Crenox ranks at the top of GitHub search results, make sure to add the following topics to your GitHub repository settings:
-`gitleaks-alternative`, `secret-scanner`, `pre-commit-hook`, `credentials-detector`, `security-tools`, `git-secrets-alternative`, `static-analysis`, `devsecops`.
-
-</details>
-
----
-
 ## Author
 
 Developed by **Khaled Hani** — [https://t.me/A245F](https://t.me/A245F)
