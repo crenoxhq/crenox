@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كرينوكس — فاحص أسرار ومفاتيح الـ Git فائق السرعة وبديل جيتليكس (Gitleaks)</title>
+    <title>كرينوكس — أداة فحص محلي للمفاتيح والرموز الأمنية في Git (بديل Gitleaks)</title>
     
     <!-- Meta Descriptions for SEO -->
-    <meta name="description" content="أداة فحص وحماية برمجية مستقلة بلغة Go لخطافات Git لمنع تسريب المفاتيح السرية والبيانات الحساسة محلياً قبل مغادرتها جهاز المطور. بديل خفيف وأصيل لكل من Gitleaks و git-secrets.">
+    <meta name="description" content="أداة فحص وحماية مستقلة بلغة Go لخطافات Git لمنع إدخال المفاتيح والرموز الأمنية المسرّبة محلياً. بديل محلي لكل من Gitleaks و git-secrets.">
     <meta name="keywords" content="secret scanner, gitleaks alternative, git-secrets alternative, pre-commit hook, credentials scanner, termux tool, go, security automation, فحص الثغرات, حماية المفاتيح">
     
     <!-- Canonical & Multilingual SEO (Hreflang) -->
-    <link rel="canonical" href="https://crenoxhq.vercel.app/index-ar.html">
-    <link rel="alternate" hreflang="en" href="https://crenoxhq.vercel.app/">
-    <link rel="alternate" hreflang="ar" href="https://crenoxhq.vercel.app/index-ar.html">
-    <link rel="alternate" hreflang="x-default" href="https://crenoxhq.vercel.app/">
+    <link rel="canonical" href="https://crenoxhq.github.io/crenox/index-ar.html">
+    <link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/">
+    <link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html">
+    <link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://crenoxhq.vercel.app/index-ar.html">
-    <meta property="og:title" content="كرينوكس — فاحص أسرار ومفاتيح الـ Git فائق السرعة وبديل جيتليكس (Gitleaks)">
-    <meta property="og:description" content="أداة فحص وحماية برمجية مستقلة بلغة Go لخطافات Git لمنع تسريب المفاتيح السرية والبيانات الحساسة محلياً قبل مغادرتها جهاز المطور.">
-    <meta property="og:image" content="https://crenoxhq.vercel.app/social-preview.png">
+    <meta property="og:url" content="https://crenoxhq.github.io/crenox/index-ar.html">
+    <meta property="og:title" content="كرينوكس — أداة فحص محلي للمفاتيح والرموز الأمنية في Git (بديل Gitleaks)">
+    <meta property="og:description" content="أداة فحص وحماية مستقلة بلغة Go لخطافات Git لمنع إدخال المفاتيح والرموز الأمنية المسرّبة محلياً.">
+    <meta property="og:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://crenoxhq.vercel.app/index-ar.html">
-    <meta name="twitter:title" content="كرينوكس — فاحص أسرار ومفاتيح الـ Git فائق السرعة وبديل جيتليكس (Gitleaks)">
-    <meta name="twitter:description" content="أداة فحص وحماية برمجية مستقلة بلغة Go لخطافات Git لمنع تسريب المفاتيح السرية والبيانات الحساسة محلياً قبل مغادرتها جهاز المطور.">
-    <meta name="twitter:image" content="https://crenoxhq.vercel.app/social-preview.png">
+    <meta name="twitter:url" content="https://crenoxhq.github.io/crenox/index-ar.html">
+    <meta name="twitter:title" content="كرينوكس — أداة فحص محلي للمفاتيح والرموز الأمنية في Git (بديل Gitleaks)">
+    <meta name="twitter:description" content="أداة فحص وحماية مستقلة بلغة Go لخطافات Git لمنع إدخال المفاتيح والرموز الأمنية المسرّبة محلياً.">
+    <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
 
     <!-- Structured Data (JSON-LD Schema) for Google Search Rich Snippets -->
     <script type="application/ld+json">
@@ -35,7 +35,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Crenox",
-      "description": "An enterprise-grade, zero-dependency Git pre-commit secret detector written in Go.",
+      "description": "A zero-dependency Git pre-commit secret detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "DeveloperApplication",
       "softwareVersion": "2.1.1",
@@ -110,8 +110,8 @@
             <div class="eyebrow">
                 حماية تسريبات خطافات Git
             </div>
-            <h1 class="hero-title">اقضِ على تسريبات البيانات الحساسة.<br>قبل وصولها إلى المستودع.</h1>
-            <p class="text-lead">كرينوكس (Crenox) هو ملف برمجي ثنائي مستقل ومجمع بلغة Go، يقوم بفحص التحقق من المرفقات محلياً في أقل من 20 جزءاً من الثانية لحماية مفاتيحك السرية وبياناتك الحساسة قبل مغادرتها جهاز المطور.</p>
+            <h1 class="hero-title">كرينوكس: فاحص Git لمنع تسريب المفاتيح والرموز الأمنية محلياً</h1>
+            <p class="text-lead">كرينوكس هو برنامج فحص محلي مكتوب بلغة Go ومستقل الاعتماديات، يفحص التعديلات المرحلية (Staged changes) في بيئة التطوير المحلية لمنع إدخال المفاتيح والرموز الأمنية المسرّبة.</p>
             
             <p class="text-muted" style="font-size: 0.85rem; margin-top: -1rem;">نُشر بواسطة <strong>خالد هاني</strong> في 3 يوليو 2026</p>
 
@@ -124,7 +124,7 @@
             </div>
             
             <div style="margin-top: 2rem; display: flex; align-items: center;">
-                <a href="https://www.producthunt.com/products/crenox-leak-secret-scanner?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-crenox-secret-scanner" target="_blank" rel="noopener noreferrer"><img alt="Crenox Secret Scanner - Ultra-fast, context-aware Git secret scanner in Go | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1196224&amp;theme=neutral&amp;t=1784131078630" style="width: 250px; height: 54px; border-radius: 6px;"></a>
+                <a href="https://www.producthunt.com/products/crenox-leak-secret-scanner?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-crenox-secret-scanner" target="_blank" rel="noopener noreferrer"><img alt="Crenox Secret Scanner - Context-aware Git secret scanner in Go | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1196224&amp;theme=neutral&amp;t=1784131078630" style="width: 250px; height: 54px; border-radius: 6px;"></a>
             </div>
         </article>
 
@@ -298,7 +298,7 @@ crenox install --global</pre>
                 06 / التخصيص والضبط
             </div>
             <h2>تخصيص كرينوكس ليتوافق مع مستودعك البرمجي</h2>
-            <p>يعمل كرينوكس بشكل فوري ومباشر بالإعدادات الافتراضية الجاهزة للإنتاج. بالنسبة لفرق العمل والمؤسسات ذات بيئات العمل المعقدة، يمكن تعديل وتخصيص سلوك الكشف بإضافة ملف <code>.crenox.yaml</code> في الجذر الرئيسي للمستودع.</p>
+            <p>يعمل كرينوكس بالإعدادات الافتراضية بشكل تلقائي، كما يدعم التخصيص لبيئات العمل المختلفة عبر إضافة ملف <code>.crenox.yaml</code> في الجذر الرئيسي للمستودع.</p>
 
             <h3>قواعد الكشف المخصصة (Custom Signatures)</h3>
             <p>يمكنك كتابة وتحديد بادئات المفاتيح الخاصة بمؤسستك وتجميعها مباشرة ضمن شجرة حالات البحث (Aho-Corasick Automaton) دون التسبب بأي بطء تشغيلي:</p>
@@ -364,13 +364,13 @@ allowlist_patterns:
             </div>
         </section>
 
-        <!-- Chapter 8: Other Masterpieces -->
+        <!-- Chapter 8: Other Projects -->
         <section id="masterpieces" class="section scroll-fade">
             <div class="eyebrow">
                 08 / المشاريع الأخرى
             </div>
-            <h2>تحف هندسية ومعمارية أخرى</h2>
-            <p>استكشف مشاريع الحماية والشبكات وتطبيقات خوادم النظام المطورة في بيئتنا التقنية الخاصة.</p>
+            <h2>مشاريع برمجية أخرى</h2>
+            <p>قائمة ببعض المشاريع والبرمجيات الأخرى المتاحة في نفس البيئة التقنية.</p>
 
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
