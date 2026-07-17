@@ -111,10 +111,10 @@ asciinema play https://crenoxhq.github.io/crenox/demo.cast
 
 ## Performance
 
-Benchmarks are averaged over **5 independent iterations** per tool per mode on each repository, measured on a standard **GitHub Actions Ubuntu cloud runner** (2 vCPU, 7 GB RAM) — the same infrastructure used in real-world CI/CD pipelines.
+Measured on real-world repositories with Crenox against the most popular alternatives, on a standard **GitHub Actions Ubuntu cloud runner** — the same infrastructure used in real-world CI/CD pipelines.
 
 <details>
-<summary>Filesystem Scan Results (Standard Mode — 5-run averages)</summary>
+<summary>Filesystem Scan Results (Standard Mode)</summary>
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
@@ -131,7 +131,7 @@ Benchmarks are averaged over **5 independent iterations** per tool per mode on e
 </details>
 
 <details>
-<summary>Git History Scan Results (History Mode — 5-run averages)</summary>
+<summary>Git History Scan Results (History Mode)</summary>
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
