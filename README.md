@@ -111,45 +111,43 @@ asciinema play https://crenoxhq.github.io/crenox/demo.cast
 
 ## Performance
 
-Measured on real-world repositories with Crenox against the most popular alternatives.
+Benchmarks are averaged over **5 independent iterations** per tool per mode on each repository, measured on a standard **GitHub Actions Ubuntu cloud runner** (2 vCPU, 7 GB RAM) — the same infrastructure used in real-world CI/CD pipelines.
 
 <details>
-<summary>Filesystem Scan Results (Standard Mode)</summary>
+<summary>Filesystem Scan Results (Standard Mode — 5-run averages)</summary>
 
-| Repository | Tool | Execution Time | Peak RAM | Findings |
-|:---|:---|:---|:---|:---|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **27 ms** | **11.4 MB** | **3** |
-| | Gitleaks v8.18.2 | 133 ms | 17.1 MB | 1 |
-| | Betterleaks v1.6.1 | 190 ms | 29.6 MB | 2 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **38 ms** | **12.8 MB** | **0** |
-| | Gitleaks v8.18.2 | 160 ms | 14.5 MB | 1 |
-| | Betterleaks v1.6.1 | 259 ms | 30.4 MB | 1 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **31 ms** | **12.8 MB** | **6** |
-| | Gitleaks v8.18.2 | 104 ms | 15.3 MB | 2 |
-| | Betterleaks v1.6.1 | 498 ms | 48.4 MB | 1 |
+| Repository | Tool | Avg Time | Peak RAM | Findings |
+|:---|:---|:---:|:---:|:---:|
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **5.2 ms** | **14.8 MB** | **3** |
+| | Gitleaks v8.18.2 | 24.2 ms | 23.4 MB | 1 |
+| | Betterleaks v1.6.1 | 51.7 ms | 36.8 MB | 2 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **7.5 ms** | **17.2 MB** | **0** |
+| | Gitleaks v8.18.2 | 39.7 ms | 21.6 MB | 1 |
+| | Betterleaks v1.6.1 | 80.8 ms | 38.7 MB | 1 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **6.9 ms** | **17.4 MB** | **6** |
+| | Gitleaks v8.18.2 | 26.7 ms | 23.0 MB | 2 |
+| | Betterleaks v1.6.1 | 176.8 ms | 54.9 MB | 1 |
 
 </details>
 
 <details>
-<summary>Git History Scan Results (History Mode)</summary>
+<summary>Git History Scan Results (History Mode — 5-run averages)</summary>
 
-| Repository | Tool | Execution Time | Peak RAM | Findings |
-|:---|:---|:---|:---|:---|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **30 ms** | **11.6 MB** | **9** |
-| | Gitleaks v8.18.2 | 176 ms | 14.5 MB | 5 |
-| | Betterleaks v1.6.1 | 502 ms | 45.9 MB | 5 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **51 ms** | **12.0 MB** | **3** |
-| | Gitleaks v8.18.2 | 175 ms | 13.7 MB | 6 |
-| | Betterleaks v1.6.1 | 207 ms | 30.4 MB | 8 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **37 ms** | **10.8 MB** | **6** |
-| | Gitleaks v8.18.2 | 144 ms | 13.9 MB | 2 |
-| | Betterleaks v1.6.1 | 583 ms | 45.8 MB | 1 |
+| Repository | Tool | Avg Time | Peak RAM | Findings |
+|:---|:---|:---:|:---:|:---:|
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **7.9 ms** | **14.7 MB** | **9** |
+| | Gitleaks v8.18.2 | 26.6 ms | 23.0 MB | 5 |
+| | Betterleaks v1.6.1 | 196.6 ms | 55.2 MB | 5 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **11.8 ms** | **17.5 MB** | **3** |
+| | Gitleaks v8.18.2 | 45.0 ms | 23.6 MB | 6 |
+| | Betterleaks v1.6.1 | 84.3 ms | 42.0 MB | 8 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **8.8 ms** | **16.9 MB** | **6** |
+| | Gitleaks v8.18.2 | 30.0 ms | 23.0 MB | 2 |
+| | Betterleaks v1.6.1 | 178.6 ms | 54.4 MB | 1 |
 
 </details>
 
-*Note: These benchmarks were conducted on an Android mobile device environment (native Termux). Execution times may be significantly faster on desktop/server hardware, although those environments have not been tested.*
-
-> **Want to reproduce these results on a real server?** A fully automated benchmark workflow is available — run it with a single click on GitHub Actions and get a fresh report generated on an Ubuntu cloud runner: [**▶ Run Cloud Benchmark**](https://github.com/crenoxhq/serverless-node-api-boilerplate/actions/workflows/benchmark.yml)
+> **Reproducible & Verifiable** — These numbers are not hand-picked. Every figure above is the output of an [open-source automated benchmark](https://github.com/crenoxhq/serverless-node-api-boilerplate/blob/main/scripts/run_benchmark.py) that anyone can run independently with a single click on GitHub Actions. [**▶ Run it yourself →**](https://github.com/crenoxhq/serverless-node-api-boilerplate/actions/workflows/benchmark.yml)
 
 **Summary:**
 
