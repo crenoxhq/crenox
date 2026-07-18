@@ -187,21 +187,21 @@
                     <tbody>
                         <tr>
                             <td class="spec-label">Peak RAM — Filesystem Scan</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">17.0 – 18.7 MB</td>
-                            <td>20.9 – 23.9 MB</td>
-                            <td>37.3 – 68.7 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">16.9 – 18.7 MB</td>
+                            <td>21.7 – 23.9 MB</td>
+                            <td>37.9 – 68.7 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Filesystem Scan Time (Avg)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">6.4 – 170.2 ms</td>
-                            <td>24.9 – 1845.2 ms</td>
-                            <td>59.2 – 1394.5 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">6.7 – 170.6 ms</td>
+                            <td>25.6 – 683.2 ms</td>
+                            <td>52.4 – 1410.6 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Git History Scan Time (Avg)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">5.2 – 12.1 ms</td>
-                            <td>25.3 – 44.0 ms</td>
-                            <td>17.4 – 187.2 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">5.0 – 13.2 ms</td>
+                            <td>25.0 – 43.9 ms</td>
+                            <td>17.1 – 190.8 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">History Recall (sample_secrets)</td>
@@ -342,9 +342,15 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">JULY 18, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.3: Dynamic Streaming, Pruned Walks & Allocation-free Entropy</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.3 introduces dynamic bounded-channel scanning (reducing peak memory by 22.6%), early directory walk exclusion pruning, and zero-allocation inlined token extraction loops within the entropy scanning paths to completely eliminate closure-based garbage collection overhead.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">JULY 17, 2026</p>
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.3: New Signatures, Deduplication Overhaul & Cloud Benchmark</a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.2 adds 10 new built-in signatures (Slack/Discord Webhooks, GitHub Client IDs, MongoDB/Postgres DSNs, AWS Secret Key variables), hardens the 4-level finding deduplication priority chain (Pattern &gt; Specific &gt; Severity &gt; Token length), validates PEM keys against footer presence to eliminate false positives, and introduces an auditable GitHub Actions cloud benchmark comparing Crenox against Gitleaks and Betterleaks.</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.2: New Signatures, Deduplication Overhaul & Cloud Benchmark</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.2 adds 8 new built-in provider signatures (Slack/Discord Webhooks, GitHub Client IDs, MongoDB/Postgres DSNs, AWS Secret Key variables), hardens the 4-level deduplication chain, validates PEM keys against footer presence, and introduces an auditable GitHub Actions cloud benchmark comparing Crenox against Gitleaks and Betterleaks.</p>
                 </div>
 
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
