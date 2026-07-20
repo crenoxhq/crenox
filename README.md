@@ -118,18 +118,18 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **6.7 ms** | **16.9 MB** | **3** |
-| | Gitleaks v8.18.2 | 25.6 ms | 23.6 MB | 1 |
-| | Betterleaks v1.6.1 | 52.4 ms | 37.9 MB | 2 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **7.1 ms** | **17.3 MB** | **0** |
-| | Gitleaks v8.18.2 | 36.4 ms | 21.7 MB | 1 |
-| | Betterleaks v1.6.1 | 81.0 ms | 39.7 MB | 1 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **7.4 ms** | **17.2 MB** | **6** |
-| | Gitleaks v8.18.2 | 28.3 ms | 22.9 MB | 2 |
-| | Betterleaks v1.6.1 | 178.8 ms | 53.1 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **170.6 ms** | **18.7 MB** | **2** |
-| | Gitleaks v8.18.2 | 683.2 ms | 23.9 MB | 1 |
-| | Betterleaks v1.6.1 | 1410.6 ms | 68.7 MB | 2 |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **4.8 ms** | **14.8 MB** | **3** |
+| | Gitleaks v8.18.2 | 17.7 ms | 23.6 MB | 1 |
+| | Betterleaks v1.6.1 | 37.6 ms | 37.4 MB | 2 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **4.7 ms** | **14.8 MB** | **0** |
+| | Gitleaks v8.18.2 | 24.5 ms | 21.9 MB | 1 |
+| | Betterleaks v1.6.1 | 52.1 ms | 38.9 MB | 1 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **5.2 ms** | **17.3 MB** | **6** |
+| | Gitleaks v8.18.2 | 19.7 ms | 23.6 MB | 2 |
+| | Betterleaks v1.6.1 | 135.8 ms | 54.0 MB | 1 |
+| **large_file_test (10 MB)** | **Crenox** | **7.8 ms** | **14.8 MB** | **0** |
+| | Gitleaks v8.18.2 | 1126.3 ms | 23.9 MB | 1 |
+| | Betterleaks v1.6.1 | 945.8 ms | 68.6 MB | 2 |
 
 </details>
 
@@ -138,18 +138,18 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **10.3 ms** | **17.1 MB** | **9** |
-| | Gitleaks v8.18.2 | 28.1 ms | 21.3 MB | 5 |
-| | Betterleaks v1.6.1 | 190.8 ms | 53.2 MB | 5 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **13.2 ms** | **17.4 MB** | **3** |
-| | Gitleaks v8.18.2 | 43.9 ms | 23.0 MB | 6 |
-| | Betterleaks v1.6.1 | 86.3 ms | 39.9 MB | 8 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **11.1 ms** | **17.5 MB** | **6** |
-| | Gitleaks v8.18.2 | 32.6 ms | 22.8 MB | 2 |
-| | Betterleaks v1.6.1 | 190.8 ms | 54.5 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **5.0 ms** | **14.6 MB** | **0** |
-| | Gitleaks v8.18.2 | 25.0 ms | 21.3 MB | 0 |
-| | Betterleaks v1.6.1 | 17.1 ms | 26.7 MB | 0 |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **8.0 ms** | **14.8 MB** | **9** |
+| | Gitleaks v8.18.2 | 20.9 ms | 21.1 MB | 5 |
+| | Betterleaks v1.6.1 | 141.0 ms | 54.3 MB | 5 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **7.8 ms** | **17.2 MB** | **3** |
+| | Gitleaks v8.18.2 | 28.3 ms | 24.1 MB | 6 |
+| | Betterleaks v1.6.1 | 58.2 ms | 40.4 MB | 8 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **6.3 ms** | **14.8 MB** | **6** |
+| | Gitleaks v8.18.2 | 21.5 ms | 23.1 MB | 2 |
+| | Betterleaks v1.6.1 | 129.9 ms | 54.5 MB | 1 |
+| **large_file_test (10 MB)** | **Crenox** | **3.8 ms** | **13.1 MB** | **0** |
+| | Gitleaks v8.18.2 | 17.3 ms | 21.2 MB | 0 |
+| | Betterleaks v1.6.1 | 11.4 ms | 24.9 MB | 0 |
 
 </details>
 
@@ -159,8 +159,8 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Metric | vs Gitleaks | vs Betterleaks |
 |--------|-------------|---------------|
-| **Speed** | **3x to 5x faster** | **6x to 15x faster** |
-| **Memory** | **1.2x to 1.5x less RAM** | **2.5x to 4x less RAM** |
+| **Speed** | **3x to 144x faster** | **3x to 121x faster** |
+| **Memory** | **1.4x to 1.6x less RAM** | **1.9x to 4.6x less RAM** |
 | **Recall (Accuracy)** | Finds obfuscated & encoded secrets ignored by Gitleaks | Finds critical secrets missed by Betterleaks |
 
 ---

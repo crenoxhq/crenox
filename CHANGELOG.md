@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.4] - 2026-07-19
+## [2.1.4] - 2026-07-20
 
 ### Added
 - **Comprehensive Integrated Test Suite:** Consolidated and expanded internal unit & integration test coverage inside `tests/` (`coverage_expansion_test.go`), achieving **100% PASS** across all core packages (`config`, `context`, `entropy`, `git`, `reporter`, `scanner`, `trie`, `updater`, `version`).
