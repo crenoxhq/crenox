@@ -8,6 +8,7 @@
     <!-- Meta Descriptions for SEO -->
     <meta name="description" content="A zero-dependency Git pre-commit secret detector written in Go. An alternative to Gitleaks & git-secrets designed for local developer workflows.">
     <meta name="keywords" content="secret scanner, gitleaks alternative, git-secrets alternative, pre-commit hook, credentials scanner, termux tool, go, security automation">
+    <meta name="google-site-verification" content="googledc7329401f946fab">
     
     <!-- Canonical & Multilingual SEO (Hreflang) -->
     <link rel="canonical" href="https://crenoxhq.github.io/crenox/">
@@ -25,9 +26,27 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://crenoxhq.github.io/crenox/">
-    <meta name="twitter:title" content="Crenox — Git Secret Scanner & Pre-Commit Hook (Gitleaks Alternative)">
+    <meta name="twitter:title" content="Crenox — Git Secret Scanner & Pre-Commit Hook">
     <meta name="twitter:description" content="A zero-dependency Git pre-commit secret detector written in Go. Protect credentials locally.">
     <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
+
+    <!-- JSON-LD Structured Data Schema for Google rich snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Crenox",
+      "operatingSystem": "Linux, macOS, Windows, Android/Termux",
+      "applicationCategory": "SecurityApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Statically compiled Git secret scanner & pre-commit hook written in Go.",
+      "url": "https://crenoxhq.github.io/crenox/"
+    }
+    </script>
 
     <!-- Structured Data (JSON-LD Schema) for Google Search Rich Snippets -->
     <script type="application/ld+json">
@@ -187,21 +206,21 @@
                     <tbody>
                         <tr>
                             <td class="spec-label">Peak RAM — Filesystem Scan</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">14.8 – 17.3 MB</td>
-                            <td>21.9 – 23.9 MB</td>
-                            <td>37.4 – 68.6 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">14.3 – 17.5 MB</td>
+                            <td>21.2 – 25.7 MB</td>
+                            <td>30.0 – 69.5 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Filesystem Scan Time (Avg)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">4.7 – 7.8 ms</td>
-                            <td>17.7 – 1126.3 ms</td>
-                            <td>37.6 – 945.8 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">7.2 – 11.4 ms</td>
+                            <td>25.8 – 1797.8 ms</td>
+                            <td>58.7 – 761.4 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">Git History Scan Time (Avg)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary);">3.8 – 8.0 ms</td>
-                            <td>17.3 – 28.3 ms</td>
-                            <td>11.4 – 141.0 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary);">4.9 – 10.9 ms</td>
+                            <td>23.1 – 44.2 ms</td>
+                            <td>29.6 – 202.3 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">History Recall (sample_secrets)</td>
@@ -341,6 +360,12 @@ allowlist_patterns:
             <p>Articles written by the developers covering the design, optimization, and security philosophy of Crenox.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">AUGUST 7, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.5: 30+ Modern Signatures Expansion, Python Descriptor Filters & Real-World Discovery</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.5 expands the Aho-Corasick automaton with 30+ modern AI, cloud & DevSecOps secret signatures (Groq, Replicate, Doppler, Supabase, Tailscale, PostHog, Linear, Sentry, Telegram), suppresses Python descriptor false positives (ConfigAttribute), and validates process-isolated scanning stability under 100MB file limit overrides.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">JULY 20, 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.4: Minified JS Capping, Lazy Buffer Allocation & 100% Test Coverage</a></h4>

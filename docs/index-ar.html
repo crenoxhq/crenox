@@ -8,6 +8,7 @@
     <!-- Meta Descriptions for SEO -->
     <meta name="description" content="أداة فحص وحماية مستقلة بلغة Go لخطافات Git لمنع إدخال المفاتيح والرموز الأمنية المسرّبة محلياً. بديل محلي لكل من Gitleaks و git-secrets.">
     <meta name="keywords" content="secret scanner, gitleaks alternative, git-secrets alternative, pre-commit hook, credentials scanner, termux tool, go, security automation, فحص الثغرات, حماية المفاتيح">
+    <meta name="google-site-verification" content="googledc7329401f946fab">
     
     <!-- Canonical & Multilingual SEO (Hreflang) -->
     <link rel="canonical" href="https://crenoxhq.github.io/crenox/index-ar.html">
@@ -187,21 +188,21 @@
                     <tbody>
                         <tr>
                             <td class="spec-label">ذاكرة الوصول العشوائي — فحص الملفات</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">14.8 – 17.3 MB</td>
-                            <td style="direction: ltr; text-align: right;">21.9 – 23.9 MB</td>
-                            <td style="direction: ltr; text-align: right;">37.4 – 68.6 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">14.3 – 17.5 MB</td>
+                            <td style="direction: ltr; text-align: right;">21.2 – 25.7 MB</td>
+                            <td style="direction: ltr; text-align: right;">30.0 – 69.5 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">وقت فحص الملفات (متوسط)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">4.7 – 7.8 ms</td>
-                            <td style="direction: ltr; text-align: right;">17.7 – 1126.3 ms</td>
-                            <td style="direction: ltr; text-align: right;">37.6 – 945.8 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">7.2 – 11.4 ms</td>
+                            <td style="direction: ltr; text-align: right;">25.8 – 1797.8 ms</td>
+                            <td style="direction: ltr; text-align: right;">58.7 – 761.4 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">وقت الفحص التاريخي (متوسط)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">3.8 – 8.0 ms</td>
-                            <td style="direction: ltr; text-align: right;">17.3 – 28.3 ms</td>
-                            <td style="direction: ltr; text-align: right;">11.4 – 141.0 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">4.9 – 10.9 ms</td>
+                            <td style="direction: ltr; text-align: right;">23.1 – 44.2 ms</td>
+                            <td style="direction: ltr; text-align: right;">29.6 – 202.3 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">دقة الاستدعاء التاريخي (sample_secrets)</td>
@@ -341,6 +342,12 @@ allowlist_patterns:
             <p>مقالات يشاركها المطورون لشرح آليات تحسين وسرعة الكشف والفلسفة الأمنية خلف بناء الأداة.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">7 أغسطس 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.5: دعم واسع بـ 30+ توقيع حديث، منع البلاغات الكاذبة لبايثون واستقرار الفحص الميداني</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.5 توسعة ضخمة لخوارزمية Aho-Corasick بإضافة أكثر من 30 توقيعاً مدمجاً لمنصات الذكاء الاصطناعي والسحابيات (Groq, Replicate, Doppler, Supabase, Tailscale, PostHog, Linear, Sentry, Telegram)، مع استبعاد البلاغات الكاذبة لخواص بايثون (ConfigAttribute)، وتأكيد استقرار الذاكرة تحت حد الـ 100MB للملفات.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">20 يوليو 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.4: حماية ملفات JS الكبيرة، تخصيص الذاكرة الكسول، وتغطية اختباريّة 100%</a></h4>

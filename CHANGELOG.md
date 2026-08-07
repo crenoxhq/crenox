@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.5] - 2026-08-07
+
+### Added
+- **30+ New Modern Provider Signatures:** Expanded `BuiltinSignatures` in `internal/trie/trie.go` with exhaustive coverage for modern AI platforms, cloud databases, and DevSecOps tools:
+  - **AI Platforms:** Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`).
+  - **Cloud & DB Services:** Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`).
+  - **DevSecOps & Observability:** PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix (`whsec_`), Telegram Bot (`bot<id>:<hash>`).
+- **Comprehensive Signature Test Suite:** Added `TestScanner_NewModernSignatures_Detected` in `tests/scanner_test.go` verifying 100% detection rate across all newly added signature patterns.
+- **In the Wild Real-World Discovery Documentation:** Added documented disclosure for `facebook/react` (hardcoded GitHub PAT & Algolia Search key) to the public disclosure archive (`docs/wild.html` and `docs/wild-ar.html`).
+
+### Fixed
+- **Python Descriptor False Positive Suppression:** Added contextual suppression rules in `internal/context/context.go` for Python 3.10+ class descriptor wrappers (`ConfigAttribute[`, `ConfigAttribute(`), eliminating false positives on framework configuration descriptors.
+- **Mobile Responsive Layout & Table Scrollability:** Redesigned table wrappers and mobile CSS across `docs/style.css`, `docs/wild.html`, and `docs/wild-ar.html` to guarantee smooth, non-cramped horizontal scrolling on mobile viewports.
+
+### Performance
+- **Bounded Automaton Memory under Overridden Limits:** Empirical benchmark tests on major open-source repositories (`laravel`, `uv`, `react`, `ansible`) with 100MB file limit overrides confirmed Peak RSS memory remains strictly bounded between **10.85 MB and 22.05 MB**.
+
 ## [2.1.4] - 2026-07-20
 
 ### Added

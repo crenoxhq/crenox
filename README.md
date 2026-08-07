@@ -46,9 +46,9 @@ Crenox uses a **three-tier detection pipeline** designed for speed and false pos
 
 | Tier | Engine | Purpose |
 |------|--------|---------|
-| 1 — PATTERN | Aho-Corasick automaton | Matches 100 known secret signatures in O(n) time, zero allocations |
+| 1 — PATTERN | Aho-Corasick automaton | Matches 112+ known secret signatures in O(n) time, zero allocations |
 | 2 — ENTROPY | Shannon entropy analysis | Catches unknown secrets by measuring information density |
-| 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, and placeholders |
+| 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, Python descriptors, and placeholders |
 
 A finding must survive all three tiers before it is reported.
 
@@ -118,18 +118,18 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **4.8 ms** | **14.8 MB** | **3** |
-| | Gitleaks v8.18.2 | 17.7 ms | 23.6 MB | 1 |
-| | Betterleaks v1.6.1 | 37.6 ms | 37.4 MB | 2 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **4.7 ms** | **14.8 MB** | **0** |
-| | Gitleaks v8.18.2 | 24.5 ms | 21.9 MB | 1 |
-| | Betterleaks v1.6.1 | 52.1 ms | 38.9 MB | 1 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **5.2 ms** | **17.3 MB** | **6** |
-| | Gitleaks v8.18.2 | 19.7 ms | 23.6 MB | 2 |
-| | Betterleaks v1.6.1 | 135.8 ms | 54.0 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **7.8 ms** | **14.8 MB** | **0** |
-| | Gitleaks v8.18.2 | 1126.3 ms | 23.9 MB | 1 |
-| | Betterleaks v1.6.1 | 945.8 ms | 68.6 MB | 2 |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **7.2 ms** | **17.3 MB** | **3** |
+| | Gitleaks v8.18.2 | 26.3 ms | 22.7 MB | 1 |
+| | Betterleaks v1.6.1 | 58.7 ms | 40.6 MB | 2 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **7.2 ms** | **17.3 MB** | **0** |
+| | Gitleaks v8.18.2 | 35.0 ms | 23.1 MB | 1 |
+| | Betterleaks v1.6.1 | 76.3 ms | 43.2 MB | 1 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **7.6 ms** | **17.3 MB** | **6** |
+| | Gitleaks v8.18.2 | 25.8 ms | 23.2 MB | 2 |
+| | Betterleaks v1.6.1 | 190.5 ms | 59.4 MB | 1 |
+| **large_file_test (10 MB)** | **Crenox** | **11.4 ms** | **17.5 MB** | **0** |
+| | Gitleaks v8.18.2 | 1797.8 ms | 25.7 MB | 1 |
+| | Betterleaks v1.6.1 | 761.4 ms | 69.5 MB | 2 |
 
 </details>
 
@@ -138,18 +138,18 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Repository | Tool | Avg Time | Peak RAM | Findings |
 |:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **8.0 ms** | **14.8 MB** | **9** |
-| | Gitleaks v8.18.2 | 20.9 ms | 21.1 MB | 5 |
-| | Betterleaks v1.6.1 | 141.0 ms | 54.3 MB | 5 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **7.8 ms** | **17.2 MB** | **3** |
-| | Gitleaks v8.18.2 | 28.3 ms | 24.1 MB | 6 |
-| | Betterleaks v1.6.1 | 58.2 ms | 40.4 MB | 8 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **6.3 ms** | **14.8 MB** | **6** |
-| | Gitleaks v8.18.2 | 21.5 ms | 23.1 MB | 2 |
-| | Betterleaks v1.6.1 | 129.9 ms | 54.5 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **3.8 ms** | **13.1 MB** | **0** |
-| | Gitleaks v8.18.2 | 17.3 ms | 21.2 MB | 0 |
-| | Betterleaks v1.6.1 | 11.4 ms | 24.9 MB | 0 |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **9.0 ms** | **17.3 MB** | **9** |
+| | Gitleaks v8.18.2 | 26.6 ms | 22.7 MB | 5 |
+| | Betterleaks v1.6.1 | 188.2 ms | 58.6 MB | 5 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **10.9 ms** | **17.4 MB** | **3** |
+| | Gitleaks v8.18.2 | 44.2 ms | 22.9 MB | 6 |
+| | Betterleaks v1.6.1 | 82.8 ms | 44.3 MB | 8 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **9.0 ms** | **17.3 MB** | **6** |
+| | Gitleaks v8.18.2 | 30.0 ms | 21.2 MB | 2 |
+| | Betterleaks v1.6.1 | 202.3 ms | 60.4 MB | 1 |
+| **large_file_test (10 MB)** | **Crenox** | **4.9 ms** | **14.3 MB** | **0** |
+| | Gitleaks v8.18.2 | 23.1 ms | 21.2 MB | 0 |
+| | Betterleaks v1.6.1 | 29.6 ms | 30.0 MB | 0 |
 
 </details>
 
@@ -325,41 +325,24 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 
 | Category | Signatures |
 |----------|-----------|
-| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`, 16-char hex validated), and suffix-matched environment tokens (`_GITHUB_TOKEN`) |
-| **Heroku** | API Key (`HEROKU_API_KEY`, regex-validated), OAuth Token (`heroku_oauth_token`) |
+| **AI & ML Platforms** | Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), OpenAI (`sk-`, `sk-proj-`), Anthropic (`sk-ant-`) |
+| **Cloud Databases & Services** | Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`) |
+| **DevSecOps & Analytics** | PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
+| **Social & Messaging** | Telegram Bot API Token (`bot<id>:<hash>`), Discord Webhook (`https://discord.com/api/webhooks/`), Slack Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Webhook (`https://hooks.slack.com/services/`) |
+| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`), Suffix environment tokens (`_GITHUB_TOKEN`) |
+| **Heroku** | API Key (`HEROKU_API_KEY`), OAuth Token (`heroku_oauth_token`) |
 | **GitLab** | Personal Access Token (`glpat-`), Pipeline Trigger (`glptt-`), Runner Registration (`GR1348941`), Runner Token (`glrt-`) |
-| **AWS** | Access Key ID (`AKIA`, validated `AKIA[0-9A-Z]{16}`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`), and Secret Access Key variable assignments (`aws_secret`, `aws_key`) |
+| **AWS** | Access Key ID (`AKIA`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`), Secret Access Key variable assignments (`aws_secret`, `aws_key`) |
 | **Google Cloud** | Service Account JSON (`"type": "service_account"`), API Key (`AIzaSy`), OAuth Client ID (`.apps.googleusercontent.com`), OAuth Client Secret (`GOCSPX-`) |
-| **Slack** | Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Refresh (`xoxr-`), and Incoming Webhook (`https://hooks.slack.com/services/`, regex-validated) |
-| **Discord** | Webhook URL (`https://discord.com/api/webhooks/`, regex-validated) |
 | **Stripe** | Live Secret (`sk_live_`), Live Restricted (`rk_live_`), Test Secret (`sk_test_`) |
-| **OpenAI** | Classic (`sk-`), Project key (`sk-proj-`) |
-| **Anthropic** | API key (`sk-ant-`) |
-| **Twilio** | Account SID (`AC`, regex-validated), Auth Token (`SK`, regex-validated) |
-| **SendGrid** | API key (`SG.`, regex-validated: `SG.[a-zA-Z0-9_-]{22}.[a-zA-Z0-9_-]{43}`) |
-| **Mailgun** | API key (`key-`) |
-| **npm** | Automation/Publish token (`npm_`), Classic/Auth Token (`_authToken=`, `_auth=`) |
+| **Twilio & SendGrid** | Account SID (`AC`), Auth Token (`SK`), SendGrid (`SG.`), Mailgun (`key-`) |
+| **npm & PyPI** | npm Automation token (`npm_`), Auth Token (`_authToken=`, `_auth=`), PyPI Upload Token (`pypi-`) |
 | **JWT** | JSON Web Token (`eyJ`, strict 3-part dot-separated regex) |
 | **Private Keys & Certs** | RSA, EC, OpenSSH, PKCS#8, PGP, DSA — all `-----BEGIN ... PRIVATE KEY-----` variants, PuTTY Private Keys (`PuTTY-User-Key-File-`) |
-| **Databases & DSNs** | PostgreSQL (`postgresql://`, `postgres://`), MySQL (`mysql://`), MongoDB SRV (`mongodb+srv://`), MongoDB (`mongodb://`), Redis (`redis://`), RabbitMQ (`amqp://`, `amqps://`) — DSN connection strings with embedded passwords |
-| **PyPI** | Upload Token (`pypi-`) |
-| **Square** | Access Token (`sq0atp-`) |
+| **Databases & DSNs** | PostgreSQL (`postgresql://`, `postgres://`), MySQL (`mysql://`), MongoDB SRV (`mongodb+srv://`), MongoDB (`mongodb://`), Redis (`redis://`), RabbitMQ (`amqp://`, `amqps://`) |
 | **Basic Auth** | HTTPS (`https://user:pass@`), HTTP (`http://user:pass@`) |
-| **HashiCorp Vault** | Service token (`hvs.`), Batch token (`hvb.`) |
-| **DigitalOcean** | Personal Access Token (`dop_v1_`) |
-| **Vercel** | API Token (`vercel_`) |
-| **Cloudflare** | API Token (`cloudflare-api-token`) |
-| **Linear** | API Key (`lin_api_`) |
-| **Databricks** | Personal Access Token (`dapi`) |
-| **PlanetScale** | Service Token (`pscale_tkn_`) |
-| **Supabase** | Service Role Key (JWT with Supabase-specific header) |
-| **Pinecone** | API Key (`pcsk_`) |
-| **Railway** | API Token (`railway_`) |
-| **HuggingFace** | API Token (`hf_`) |
-| **Shopify** | Custom App (`shpca_`), Private App (`shppa_`), Access Token (`shpat_`) |
-| **Generic** | `password=`, `secret=`, `api_key=`, `token=`, `auth=`, `pass=`, `pwd=`, and their YAML/JSON/space colon and snake_case variants |
-| **Django & Rails**| `SECRET_KEY =`, Rails `secret_key_base` (space and colon assignments) |
-| **WordPress** | `AUTH_KEY` `SECURE_AUTH_KEY` `LOGGED_IN_KEY` `NONCE_KEY` `AUTH_SALT` `SECURE_AUTH_SALT` `LOGGED_IN_SALT` `NONCE_SALT` |
+| **Vault & DigitalOcean** | HashiCorp Vault Service (`hvs.`), Batch (`hvb.`), DigitalOcean (`dop_v1_`), Vercel (`vercel_`), Cloudflare (`cloudflare-api-token`), HuggingFace (`hf_`), Shopify (`shpat_`, `shpca_`, `shppa_`) |
+| **Generic & Frameworks** | `password=`, `secret=`, `api_key=`, `token=`, `auth=`, `SECRET_KEY =`, Rails `secret_key_base`, WordPress keys (`AUTH_KEY`, `SECURE_AUTH_KEY`, etc.), Python Descriptor Filters (`ConfigAttribute[...]`) |
 | **Crypto Wallets** | BIP-39 mnemonic (12/15/18/21/24 words, validated against 2048-word dictionary) |
 
 Custom signatures can be added in `.crenox.yaml` and are compiled into the same automaton at startup — no performance overhead.

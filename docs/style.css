@@ -440,33 +440,35 @@ html[dir="rtl"] .bento-desc {
 .spec-table-wrapper {
     margin: 2rem 0;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--bg-surface);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .spec-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     text-align: left;
-    min-width: 500px;
+    min-width: 600px;
 }
 
 html[dir="rtl"] .spec-table {
     text-align: right;
-    font-size: 0.8rem;
+    font-size: 0.88rem;
 }
 
 .spec-table th, .spec-table td {
-    padding: 1rem 1.5rem;
+    padding: 1.1rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
 }
 
 .spec-table th {
     background: var(--bg-base);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
@@ -656,8 +658,18 @@ html[dir="rtl"] .spec-table {
         font-size: 0.725rem;
     }
 
+    .spec-table-wrapper {
+        margin: 1.25rem 0;
+    }
+
+    .spec-table {
+        min-width: 550px !important;
+        font-size: 0.85rem !important;
+    }
+
     .spec-table th, .spec-table td {
-        padding: 0.75rem 1rem;
+        padding: 0.85rem 1rem !important;
+        white-space: nowrap !important;
     }
 
     .hero-actions {
@@ -671,12 +683,13 @@ html[dir="rtl"] .spec-table {
         padding: 0.75rem 1.25rem;
     }
 
-    /* Wrap tables to prevent screen stretching on very small viewports */
     .findings-table {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        min-width: 550px;
     }
     
     .findings-table th, .findings-table td {
-        padding: 0.5rem;
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
     }
 }
