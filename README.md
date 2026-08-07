@@ -351,6 +351,36 @@ Custom signatures can be added in `.crenox.yaml` and are compiled into the same 
 
 ---
 
+## Show Your Security Badge
+
+Show that your repository is actively protected against hardcoded secrets by embedding the official **Secured by Crenox** badge in your `README.md`:
+
+### Option 1 — Luxury Dark Shield (Recommended)
+
+[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-1E1E1E?style=for-the-badge&logo=shield&logoColor=10B981&labelColor=1E1E1E)](https://github.com/crenoxhq/crenox)
+
+```markdown
+[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-1E1E1E?style=for-the-badge&logo=shield&logoColor=10B981&labelColor=1E1E1E)](https://github.com/crenoxhq/crenox)
+```
+
+### Option 2 — Emerald Minimalist
+
+[![Protected by Crenox](https://img.shields.io/badge/Protected%20by-Crenox-10B981?style=flat-square&logo=git&logoColor=white)](https://github.com/crenoxhq/crenox)
+
+```markdown
+[![Protected by Crenox](https://img.shields.io/badge/Protected%20by-Crenox-10B981?style=flat-square&logo=git&logoColor=white)](https://github.com/crenoxhq/crenox)
+```
+
+### Option 3 — DevSecOps Capsule
+
+[![Crenox Secret Scanner](https://img.shields.io/badge/Secret%20Scanner-Crenox-3c6382?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/crenoxhq/crenox)
+
+```markdown
+[![Crenox Secret Scanner](https://img.shields.io/badge/Secret%20Scanner-Crenox-3c6382?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/crenoxhq/crenox)
+```
+
+---
+
 ## Installation
 
 ### Pre-compiled Binary (Recommended)
