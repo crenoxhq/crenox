@@ -15,6 +15,12 @@
 
 **Statically compiled Git pre-commit secret scanner and credentials detector written in Go.**
 
+<p align="center">
+  <a href="https://github.com/crenoxhq/crenox">
+    <img src="https://img.shields.io/badge/Secured%20by-Crenox-1E1E1E?style=for-the-badge&logo=shield&logoColor=10B981&labelColor=1E1E1E" alt="Secured by Crenox" height="38">
+  </a>
+</p>
+
 [![Release](https://img.shields.io/github/v/release/crenoxhq/crenox?color=3c6382&logo=github&label=latest&v=4)](https://github.com/crenoxhq/crenox/releases)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Crenox-3c6382.svg?logo=github&v=4)](https://github.com/marketplace/actions/crenox-git-secrets-scanner)
 [![Downloads](https://img.shields.io/github/downloads/crenoxhq/crenox/total?color=4b6584&logo=github&v=4)](https://github.com/crenoxhq/crenox/releases)
@@ -97,6 +103,7 @@ asciinema play https://crenoxhq.github.io/crenox/demo.cast
 - [Why Crenox](#why-crenox)
 - [Architecture](#architecture)
 - [Signature Coverage](#signature-coverage)
+- [Show Your Security Badge](#show-your-security-badge)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -355,7 +362,7 @@ Custom signatures can be added in `.crenox.yaml` and are compiled into the same 
 
 Show that your repository is actively protected against hardcoded secrets by embedding the official **Secured by Crenox** badge in your `README.md`:
 
-### Option 1 — Luxury Dark Shield (Recommended)
+### Option 1 — Luxury Dark Shield
 
 [![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-1E1E1E?style=for-the-badge&logo=shield&logoColor=10B981&labelColor=1E1E1E)](https://github.com/crenoxhq/crenox)
 
