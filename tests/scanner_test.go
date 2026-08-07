@@ -1044,3 +1044,37 @@ MIIEpAIBAAKCAQEA3...
 		t.Error("expected finding for yaml password containing '+'")
 	}
 }
+
+func TestScanner_NewModernSignatures_Detected(t *testing.T) {
+	s := defaultScanner()
+
+	tests := []struct {
+		name    string
+		content string
+		sigID   string
+	}{
+		{"Groq API Key", `key := "gsk_1234567890abcdef1234567890abcdef1234567890abcdef"`, "groq-api-key"},
+		{"Replicate Token", `token := "r8_1234567890abcdef1234567890abcdef"`, "replicate-api-token"},
+		{"Resend API Key", `key := "re_1234567890abcdef1234567890abcdef"`, "resend-api-key"},
+		{"Perplexity API Key", `key := "pplx-1234567890abcdef1234567890abcdef1234567890abcdef"`, "perplexity-api-key"},
+		{"Doppler Service Token", `token := "dp.st.dev_1234567890abcdef1234567890abcdef"`, "doppler-service-token"},
+		{"Supabase Secret Key", `key := "sb_secret_1234567890abcdef1234567890"`, "supabase-secret-key"},
+		{"Tailscale Auth Key", `key := "tskey-auth-1234567890abcdef1234567890abcdef"`, "tailscale-auth-key"},
+		{"PostHog Personal Key", `key := "phx_1234567890abcdef1234567890abcdef"`, "posthog-personal-key"},
+		{"Linear API Key", `key := "lin_api_1234567890abcdef1234567890abcdef1234567890"`, "linear-api-key"},
+		{"Sentry Auth Token", `token := "sntry_1234567890abcdef1234567890abcdef123456"`, "sentry-auth-token"},
+		{"SonarQube Token", `token := "squ_1234567890abcdef1234567890abcdef12345678"`, "sonarqube-token"},
+		{"Telegram Bot Token", `botToken := "bot123456789:ABCdefGHIjklMNOpqrSTUvwxYZ123456789"`, "telegram-bot-token"},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			findings := s.ScanContent("app_config.go", []byte(tc.content))
+			if len(findings) == 0 {
+				t.Errorf("expected finding for %s (signature: %s), got 0", tc.name, tc.sigID)
+			}
+		})
+	}
+}
+

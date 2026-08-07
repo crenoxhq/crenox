@@ -200,7 +200,7 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 			return SafePlaceholder
 		}
 	}
-	if strings.HasSuffix(lowerToken, "-xxx") || strings.HasPrefix(lowerToken, "sk-proj-key") || strings.HasPrefix(lowerToken, "sk-ant-key") {
+	if strings.HasSuffix(lowerToken, "-xxx") || strings.HasPrefix(lowerToken, "sk-proj-key") || strings.HasPrefix(lowerToken, "sk-ant-key") || strings.Contains(lowerLine, "configattribute[") || strings.Contains(lowerLine, "configattribute(") {
 		return SafePlaceholder
 	}
 

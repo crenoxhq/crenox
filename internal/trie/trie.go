@@ -221,6 +221,42 @@ var BuiltinSignatures = []Signature{
 	// ── AWS Secret Key Variable Assignments ───────────────────────────────────
 	{ID: "aws-secret-key-var", Description: "AWS Secret Access Key assignment", Prefix: "aws_secret", Severity: "CRITICAL"},
 	{ID: "aws-secret-key-var-2", Description: "AWS Secret Access Key assignment", Prefix: "aws_key", Severity: "CRITICAL"},
+
+	// ── Modern AI & ML Platforms ──────────────────────────────────────────────
+	{ID: "groq-api-key", Description: "Groq API Key", Prefix: "gsk_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^gsk_[a-zA-Z0-9]{48}$`)},
+	{ID: "replicate-api-token", Description: "Replicate API Token", Prefix: "r8_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^r8_[a-zA-Z0-9]{32,40}$`)},
+	{ID: "resend-api-key", Description: "Resend API Key", Prefix: "re_", Severity: "HIGH", Validator: regexp.MustCompile(`^re_[a-zA-Z0-9]{32,40}$`)},
+	{ID: "perplexity-api-key", Description: "Perplexity API Key", Prefix: "pplx-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^pplx-[a-zA-Z0-9]{48,64}$`)},
+	{ID: "fireworks-api-key", Description: "Fireworks AI API Key", Prefix: "fw_", Severity: "HIGH", Validator: regexp.MustCompile(`^fw_[a-zA-Z0-9]{32,40}$`)},
+	{ID: "langsmith-api-key", Description: "LangSmith Personal Access Token", Prefix: "lsv2_", Severity: "HIGH", Validator: regexp.MustCompile(`^lsv2_[a-zA-Z0-9_]{30,60}$`)},
+
+	// ── Modern Cloud & Managed Databases ──────────────────────────────────────
+	{ID: "doppler-service-token", Description: "Doppler Service Token", Prefix: "dp.st.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dp\.st\.[a-zA-Z0-9_-]{32,64}$`)},
+	{ID: "doppler-personal-token", Description: "Doppler Personal Token", Prefix: "dp.pt.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dp\.pt\.[a-zA-Z0-9_-]{32,64}$`)},
+	{ID: "doppler-service-account", Description: "Doppler Service Account Token", Prefix: "dp.sa.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dp\.sa\.[a-zA-Z0-9_-]{32,64}$`)},
+	{ID: "supabase-publishable-key", Description: "Supabase Publishable Key", Prefix: "sb_publishable_", Severity: "MEDIUM"},
+	{ID: "supabase-secret-key", Description: "Supabase Secret Key", Prefix: "sb_secret_", Severity: "CRITICAL"},
+	{ID: "turso-database-token", Description: "Turso Database Token", Prefix: "fn_", Severity: "HIGH"},
+	{ID: "tailscale-auth-key", Description: "Tailscale Auth Key", Prefix: "tskey-auth-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^tskey-auth-[a-zA-Z0-9_-]{30,50}$`)},
+	{ID: "tailscale-api-key", Description: "Tailscale API Key", Prefix: "tskey-api-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^tskey-api-[a-zA-Z0-9_-]{30,50}$`)},
+	{ID: "clerk-secret-key", Description: "Clerk Secret Key", Prefix: "clerk_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^clerk_[a-zA-Z0-9_]{30,60}$`)},
+	{ID: "neon-api-key", Description: "Neon Database API Key", Prefix: "npg_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^npg_[a-zA-Z0-9]{30,60}$`)},
+	{ID: "planetscale-password", Description: "PlanetScale Database Password", Prefix: "pscale_pw_", Severity: "CRITICAL"},
+
+	// ── DevSecOps & Observability Platforms ───────────────────────────────────
+	{ID: "posthog-personal-key", Description: "PostHog Personal API Key", Prefix: "phx_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^phx_[a-zA-Z0-9]{30,50}$`)},
+	{ID: "posthog-project-key", Description: "PostHog Project API Key", Prefix: "phs_", Severity: "HIGH", Validator: regexp.MustCompile(`^phs_[a-zA-Z0-9]{30,50}$`)},
+	{ID: "posthog-access-token", Description: "PostHog OAuth Access Token", Prefix: "pha_", Severity: "HIGH", Validator: regexp.MustCompile(`^pha_[a-zA-Z0-9]{30,50}$`)},
+	{ID: "linear-api-key", Description: "Linear API Key", Prefix: "lin_api_", Severity: "HIGH", Validator: regexp.MustCompile(`^lin_api_[a-zA-Z0-9]{40,64}$`)},
+	{ID: "sentry-auth-token", Description: "Sentry Auth Token", Prefix: "sntry_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sntry_[a-zA-Z0-9]{30,64}$`)},
+	{ID: "sonarqube-token", Description: "SonarQube User Token", Prefix: "squ_", Severity: "HIGH", Validator: regexp.MustCompile(`^squ_[a-f0-9]{40}$`)},
+	{ID: "snyk-api-token", Description: "Snyk API Token", Prefix: "snyk_", Severity: "HIGH"},
+	{ID: "pulumi-access-token", Description: "Pulumi Access Token", Prefix: "pul-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^pul-[a-f0-9]{40}$`)},
+	{ID: "databricks-token", Description: "Databricks Personal Access Token", Prefix: "dapi", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dapi[a-f0-9]{32}$`)},
+	{ID: "svix-webhook-secret", Description: "Svix Webhook Signing Secret", Prefix: "whsec_", Severity: "HIGH", Validator: regexp.MustCompile(`^whsec_[a-zA-Z0-9+/=]{32,64}$`)},
+
+	// ── Social & Communications ───────────────────────────────────────────────
+	{ID: "telegram-bot-token", Description: "Telegram Bot API Token", Prefix: "bot", Severity: "CRITICAL", Validator: regexp.MustCompile(`^bot[0-9]{8,10}:[a-zA-Z0-9_-]{35}$`)},
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
