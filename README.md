@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://github.com/crenoxhq/crenox">
-    <img src="https://img.shields.io/badge/Secured%20by-Crenox-10B981?style=for-the-badge&logo=shield&logoColor=white&labelColor=111827" alt="Secured by Crenox" height="38">
+    <img src="https://img.shields.io/badge/Secured%20by-Crenox-E2E8F0?style=for-the-badge&logo=shield&logoColor=0F172A&labelColor=0F172A" alt="Secured by Crenox" height="38">
   </a>
 </p>
 
@@ -362,12 +362,12 @@ Custom signatures can be added in `.crenox.yaml` and are compiled into the same 
 
 Show that your repository is actively protected against hardcoded secrets by embedding the official **Secured by Crenox** badge in your `README.md`:
 
-### Option 1 — Vibrant High-Contrast Shield
+### Option 1 — Platinum Silver Shield
 
-[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-10B981?style=for-the-badge&logo=shield&logoColor=white&labelColor=111827)](https://github.com/crenoxhq/crenox)
+[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-E2E8F0?style=for-the-badge&logo=shield&logoColor=0F172A&labelColor=0F172A)](https://github.com/crenoxhq/crenox)
 
 ```markdown
-[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-10B981?style=for-the-badge&logo=shield&logoColor=white&labelColor=111827)](https://github.com/crenoxhq/crenox)
+[![Secured by Crenox](https://img.shields.io/badge/Secured%20by-Crenox-E2E8F0?style=for-the-badge&logo=shield&logoColor=0F172A&labelColor=0F172A)](https://github.com/crenoxhq/crenox)
 ```
 
 ### Option 2 — Emerald Minimalist
