@@ -182,3 +182,31 @@ func TestDecisionString(t *testing.T) {
 		}
 	}
 }
+
+func TestClassify_SafeComment_Nosec(t *testing.T) {
+	d := crenoxcontext.Classify("main.go", `const authTokenHeader = "X-Auth-Token" //#nosec G101 -- This is a false positive`, "X-Auth-Token", "high-entropy")
+	if d != crenoxcontext.SafeComment {
+		t.Errorf("expected SafeComment for #nosec, got %s", d)
+	}
+}
+
+func TestClassify_SafePlaceholder_FormatString(t *testing.T) {
+	d := crenoxcontext.Classify("db.go", `dsn := fmt.Sprintf("postgres://%s:%s@%s", user, pass, host)`, "postgres://%s:%s@%s", "high-entropy")
+	if d != crenoxcontext.SafePlaceholder {
+		t.Errorf("expected SafePlaceholder for format string, got %s", d)
+	}
+}
+
+func TestClassify_SafeVariableName_FakeTokens(t *testing.T) {
+	d := crenoxcontext.Classify("auth.go", `token := "completely_fake_token_xxx"`, "completely_fake_token_xxx", "hex")
+	if !crenoxcontext.IsSuppressed(d) {
+		t.Errorf("expected completely_fake_token_xxx to be suppressed, got %s", d)
+	}
+}
+
+func TestClassify_SafeVersionString_Geohash(t *testing.T) {
+	d := crenoxcontext.Classify("geo.go", `my_secret := "0123456789bcdefghjkmnpqrstuvwxyz"`, "0123456789bcdefghjkmnpqrstuvwxyz", "hex")
+	if d != crenoxcontext.SafeVersionString {
+		t.Errorf("expected SafeVersionString for geohash base32, got %s", d)
+	}
+}

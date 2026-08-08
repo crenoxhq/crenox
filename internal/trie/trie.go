@@ -236,7 +236,7 @@ var BuiltinSignatures = []Signature{
 	{ID: "doppler-service-account", Description: "Doppler Service Account Token", Prefix: "dp.sa.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dp\.sa\.[a-zA-Z0-9_-]{32,64}$`)},
 	{ID: "supabase-publishable-key", Description: "Supabase Publishable Key", Prefix: "sb_publishable_", Severity: "MEDIUM"},
 	{ID: "supabase-secret-key", Description: "Supabase Secret Key", Prefix: "sb_secret_", Severity: "CRITICAL"},
-	{ID: "turso-database-token", Description: "Turso Database Token", Prefix: "fn_", Severity: "HIGH"},
+	{ID: "turso-database-token", Description: "Turso Database Token", Prefix: "fn_", Severity: "HIGH", Validator: regexp.MustCompile(`^fn_[a-zA-Z0-9_-]{30,}$`)},
 	{ID: "tailscale-auth-key", Description: "Tailscale Auth Key", Prefix: "tskey-auth-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^tskey-auth-[a-zA-Z0-9_-]{30,50}$`)},
 	{ID: "tailscale-api-key", Description: "Tailscale API Key", Prefix: "tskey-api-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^tskey-api-[a-zA-Z0-9_-]{30,50}$`)},
 	{ID: "clerk-secret-key", Description: "Clerk Secret Key", Prefix: "clerk_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^clerk_[a-zA-Z0-9_]{30,60}$`)},
@@ -362,8 +362,8 @@ func Build(sigs []Signature) *Automaton {
 // Search scans content and returns all Signature matches found.
 // It operates in O(n) time. The returned Match values contain Sig and Offset
 // only — the caller is responsible for line-number tracking.
-func (a *Automaton) Search(content []byte) []Match {
-	var matches []Match
+func (a *Automaton) Search(content []byte, matches []Match) []Match {
+	matches = matches[:0]
 	cur := uint16(0)
 	for i := 0; i < len(content); i++ {
 		c := toLower(content[i])

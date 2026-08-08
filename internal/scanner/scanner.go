@@ -16,6 +16,7 @@ import (
 	"io"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -109,18 +110,14 @@ func New(automaton *trie.Automaton, opts Options) *Scanner {
 	}
 }
 
-// isDuplicateMatch checks if a new Finding's token already exists in the matches slice on the same line.
-func (s *Scanner) isDuplicateMatch(matches []Finding, newMatch Finding) bool {
-	for _, m := range matches {
-		if m.FilePath == newMatch.FilePath && m.Line == newMatch.Line {
-			if m.Token == newMatch.Token {
-				return true
-			}
-			if strings.Contains(newMatch.Token, m.Token) || strings.Contains(m.Token, newMatch.Token) {
-				return true
-			}
-		}
+// isDuplicateMatch checks if a new Finding's token already exists in the seen map for this scan.
+// It uses an O(1) map lookup keyed by line number and token to avoid O(n²) linear scans.
+func (s *Scanner) isDuplicateMatch(seen map[string]bool, newMatch Finding) bool {
+	key := strconv.Itoa(newMatch.Line) + "::" + newMatch.Token
+	if seen[key] {
+		return true
 	}
+	seen[key] = true
 	return false
 }
 
@@ -166,13 +163,6 @@ var (
 	prefixHtml          = []byte("<!--")
 )
 
-// b64Pool caches reusable Base64 decoding buffers to minimize GC pressure during hot paths.
-var b64Pool = sync.Pool{
-	New: func() interface{} {
-		buf := make([]byte, 3072)
-		return &buf
-	},
-}
 
 // scanBufPool caches the streaming buffers to avoid heap thrashing and reduce peak RSS.
 var scanBufPool = sync.Pool{
@@ -211,12 +201,12 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 		strings.Contains(filePath, "yarn.lock") ||
 		strings.Contains(filePath, "pnpm-lock.yaml")
 
-	// Retrieve a reusable decoding buffer from the pool
-	decBufPtr := b64Pool.Get().(*[]byte)
-	decBuf := *decBufPtr
-	defer b64Pool.Put(decBufPtr)
+	var decBufArray [8192]byte
+	decBuf := decBufArray[:]
+	var searchMatches []trie.Match
+	seenFindings := make(map[string]bool)
 
-	// Retrieve a reusable 8 MB streaming buffer from the pool
+	// Retrieve a reusable 64 KB streaming buffer from the pool
 	bufPtr := scanBufPool.Get().(*[]byte)
 	buf := *bufPtr
 	defer scanBufPool.Put(bufPtr)
@@ -424,7 +414,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 		if !s.opts.DisableTrie && s.automaton != nil {
 			// CRITICAL: We search the FULL lineTrim to catch leaked tokens in logs,
 			// raw JSON, or unstructured text, bypassing the strict assignment rules.
-			matches := s.automaton.Search(lineTrim)
+			matches := s.automaton.Search(lineTrim, searchMatches)
 			hasMatches := len(matches) > 0
 			for _, m := range matches {
 				// Whole-word boundary check: skip matches embedded inside a larger
@@ -478,7 +468,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 						Description:   m.Sig.Description,
 						Severity:      m.Sig.Severity,
 					}
-					if s.isDuplicateMatch(findings, newMatch) {
+					if s.isDuplicateMatch(seenFindings, newMatch) {
 						replaced := false
 						for idx, existing := range findings {
 							if existing.Line == newMatch.Line {
@@ -531,7 +521,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 
 			// Process compMatches if needed
 			if !hasMatches && cLen > 0 && cLen < vLen {
-				compMatches := s.automaton.Search(compVal)
+				compMatches := s.automaton.Search(compVal, searchMatches)
 				for _, m := range compMatches {
 					{
 						startIdx := m.Offset - len(m.Sig.Prefix) + 1
@@ -575,7 +565,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 							Description:   m.Sig.Description,
 							Severity:      m.Sig.Severity,
 						}
-						if s.isDuplicateMatch(findings, newMatch) {
+						if s.isDuplicateMatch(seenFindings, newMatch) {
 							continue
 						}
 						findings = append(findings, newMatch)
@@ -612,7 +602,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 				}
 				if err == nil {
 					if !s.opts.DisableTrie && s.automaton != nil {
-						decMatches := s.automaton.Search(decodedVal)
+						decMatches := s.automaton.Search(decodedVal, searchMatches)
 						for _, m := range decMatches {
 							{
 								startIdx := m.Offset - len(m.Sig.Prefix) + 1
@@ -655,7 +645,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 									Description:   m.Sig.Description + " (Base64 Decoded)",
 									Severity:      m.Sig.Severity,
 								}
-								if s.isDuplicateMatch(findings, newMatch) {
+								if s.isDuplicateMatch(seenFindings, newMatch) {
 									continue
 								}
 								findings = append(findings, newMatch)
@@ -738,6 +728,20 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 							}
 						}
 						if decision == crenoxcontext.Real {
+							var e float64
+							expectedThresh := threshold
+							if h.Kind == "hex" {
+								expectedThresh = threshold * (4.0 / 6.0)
+								if expectedThresh < 3.0 {
+									expectedThresh = 3.0
+								}
+							}
+							e = entropy.Shannon([]byte(h.Token))
+							if e < expectedThresh {
+								continue
+							}
+							h.Entropy = e
+
 							idx := strings.Index(string(rawLine), h.Token)
 							if idx > 0 && rawLine[idx-1] == '@' {
 								continue
@@ -869,7 +873,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 								Description:   fmt.Sprintf("High-entropy %s string (entropy=%.2f)", strings.ToUpper(h.Kind), h.Entropy),
 								Severity:      entropySeverity(h.Entropy),
 							}
-							if s.isDuplicateMatch(findings, newMatch) {
+							if s.isDuplicateMatch(seenFindings, newMatch) {
 								continue
 							}
 							findings = append(findings, newMatch)
@@ -904,6 +908,20 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 										decision = crenoxcontext.Classify(filePath, string(rawLine), h.Token, h.Kind)
 									}
 									if decision == crenoxcontext.Real {
+										var e float64
+										expectedThresh := 4.5
+										if h.Kind == "hex" {
+											expectedThresh = 4.5 * (4.0 / 6.0)
+											if expectedThresh < 3.0 {
+												expectedThresh = 3.0
+											}
+										}
+										e = entropy.Shannon([]byte(h.Token))
+										if e < expectedThresh {
+											continue
+										}
+										h.Entropy = e
+										
 										newMatch := Finding{
 											FilePath:      filePath,
 											Line:          lineNum,
@@ -915,7 +933,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 											Description:   fmt.Sprintf("High-entropy %s in log auth context (entropy=%.2f)", strings.ToUpper(h.Kind), h.Entropy),
 											Severity:      entropySeverity(h.Entropy),
 										}
-										if !s.isDuplicateMatch(findings, newMatch) {
+										if !s.isDuplicateMatch(seenFindings, newMatch) {
 											findings = append(findings, newMatch)
 										}
 									}
@@ -985,39 +1003,19 @@ func isKnownSafeFile(filePath string) bool {
 	base := strings.ToLower(filepath.Base(filePath))
 	ext := strings.ToLower(filepath.Ext(filePath))
 
-	// Microsoft Guardian / security scanner suppression files.
-	// They contain SHA-256 hashes of known FPs, not secrets.
-	if ext == ".gdnsuppress" || ext == ".snyk" || ext == ".dotsettings" {
+	switch ext {
+	case ".gdnsuppress", ".snyk", ".dotsettings":
 		return true
 	}
-	// Go package-level documentation files: contain instruction encoding
-	// tables and CPU register examples in hex, never production secrets.
-	if base == "doc.go" {
+	switch base {
+	case "doc.go", "cgmanifest.json", ".git-blame-ignore-revs", "product.json", ".terraform.lock.hcl":
 		return true
 	}
-	// Protocol Buffer generated code — machine-written, no human secrets.
 	if strings.HasSuffix(base, ".pb.go") || strings.HasSuffix(base, ".pb.gw.go") ||
 		strings.HasSuffix(base, "_pb2.py") || strings.HasSuffix(base, "_pb2_grpc.py") {
 		return true
 	}
-	// Controller-runtime / Kubernetes code-gen output.
 	if strings.HasPrefix(base, "zz_generated") {
-		return true
-	}
-	// Microsoft Component Governance manifests contain only SHA512 package hashes.
-	if base == "cgmanifest.json" {
-		return true
-	}
-	// Git blame suppression files contain only commit SHA hashes, never secrets.
-	if base == ".git-blame-ignore-revs" {
-		return true
-	}
-	// product.json and similar build manifests with reproducibility hashes.
-	if base == "product.json" {
-		return true
-	}
-	// Terraform lock files contain only provider binary hashes.
-	if base == ".terraform.lock.hcl" {
 		return true
 	}
 	return false

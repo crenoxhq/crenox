@@ -148,6 +148,17 @@ func (d Decision) String() string {
 //   - token: the specific token that triggered the detector
 func Classify(filePath, lineContent, token, sigID string) Decision {
 	lowerLine := strings.ToLower(lineContent)
+	
+	// ── Check 0: Inline suppression directives ────────────────────────────────
+	if strings.Contains(lowerLine, "#nosec") || strings.Contains(lowerLine, "nolint") {
+		return SafeComment
+	}
+
+	// ── Check 0A: Format string templates ────────────────────────────────────
+	if strings.Contains(token, "%s") || strings.Contains(token, "%v") || strings.Contains(token, "%d") || strings.Contains(token, "%q") {
+		return SafePlaceholder
+	}
+
 	isCredAssignment := (strings.Contains(lowerLine, "password") ||
 		strings.Contains(lowerLine, "secret") ||
 		strings.Contains(lowerLine, "token") ||
@@ -435,7 +446,9 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 				strings.Contains(lowerToken, "placeholder") || strings.Contains(lowerToken, "dummy") ||
 				strings.Contains(lowerToken, "example") || strings.Contains(lowerToken, "test-token") ||
 				strings.Contains(lowerToken, "test_token") || strings.Contains(lowerToken, "mocktoken") ||
-				strings.Contains(lowerToken, "notareal") || strings.Contains(lowerToken, "not-a-real") {
+				strings.Contains(lowerToken, "notareal") || strings.Contains(lowerToken, "not-a-real") ||
+				strings.Contains(lowerToken, "completely_fake") || strings.Contains(lowerToken, "fake_token") ||
+				strings.Contains(lowerToken, "completely-fake") || strings.Contains(lowerToken, "test_token_") {
 				return SafeVariableName
 			}
 
@@ -852,6 +865,7 @@ func isSequential(s string) bool {
 	}
 
 	const alphanumeric = "0123456789abcdefghijklmnopqrstuvwxyz"
+	const geohashBase32 = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 	maxRun := 1
 	currentRun := 1
@@ -872,7 +886,16 @@ func isSequential(s string) bool {
 			isSeqAlpha = diffAlpha == 1 || diffAlpha == -1
 		}
 
-		if isSeqASCII || isSeqAlpha {
+		// Check sequential in geohash base32 alphabet
+		idx1Geo := strings.IndexRune(geohashBase32, r1)
+		idx2Geo := strings.IndexRune(geohashBase32, r2)
+		isSeqGeo := false
+		if idx1Geo >= 0 && idx2Geo >= 0 {
+			diffGeo := idx2Geo - idx1Geo
+			isSeqGeo = diffGeo == 1 || diffGeo == -1
+		}
+
+		if isSeqASCII || isSeqAlpha || isSeqGeo {
 			currentRun++
 			if currentRun > maxRun {
 				maxRun = currentRun

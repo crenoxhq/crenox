@@ -63,6 +63,28 @@ func Shannon(data []byte) float64 {
 	return h
 }
 
+// hasDiversity reports whether data contains at least minUnique distinct byte
+// values. It performs an O(n) scan with early exit and no arithmetic, making
+// it a very cheap guard before the more expensive Shannon call.
+//
+// Mathematical basis: Shannon entropy H(X) ≤ log₂(k) where k is the number of
+// distinct symbols. So if k < 2^threshold, entropy is PROVABLY below threshold
+// and we can skip the full computation entirely.
+func hasDiversity(data []byte, minUnique int) bool {
+	var seen [256]bool
+	count := 0
+	for _, b := range data {
+		if !seen[b] {
+			seen[b] = true
+			count++
+			if count >= minUnique {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Token extraction
 // ──────────────────────────────────────────────────────────────────────────────
@@ -88,8 +110,27 @@ type EntropyHit struct {
 // Analyze scans content line-by-line, extracts candidate tokens from each
 // line, and returns all tokens whose Shannon entropy exceeds the threshold and
 // whose length is at least minLen.
+//
+// Performance: before computing the full O(n) Shannon entropy, a cheap
+// diversity pre-filter eliminates tokens where entropy is provably below the
+// threshold (H(X) ≤ log₂(distinct_bytes), so skip when distinct_bytes < 2^threshold).
 func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 	var hits []EntropyHit
+
+	// Precompute minimum distinct-byte requirements once per Analyze call.
+	// For a token to reach entropy >= T, it needs at least ceil(2^T) unique bytes.
+	b64MinUnique := int(math.Exp2(threshold))
+	if b64MinUnique < 4 {
+		b64MinUnique = 4
+	}
+	hexRawThreshold := threshold * (4.0 / 6.0)
+	if hexRawThreshold < 3.0 {
+		hexRawThreshold = 3.0
+	}
+	hexMinUnique := int(math.Exp2(hexRawThreshold))
+	if hexMinUnique < 4 {
+		hexMinUnique = 4
+	}
 
 	lineNum := 1
 	start := 0
@@ -119,7 +160,8 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						if tokStart != -1 {
 							if idx-tokStart >= minLen {
 								tok := line[tokStart:idx]
-								if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) {
+								if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
+									hasDiversity(tok, b64MinUnique) {
 									e := Shannon(tok)
 									if e >= threshold {
 										hits = append(hits, EntropyHit{
@@ -138,7 +180,8 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 				}
 				if tokStart != -1 && len(line)-tokStart >= minLen {
 					tok := line[tokStart:]
-					if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) {
+					if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
+						hasDiversity(tok, b64MinUnique) {
 						e := Shannon(tok)
 						if e >= threshold {
 							hits = append(hits, EntropyHit{
@@ -163,13 +206,9 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						if tokStart != -1 {
 							if idx-tokStart >= minLen {
 								tok := line[tokStart:idx]
-								if len(tok)%2 == 0 || len(tok) >= 32 {
+								if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
 									e := Shannon(tok)
-									hexThreshold := threshold * (4.0 / 6.0)
-									if hexThreshold < 3.0 {
-										hexThreshold = 3.0
-									}
-									if e >= hexThreshold {
+									if e >= hexRawThreshold {
 										hits = append(hits, EntropyHit{
 											Token:       string(tok),
 											Entropy:     e,
@@ -186,13 +225,9 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 				}
 				if tokStart != -1 && len(line)-tokStart >= minLen {
 					tok := line[tokStart:]
-					if len(tok)%2 == 0 || len(tok) >= 32 {
+					if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
 						e := Shannon(tok)
-						hexThreshold := threshold * (4.0 / 6.0)
-						if hexThreshold < 3.0 {
-							hexThreshold = 3.0
-						}
-						if e >= hexThreshold {
+						if e >= hexRawThreshold {
 							hits = append(hits, EntropyHit{
 								Token:       string(tok),
 								Entropy:     e,

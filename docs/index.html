@@ -57,7 +57,7 @@
       "description": "A zero-dependency Git pre-commit secret detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "DeveloperApplication",
-      "softwareVersion": "2.1.4",
+      "softwareVersion": "2.1.5",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -250,11 +250,15 @@
             <h2>Deployment and local setup</h2>
             <p>Crenox is statically compiled to run natively across Linux, macOS, and Android/Termux. It does not require Go, Python, or additional runtime setups on the workstation.</p>
 
-            <h3>Option A: Pre-compiled Binaries (Recommended)</h3>
-            <p>The fastest way to install Crenox without dependencies. Example for Linux/macOS systems:</p>
+            <h3>Option A: One-Line Interactive Installer (Recommended)</h3>
+            <p>The fastest way to install Crenox natively with automatic OS/CPU architecture detection and interactive Git hook setup:</p>
+            <pre class="font-mono">curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash</pre>
+
+            <h3>Option B: Pre-compiled Binaries</h3>
+            <p>Download pre-built binaries directly without dependencies. Example for Linux AMD64:</p>
             <pre class="font-mono">
 # 1. Download the target binary (example for Linux AMD64)
-wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.4</span>/crenox-<span class="latest-version">v2.1.4</span>-linux-amd64 -O crenox
+wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.5</span>/crenox-<span class="latest-version">v2.1.5</span>-linux-amd64 -O crenox
 
 # 2. Add execution permissions
 chmod +x crenox
@@ -265,13 +269,13 @@ sudo mv crenox /usr/local/bin/
 # 4. Verify deployment
 crenox version</pre>
 
-            <h3>Option B: Package Manager (Android / Termux)</h3>
+            <h3>Option C: Package Manager (Android / Termux)</h3>
             <p>If you are on Android/Termux, you can install Crenox easily in just two command lines via the Termux User Repository (TUR):</p>
             <pre class="font-mono">
 pkg install tur-repo
 pkg install crenox</pre>
 
-            <h3>Option C: Go package installer</h3>
+            <h3>Option D: Go package installer</h3>
             <p>If you have Go installed on your path, fetch and compile the latest release directly:</p>
             <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
 
@@ -361,9 +365,9 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">AUGUST 7, 2026</p>
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.5: 30+ Modern Signatures Expansion, Python Descriptor Filters & Real-World Discovery</a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.5 expands the Aho-Corasick automaton with 30+ modern AI, cloud & DevSecOps secret signatures (Groq, Replicate, Doppler, Supabase, Tailscale, PostHog, Linear, Sentry, Telegram), suppresses Python descriptor false positives (ConfigAttribute), and validates process-isolated scanning stability under 100MB file limit overrides.</p>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">AUGUST 8, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.5: 9.8x Benchmark Speedup, hasDiversity Entropy Pre-Filter & Inline Directive Suppression</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.5 introduces a mathematical O(n) diversity pre-filter (hasDiversity) in the Shannon entropy engine yielding a 39% scan speedup on massive codebases, inline #nosec / // nolint directive suppression, fmt.Sprintf format-string verb filtering, O(1) deduplication, 30+ modern provider signatures, and 9.8x average speedup over Gitleaks across real-world open-source benchmarks.</p>
                 </div>
 
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">

@@ -15,12 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **DevSecOps & Observability:** PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix (`whsec_`), Telegram Bot (`bot<id>:<hash>`).
 - **Comprehensive Signature Test Suite:** Added `TestScanner_NewModernSignatures_Detected` in `tests/scanner_test.go` verifying 100% detection rate across all newly added signature patterns.
 - **In the Wild Real-World Discovery Documentation:** Added documented disclosure for `facebook/react` (hardcoded GitHub PAT & Algolia Search key) to the public disclosure archive (`docs/wild.html` and `docs/wild-ar.html`).
+- **Inline Directive & Format String Suppression:** Added inline `#nosec` / `nolint` directive handling and `fmt.Sprintf` format verb (`%s`, `%v`, `%d`, `%q`) token suppression in `internal/context/context.go`.
 
 ### Fixed
+- **Turso Database Token Signature Validator:** Added strict regex validator `^fn_[a-zA-Z0-9_-]{30,}$` to `turso-database-token` signature in `internal/trie/trie.go`, preventing Rust identifiers starting with `fn_` (e.g. `fn_type`) from triggering false positives.
+- **Geohash & Sequential Alphabet Detection:** Enhanced `isSequential` in `internal/context/context.go` with geohash base32 alphabet awareness (`0123456789bcdefghjkmnpqrstuvwxyz`), correctly suppressing character-set constants.
 - **Python Descriptor False Positive Suppression:** Added contextual suppression rules in `internal/context/context.go` for Python 3.10+ class descriptor wrappers (`ConfigAttribute[`, `ConfigAttribute(`), eliminating false positives on framework configuration descriptors.
 - **Mobile Responsive Layout & Table Scrollability:** Redesigned table wrappers and mobile CSS across `docs/style.css`, `docs/wild.html`, and `docs/wild-ar.html` to guarantee smooth, non-cramped horizontal scrolling on mobile viewports.
 
 ### Performance
+- **Diversity Pre-Filter (`hasDiversity`):** Implemented a mathematical $O(n)$ diversity pre-filter (`hasDiversity`) in `internal/entropy/entropy.go`. By enforcing $k \ge \lceil 2^{threshold} \rceil$ unique bytes before computing full Shannon entropy, impossible candidate tokens are discarded instantly without floating-point math, yielding a **39% speedup on large codebases** (e.g. Grafana scan dropped from 4.19s to 2.54s).
+- **O(1) Finding Deduplication:** Replaced $O(n^2)$ slice scanning in `internal/scanner/scanner.go` with an $O(1)$ line-and-token hash map.
+- **Automaton Search Buffer Reuse:** Reused `[]trie.Match` buffers in `internal/trie/trie.go` and `scanner.go` to eliminate per-search slice allocations.
 - **Bounded Automaton Memory under Overridden Limits:** Empirical benchmark tests on major open-source repositories (`laravel`, `uv`, `react`, `ansible`) with 100MB file limit overrides confirmed Peak RSS memory remains strictly bounded between **10.85 MB and 22.05 MB**.
 
 ## [2.1.4] - 2026-07-20

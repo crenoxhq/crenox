@@ -232,11 +232,15 @@
             <h2>التثبيت والدمج المحلي</h2>
             <p>يتم تجميع كرينوكس كملف ثنائي مستقل للعمل مباشرة على أنظمة Linux و macOS وأجهزة Android عبر بيئة Termux دون الحاجة لتثبيت لغة Go أو أي اعتماديات برمجية أخرى.</p>
 
-            <h3>الخيار أ: الملفات الثنائية الجاهزة (موصى به)</h3>
-            <p>أسرع طريقة لتثبيت الأداة مباشرة على نظامك دون الحاجة لبناء الملف من المصدر. مثال للتثبيت على أنظمة Linux أو macOS:</p>
+            <h3>الخيار أ: التثبيت التفاعلي بسطر واحد (الموصى به)</h3>
+            <p>الطريقة الأسرع والأسهل لتثبيت كرينوكس محلياً مع اكتشاف نظام التشغيل ومعمارية المعالج وتجهيز خطاف Git تلقائياً:</p>
+            <pre class="font-mono">curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash</pre>
+
+            <h3>الخيار ب: الملفات الثنائية الجاهزة (Pre-compiled)</h3>
+            <p>تنزيل البرنامج الجاهز مباشرة بدون أي متطلبات سابقة. مثال لنظام Linux AMD64:</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك (مثال لـ Linux AMD64)
-wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.4</span>/crenox-<span class="latest-version">v2.1.4</span>-linux-amd64 -O crenox
+wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.5</span>/crenox-<span class="latest-version">v2.1.5</span>-linux-amd64 -O crenox
 
 # 2. منح صلاحيات التشغيل للملف
 chmod +x crenox
@@ -247,13 +251,13 @@ sudo mv crenox /usr/local/bin/
 # 4. التحقق من نجاح التثبيت
 crenox version</pre>
 
-            <h3>الخيار ب: مدير حزم أندرويد (Termux)</h3>
+            <h3>الخيار ج: مدير حزم أندرويد (Termux)</h3>
             <p>إذا كنت تستخدم أندرويد عبر بيئة Termux، يمكنك تثبيت الأداة مباشرة وبسهولة فائقة بسطرين من الأوامر عبر مستودع مستخدمي Termux (TUR):</p>
             <pre class="font-mono">
 pkg install tur-repo
 pkg install crenox</pre>
 
-            <h3>الخيار ج: مثبت حزم لغة Go</h3>
+            <h3>الخيار د: مثبت حزم لغة Go</h3>
             <p>إذا كان لديك بيئة Go مهيأة في مسار نظامك، يمكنك تنزيل وبناء الأداة مباشرة بالأمر التالي:</p>
             <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
 
@@ -343,9 +347,9 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">7 أغسطس 2026</p>
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.5: دعم واسع بـ 30+ توقيع حديث، منع البلاغات الكاذبة لبايثون واستقرار الفحص الميداني</a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.5 توسعة ضخمة لخوارزمية Aho-Corasick بإضافة أكثر من 30 توقيعاً مدمجاً لمنصات الذكاء الاصطناعي والسحابيات (Groq, Replicate, Doppler, Supabase, Tailscale, PostHog, Linear, Sentry, Telegram)، مع استبعاد البلاغات الكاذبة لخواص بايثون (ConfigAttribute)، وتأكيد استقرار الذاكرة تحت حد الـ 100MB للملفات.</p>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">8 أغسطس 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.5: تفوق السرعة بـ 9.8 أضعاف على Gitleaks، مرشح التنوع الرياضي hasDiversity واستبعاد التنبيهات الكاذبة</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.5 مرشح التنوع الرياضي hasDiversity لتسريع فحص Shannon Entropy بنسبة 39% على المستودعات الضخمة، ودعم تعليقات التجاهل المباشرة #nosec و nolint، وتصفية صيغ fmt.Sprintf، وإلغاء التكرار الخطي بـ O(1)، وتفوق السرعة بمقدار 9.8 ضعف مقارنة بأداة Gitleaks عبر المستودعات الشهيرة.</p>
                 </div>
 
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">

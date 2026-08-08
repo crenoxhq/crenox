@@ -22,7 +22,7 @@ func buildDefaultAutomaton() *trie.Automaton {
 
 // search is a convenience wrapper.
 func search(a *trie.Automaton, content string) []trie.Match {
-	return a.Search([]byte(content))
+	return a.Search([]byte(content), nil)
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -227,10 +227,11 @@ func BenchmarkAutomatonBuild(b *testing.B) {
 func BenchmarkSearch(b *testing.B) {
 	a := buildDefaultAutomaton()
 	content := []byte(strings.Repeat("The quick brown fox jumps over the lazy dog.\n", 2500))
+	buf := make([]trie.Match, 0, 32)
 	b.SetBytes(int64(len(content)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = a.Search(content)
+		_ = a.Search(content, buf)
 	}
 }
 
@@ -239,10 +240,11 @@ func BenchmarkSearchWithHit(b *testing.B) {
 	a := buildDefaultAutomaton()
 	base := strings.Repeat("normal code line here\n", 2500)
 	content := []byte(base + "token=ghp_TESTTOKEN1234567890abcdef\n")
+	buf := make([]trie.Match, 0, 32)
 	b.SetBytes(int64(len(content)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = a.Search(content)
+		_ = a.Search(content, buf)
 	}
 }
 
