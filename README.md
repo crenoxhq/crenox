@@ -65,10 +65,13 @@ A finding must survive all three tiers before it is reported.
 **Install and protect your repository in under 60 seconds:**
 
 ```bash
-# 1. Install
-go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest
+# 1. Automatic One-Line Install (Linux, macOS, Termux)
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash
 
-# 2. Protect the current repository
+# Or via Go:
+# go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest
+
+# 2. Protect current repository (if skipped during installer)
 crenox install
 
 # 3. Verify — Crenox will now scan every commit automatically
@@ -390,7 +393,28 @@ Show that your repository is actively protected against hardcoded secrets by emb
 
 ## Installation
 
-### Pre-compiled Binary (Recommended)
+### One-Line Automatic Installer (Recommended)
+
+Install Crenox in under 5 seconds (Linux, macOS, Termux):
+
+```bash
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash
+```
+
+**Installer Options / Flags:**
+
+```bash
+# Install binary & automatically protect current Git repository:
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --local
+
+# Install binary & protect ALL Git repositories globally:
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --global
+
+# Install binary only (skip Git hook setup):
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
+```
+
+### Pre-compiled Binary (Manual Download)
 
 Download the binary for your platform from the [Releases page](https://github.com/crenoxhq/crenox/releases):
 
@@ -465,7 +489,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.4 # Replace with the latest release version
+    rev: v2.1.5 # Replace with the latest release version
     hooks:
       - id: crenox
 ```
