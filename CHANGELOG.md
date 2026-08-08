@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.5] - 2026-08-07
 
 ### Added
+- **Interactive One-Line Installer Script:** Created production-grade cross-platform installer (`scripts/install.sh` & `docs/install.sh`) supporting instant one-liner deployment (`curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash`), automatic OS/CPU architecture detection, network retries, Git environment validation, interactive hook configuration prompts, and non-interactive automation flags (`--local`, `--global`, `--no-hook`).
 - **30+ New Modern Provider Signatures:** Expanded `BuiltinSignatures` in `internal/trie/trie.go` with exhaustive coverage for modern AI platforms, cloud databases, and DevSecOps tools:
   - **AI Platforms:** Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`).
   - **Cloud & DB Services:** Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`).
