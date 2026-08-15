@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crenox — Git Secret Scanner & Pre-Commit Hook (Gitleaks Alternative)</title>
+    <title>Crenox (كرينوكس) — Ultra-Fast Git Secret Scanner & Pre-Commit Hook | Gitleaks Alternative</title>
     
     <!-- Meta Descriptions for SEO -->
-    <meta name="description" content="A zero-dependency Git pre-commit secret detector written in Go. An alternative to Gitleaks & git-secrets designed for local developer workflows.">
-    <meta name="keywords" content="secret scanner, gitleaks alternative, git-secrets alternative, pre-commit hook, credentials scanner, termux tool, go, security automation">
+    <meta name="description" content="Crenox is a zero-dependency, ultra-fast Git secret scanner and pre-commit hook written in Go. Detect leaked API keys, tokens, and credentials in under 20ms with 125+ signatures and GitLab SAST / GitHub SARIF reporting.">
+    <meta name="keywords" content="secret scanner, git secret scanner, secret detection tool, gitleaks alternative, git-secrets alternative, detect api keys, detect leaked passwords, pre-commit secret scanner, gitlab secret detection sast, sarif secret scanner, go secret scanner, devsecops secret scanner, فاحص أسرار, فحص الأسرار البرمجية">
+    <meta name="author" content="Khaled Hani">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="google-site-verification" content="googledc7329401f946fab">
     
     <!-- Canonical & Multilingual SEO (Hreflang) -->
@@ -19,34 +21,19 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://crenoxhq.github.io/crenox/">
-    <meta property="og:title" content="Crenox — Git Secret Scanner & Pre-Commit Hook (Gitleaks Alternative)">
-    <meta property="og:description" content="A zero-dependency Git pre-commit secret detector written in Go. Protect credentials locally.">
+    <meta property="og:title" content="Crenox — Ultra-Fast Git Secret Scanner & Pre-Commit Hook (Gitleaks Alternative)">
+    <meta property="og:description" content="A zero-dependency, sub-20ms Git pre-commit secret detector written in Go. Prevent credential leaks at the developer workstation.">
     <meta property="og:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
+    <meta property="og:site_name" content="Crenox Secret Scanner">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="ar_AR">
  
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://crenoxhq.github.io/crenox/">
-    <meta name="twitter:title" content="Crenox — Git Secret Scanner & Pre-Commit Hook">
-    <meta name="twitter:description" content="A zero-dependency Git pre-commit secret detector written in Go. Protect credentials locally.">
+    <meta name="twitter:title" content="Crenox — Ultra-Fast Git Secret Scanner & Pre-Commit Hook">
+    <meta name="twitter:description" content="A zero-dependency Git pre-commit secret detector written in Go. Protect credentials locally in <20ms.">
     <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
-
-    <!-- JSON-LD Structured Data Schema for Google rich snippets -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Crenox",
-      "operatingSystem": "Linux, macOS, Windows, Android/Termux",
-      "applicationCategory": "SecurityApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "Statically compiled Git secret scanner & pre-commit hook written in Go.",
-      "url": "https://crenoxhq.github.io/crenox/"
-    }
-    </script>
 
     <!-- Structured Data (JSON-LD Schema) for Google Search Rich Snippets -->
     <script type="application/ld+json">
@@ -54,9 +41,10 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Crenox",
-      "description": "A zero-dependency Git pre-commit secret detector written in Go.",
+      "alternateName": ["Crenox Secret Scanner", "كرينوكس", "فاحص أسرار كرينوكس"],
+      "description": "A high-performance zero-dependency Git pre-commit secret scanner and credentials detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
-      "applicationCategory": "DeveloperApplication",
+      "applicationCategory": "SecurityApplication",
       "softwareVersion": "2.1.6",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
@@ -68,7 +56,48 @@
       "author": {
         "@type": "Person",
         "name": "Khaled Hani"
-      }
+      },
+      "featureList": [
+        "Sub-20ms local Git pre-commit secret scanning",
+        "125+ built-in modern provider and AI signatures",
+        "Precomputed Shannon Entropy Log2 Look-Up Table",
+        "GitLab Secret Detection SAST v15.0.0 and GitHub SARIF 2.1.0 output formats",
+        "Zero-allocation hot scanning path"
+      ]
+    }
+    </script>
+
+    <!-- FAQPage Schema for Rich Search Results in Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a Git Secret Scanner and why is Crenox needed?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A Git secret scanner detects API keys, passwords, and private tokens inside codebases before they get pushed to remote servers. Crenox runs locally as a native pre-commit hook, aborting leaks in under 20ms with zero network transmission."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Crenox compare to Gitleaks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Crenox is 3.8x to 154x faster than Gitleaks, maintains a strictly bounded 13-17 MB RAM footprint, eliminates heap allocations in the hot search path, and includes 125+ built-in signatures."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Crenox support GitLab SAST and GitHub Actions SARIF?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Crenox natively generates GitLab Secret Detection SAST reports (-f gitlab-sast) for GitLab Security Dashboards, and OASIS SARIF 2.1.0 (-f sarif) for GitHub Security Code Scanning."
+          }
+        }
+      ]
     }
     </script>
     

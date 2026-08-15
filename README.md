@@ -1,6 +1,6 @@
 # Crenox — Statically Compiled Git Secret Scanner & Pre-Commit Hook
 
-<!-- SEO: git secret scanner, pre-commit hook, gitleaks alternative, credentials detector, api key detection, go security tool, git-secrets alternative -->
+<!-- SEO: git secret scanner, pre-commit hook, gitleaks alternative, credentials detector, api key detection, go security tool, git-secrets alternative, devsecops, gitlab secret detection sast, sarif, فاحص أسرار, فحص الأسرار البرمجية, كشف تسريب المفاتيح, فحص مفاتيح API, بديل gitleaks -->
 
 <div align="center">
 
