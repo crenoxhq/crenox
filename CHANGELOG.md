@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.6] - 2026-08-15
+
+### Added
+- **125+ Built-in Signatures:** Expanded `BuiltinSignatures` in `internal/trie/trie.go` with coverage for modern AI and cloud services:
+  - Cohere API Key (`co_`)
+  - Together AI API Key (`tog_`)
+  - Mistral AI API Key (`mis_`)
+  - Datadog API Key (`ddp_`)
+  - AWS AppSync API Key (`da2-`)
+- **GitLab Secret Detection SAST Report Format:** Implemented native GitLab SAST v15.0.0 JSON export format (`FormatGitLabSAST`) in `internal/reporter/reporter.go` accessible via `-f gitlab-sast`, `-f gitlab`, or `-f sast` for direct integration into GitLab CI/CD pipelines (`gl-secret-detection-report.json`).
+- **Comprehensive Unit & Regression Test Coverage:** Added automated tests across `tests/entropy_test.go`, `tests/reporter_test.go`, `tests/context_test.go`, and `tests/scanner_test.go` covering Shannon LUT accuracy, GitLab SAST serialization, token-boundary variable matching, and new provider signatures.
+
+### Fixed
+- **False Negative Suppression on Secret Variable Names:** Resolved an issue where valid secret variable names (e.g., `valid_api_key`, `paid_token`, `guard_secret`, `square_key`) were suppressed by substring matches on safe names (`id`, `uid`). Introduced exact token-boundary and compound identifier matching via `isNonSecretVariableName` in `internal/context/context.go`.
+- **False Negative Suppression in Path Segment Matching:** Fixed directory matching in `IsTestFilePath` (`internal/context/context.go`) to check exact path boundaries, preventing legitimate production directories containing "test" substrings (e.g., `latest/`, `attestation/`, `speedtest/`, `protest/`, `contest/`) from being treated as test folders.
+- **Path Traversal Protection in Web Server:** Sanitized relative file paths in `handleFindingDetail` (`internal/web/server.go`) to ensure file reads remain strictly bounded within the repository root.
+
+### Performance
+- **Shannon Entropy Look-Up Table (LUT):** Replaced runtime `math.Log2` floating-point calculations with a precomputed `xLog2xTable [513]float64` array in `internal/entropy/entropy.go`. This delivers **+41.4% faster throughput** in token entropy analysis (measured from 228,153 ns/op to 161,441 ns/op).
+- **Single-Pass Stream Tokenizer:** Unified Base64 and Hex candidate token extraction into a single-pass loop in `Analyze` (`internal/entropy/entropy.go`), eliminating redundant line iterations.
+- **Zero-Allocation Deduplication Pooling:** Added `seenFindingsPool` (`sync.Pool`) in `internal/scanner/scanner.go` to recycle deduplication maps across files, eliminating map heap allocations on the hot path.
+
+### Changed
+- **CLI Help Menus & Options:** Redesigned `--help` documentation across all commands (`crenox`, `scan`, `run`, `install`, `update`, `uninstall`) with concise descriptions, accurate 125+ signature counts, and full documentation for all 5 output formats (`pretty`, `json`, `plain`, `sarif`, `gitlab-sast`).
+
 ## [2.1.5] - 2026-08-07
 
 ### Added

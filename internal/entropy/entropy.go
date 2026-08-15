@@ -35,14 +35,24 @@ func buildCharSet(chars string) [256]bool {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Shannon entropy calculator
-// ──────────────────────────────────────────────────────────────────────────────
+var xLog2xTable [513]float64
+
+func init() {
+	for i := 1; i <= 512; i++ {
+		xLog2xTable[i] = float64(i) * math.Log2(float64(i))
+	}
+}
 
 // Shannon computes the Shannon entropy (in bits per symbol) of the given byte
-// slice.  The result ranges from 0.0 (all bytes identical) to 8.0 (perfectly
+// slice. The result ranges from 0.0 (all bytes identical) to 8.0 (perfectly
 // uniform 256-symbol distribution).
+//
+// Performance: For inputs up to 512 bytes (all standard secrets and tokens),
+// it uses a precomputed x*log2(x) lookup table, eliminating all runtime log2 calls
+// and divisions inside the 256-symbol frequency summation.
 func Shannon(data []byte) float64 {
-	if len(data) == 0 {
+	n := len(data)
+	if n == 0 {
 		return 0
 	}
 
@@ -51,13 +61,23 @@ func Shannon(data []byte) float64 {
 		freq[b]++
 	}
 
-	n := float64(len(data))
+	if n <= 512 {
+		var sum float64
+		for _, count := range freq {
+			if count > 0 {
+				sum += xLog2xTable[count]
+			}
+		}
+		return math.Log2(float64(n)) - (sum / float64(n))
+	}
+
+	fn := float64(n)
 	var h float64
 	for _, count := range freq {
 		if count == 0 {
 			continue
 		}
-		p := float64(count) / n
+		p := float64(count) / fn
 		h -= p * math.Log2(p)
 	}
 	return h
@@ -111,9 +131,10 @@ type EntropyHit struct {
 // line, and returns all tokens whose Shannon entropy exceeds the threshold and
 // whose length is at least minLen.
 //
-// Performance: before computing the full O(n) Shannon entropy, a cheap
-// diversity pre-filter eliminates tokens where entropy is provably below the
-// threshold (H(X) ≤ log₂(distinct_bytes), so skip when distinct_bytes < 2^threshold).
+// Performance:
+// 1. Unified single-pass tokenization across character sets.
+// 2. Diversity pre-filter before Shannon calculation.
+// 3. Precomputed Log2 LUT in Shannon entropy computation.
 func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 	var hits []EntropyHit
 
@@ -149,7 +170,40 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 					continue
 				}
 
-				// Inline Base64 token extraction to avoid closure heap allocation
+				processToken := func(tok []byte) {
+					if len(tok) < minLen {
+						return
+					}
+					if isHexLikeBytes(tok) {
+						if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
+							e := Shannon(tok)
+							if e >= hexRawThreshold {
+								hits = append(hits, EntropyHit{
+									Token:       string(tok),
+									Entropy:     e,
+									Line:        lineNum,
+									LineContent: truncateBytes(line, 512),
+									Kind:        "hex",
+								})
+							}
+						}
+					} else {
+						if !isJavaConstant(tok) && !isAllSameChar(tok) && hasDiversity(tok, b64MinUnique) {
+							e := Shannon(tok)
+							if e >= threshold {
+								hits = append(hits, EntropyHit{
+									Token:       string(tok),
+									Entropy:     e,
+									Line:        lineNum,
+									LineContent: truncateBytes(line, 512),
+									Kind:        "base64",
+								})
+							}
+						}
+					}
+				}
+
+				// Single-pass token extraction
 				tokStart := -1
 				for idx, b := range line {
 					if base64Set[b] {
@@ -158,85 +212,13 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						}
 					} else {
 						if tokStart != -1 {
-							if idx-tokStart >= minLen {
-								tok := line[tokStart:idx]
-								if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
-									hasDiversity(tok, b64MinUnique) {
-									e := Shannon(tok)
-									if e >= threshold {
-										hits = append(hits, EntropyHit{
-											Token:       string(tok),
-											Entropy:     e,
-											Line:        lineNum,
-											LineContent: truncateBytes(line, 512),
-											Kind:        "base64",
-										})
-									}
-								}
-							}
+							processToken(line[tokStart:idx])
 							tokStart = -1
 						}
 					}
 				}
-				if tokStart != -1 && len(line)-tokStart >= minLen {
-					tok := line[tokStart:]
-					if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
-						hasDiversity(tok, b64MinUnique) {
-						e := Shannon(tok)
-						if e >= threshold {
-							hits = append(hits, EntropyHit{
-								Token:       string(tok),
-								Entropy:     e,
-								Line:        lineNum,
-								LineContent: truncateBytes(line, 512),
-								Kind:        "base64",
-							})
-						}
-					}
-				}
-
-				// Inline Hex token extraction to avoid closure heap allocation
-				tokStart = -1
-				for idx, b := range line {
-					if hexSet[b] {
-						if tokStart == -1 {
-							tokStart = idx
-						}
-					} else {
-						if tokStart != -1 {
-							if idx-tokStart >= minLen {
-								tok := line[tokStart:idx]
-								if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
-									e := Shannon(tok)
-									if e >= hexRawThreshold {
-										hits = append(hits, EntropyHit{
-											Token:       string(tok),
-											Entropy:     e,
-											Line:        lineNum,
-											LineContent: truncateBytes(line, 512),
-											Kind:        "hex",
-										})
-									}
-								}
-							}
-							tokStart = -1
-						}
-					}
-				}
-				if tokStart != -1 && len(line)-tokStart >= minLen {
-					tok := line[tokStart:]
-					if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
-						e := Shannon(tok)
-						if e >= hexRawThreshold {
-							hits = append(hits, EntropyHit{
-								Token:       string(tok),
-								Entropy:     e,
-								Line:        lineNum,
-								LineContent: truncateBytes(line, 512),
-								Kind:        "hex",
-							})
-						}
-					}
+				if tokStart != -1 {
+					processToken(line[tokStart:])
 				}
 			}
 			if i < len(content) {

@@ -32,6 +32,7 @@ const (
 	FormatJSON
 	FormatPlain
 	FormatSARIF
+	FormatGitLabSAST
 )
 
 // ParseFormat converts a string to a Format constant.
@@ -43,6 +44,8 @@ func ParseFormat(s string) Format {
 		return FormatPlain
 	case "sarif":
 		return FormatSARIF
+	case "gitlab", "gitlab-sast", "sast":
+		return FormatGitLabSAST
 	default:
 		return FormatPretty
 	}
@@ -96,7 +99,7 @@ var (
 // PrintHeader prints the Crenox startup banner.
 func (r *Reporter) PrintHeader() {
 	switch r.format {
-	case FormatJSON, FormatSARIF:
+	case FormatJSON, FormatSARIF, FormatGitLabSAST:
 		// No header in machine-readable modes.
 	case FormatPlain:
 		fmt.Fprintf(r.w, "crenox %s — pre-commit security scan\n", version.Version)
@@ -109,7 +112,7 @@ func (r *Reporter) PrintHeader() {
 // PrintFindings renders all findings.  Returns true if any CRITICAL or HIGH
 // severity findings were emitted (useful for exit-code logic).
 func (r *Reporter) PrintFindings(findings []scanner.Finding) bool {
-	if r.format == FormatJSON || r.format == FormatSARIF {
+	if r.format == FormatJSON || r.format == FormatSARIF || r.format == FormatGitLabSAST {
 		return r.jsonFindings(findings)
 	}
 	hasBlocker := false
@@ -129,6 +132,8 @@ func (r *Reporter) PrintSummary(findings []scanner.Finding, elapsed time.Duratio
 		r.jsonSummary(findings, elapsed, scannedFiles)
 	case FormatSARIF:
 		r.sarifSummary(findings)
+	case FormatGitLabSAST:
+		r.gitlabSummary(findings)
 	case FormatPlain:
 		r.plainSummary(findings, elapsed, scannedFiles)
 	default:
@@ -144,6 +149,8 @@ func (r *Reporter) PrintClean(elapsed time.Duration, scannedFiles int) {
 			scannedFiles, elapsed.Milliseconds())
 	case FormatSARIF:
 		r.sarifSummary(nil)
+	case FormatGitLabSAST:
+		r.gitlabSummary(nil)
 	case FormatPlain:
 		fmt.Fprintf(r.w, "crenox: clean — %d file(s) scanned in %s\n",
 			scannedFiles, elapsed.Round(time.Millisecond))
@@ -494,4 +501,125 @@ func (r *Reporter) sarifSummary(findings []scanner.Finding) {
 	enc := json.NewEncoder(r.w)
 	enc.SetIndent("", "  ")
 	_ = enc.Encode(report)
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// GitLab SAST Report structures
+// ──────────────────────────────────────────────────────────────────────────────
+
+type gitlabIdentifier struct {
+	Type  string `json:"type"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type gitlabLocation struct {
+	File      string `json:"file"`
+	StartLine int    `json:"start_line"`
+	EndLine   int    `json:"end_line"`
+}
+
+type gitlabScannerInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type gitlabVulnerability struct {
+	ID          string             `json:"id"`
+	Category    string             `json:"category"`
+	Name        string             `json:"name"`
+	Message     string             `json:"message"`
+	Description string             `json:"description"`
+	Severity    string             `json:"severity"`
+	Confidence  string             `json:"confidence"`
+	Scanner     gitlabScannerInfo  `json:"scanner"`
+	Location    gitlabLocation     `json:"location"`
+	Identifiers []gitlabIdentifier `json:"identifiers"`
+}
+
+type gitlabScanMeta struct {
+	Scanner struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Version string `json:"version"`
+		Vendor  struct {
+			Name string `json:"name"`
+		} `json:"vendor"`
+	} `json:"scanner"`
+	Type      string `json:"type"`
+	Status    string `json:"status"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+}
+
+type gitlabReport struct {
+	Schema          string                `json:"schema"`
+	Version         string                `json:"version"`
+	Vulnerabilities []gitlabVulnerability `json:"vulnerabilities"`
+	Scan            gitlabScanMeta        `json:"scan"`
+}
+
+func (r *Reporter) gitlabSummary(findings []scanner.Finding) {
+	vulns := make([]gitlabVulnerability, 0, len(findings))
+	for idx, f := range findings {
+		sev := "Info"
+		switch strings.ToUpper(f.Severity) {
+		case "CRITICAL":
+			sev = "Critical"
+		case "HIGH":
+			sev = "High"
+		case "MEDIUM":
+			sev = "Medium"
+		case "LOW":
+			sev = "Low"
+		}
+
+		vulns = append(vulns, gitlabVulnerability{
+			ID:          fmt.Sprintf("crenox-%s-%d", f.SignatureID, idx+1),
+			Category:    "secret_detection",
+			Name:        f.Description,
+			Message:     fmt.Sprintf("Secret detected: %s", f.Description),
+			Description: fmt.Sprintf("Found exposed secret [%s] with %s severity at %s:%d", f.SignatureID, f.Severity, f.FilePath, f.Line),
+			Severity:    sev,
+			Confidence:  "Confirmed",
+			Scanner: gitlabScannerInfo{
+				ID:   "crenox",
+				Name: "Crenox",
+			},
+			Location: gitlabLocation{
+				File:      f.FilePath,
+				StartLine: f.Line,
+				EndLine:   f.Line,
+			},
+			Identifiers: []gitlabIdentifier{
+				{
+					Type:  "crenox_rule_id",
+					Name:  fmt.Sprintf("Crenox Rule %s", f.SignatureID),
+					Value: f.SignatureID,
+				},
+			},
+		})
+	}
+
+	nowStr := time.Now().UTC().Format(time.RFC3339)
+	var scanMeta gitlabScanMeta
+	scanMeta.Scanner.ID = "crenox"
+	scanMeta.Scanner.Name = "Crenox"
+	scanMeta.Scanner.Version = version.Version
+	scanMeta.Scanner.Vendor.Name = "Crenox Security"
+	scanMeta.Type = "secret_detection"
+	scanMeta.Status = "success"
+	scanMeta.StartTime = nowStr
+	scanMeta.EndTime = nowStr
+
+	rep := gitlabReport{
+		Schema:          "https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/raw/v15.0.0/dist/secret-detection-report-format.json",
+		Version:         "15.0.0",
+		Vulnerabilities: vulns,
+		Scan:            scanMeta,
+	}
+
+	enc := json.NewEncoder(r.w)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(rep)
 }

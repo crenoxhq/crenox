@@ -229,6 +229,11 @@ var BuiltinSignatures = []Signature{
 	{ID: "perplexity-api-key", Description: "Perplexity API Key", Prefix: "pplx-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^pplx-[a-zA-Z0-9]{48,64}$`)},
 	{ID: "fireworks-api-key", Description: "Fireworks AI API Key", Prefix: "fw_", Severity: "HIGH", Validator: regexp.MustCompile(`^fw_[a-zA-Z0-9]{32,40}$`)},
 	{ID: "langsmith-api-key", Description: "LangSmith Personal Access Token", Prefix: "lsv2_", Severity: "HIGH", Validator: regexp.MustCompile(`^lsv2_[a-zA-Z0-9_]{30,60}$`)},
+	{ID: "cohere-api-key", Description: "Cohere API Key", Prefix: "co_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^co_[a-zA-Z0-9]{40}$`)},
+	{ID: "together-api-key", Description: "Together AI API Key", Prefix: "tog_", Severity: "HIGH", Validator: regexp.MustCompile(`^tog_[a-zA-Z0-9]{32,64}$`)},
+	{ID: "mistral-api-key", Description: "Mistral AI API Key", Prefix: "mis_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^mis_[a-zA-Z0-9]{32}$`)},
+	{ID: "datadog-api-key", Description: "Datadog API Key", Prefix: "ddp_", Severity: "HIGH", Validator: regexp.MustCompile(`^ddp_[a-zA-Z0-9]{32,64}$`)},
+	{ID: "aws-appsync-api-key", Description: "AWS AppSync API Key", Prefix: "da2-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^da2-[a-z0-9]{26}$`)},
 
 	// ── Modern Cloud & Managed Databases ──────────────────────────────────────
 	{ID: "doppler-service-token", Description: "Doppler Service Token", Prefix: "dp.st.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^dp\.st\.[a-zA-Z0-9_-]{32,64}$`)},

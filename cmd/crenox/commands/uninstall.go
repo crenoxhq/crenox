@@ -12,13 +12,13 @@ import (
 func NewUninstallCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "uninstall",
-		Short: "Completely remove Crenox from the system",
-		Long: `Completely remove Crenox, its pre-commit hooks, and global configurations from your system.
-This command performs the following cleanup steps:
-  1. Unsets the global git config 'core.hooksPath' if it was configured for Crenox.
-  2. Deletes the 'crenox' executable binary from your system path (unless managed by a package manager).
-  3. Removes the global configuration and hook folder located at '~/.config/crenox'.
-  4. Deletes the local pre-commit hook file '.git/hooks/pre-commit' in the current working directory.`,
+		Short: "Completely remove Crenox binary, hooks, and configuration",
+		Long: `Completely remove Crenox, its Git pre-commit hooks, and global configurations from your system.
+This command performs:
+  1. Unsetting the global git config 'core.hooksPath' if it was configured for Crenox.
+  2. Deleting the 'crenox' executable binary from your system PATH.
+  3. Removing the configuration and data folder located at '~/.config/crenox'.
+  4. Deleting local pre-commit hooks '.git/hooks/pre-commit' in the current working directory.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("Uninstalling Crenox...")
 

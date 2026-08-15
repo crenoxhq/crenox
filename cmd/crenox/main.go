@@ -36,44 +36,28 @@ func init() {
 func main() {
 	root := &cobra.Command{
 		Use:   "crenox",
-		Short: "Crenox — enterprise-grade Git pre-commit secret detector",
-		Long: `Crenox is an ultra-lightweight, modular Git pre-commit security hook
-that prevents accidental commits of API keys, SSH private keys, passwords,
-and other sensitive data using a three-tier detection pipeline:
+		Short: "Crenox — Git secret scanner and pre-commit hook",
+		Long: `Crenox is a statically compiled Git pre-commit hook and credentials scanner.
+It scans source code to prevent commits containing API keys, private keys, passwords,
+and sensitive tokens using a three-tier pipeline:
 
-  Tier 1 (PATTERN)  — Aho-Corasick trie matching of 92 known secret signatures
-  Tier 2 (ENTROPY)  — Shannon entropy analysis for unknown/novel secrets
-  Tier 3 (CONTEXT)  — Context-aware false-positive suppression
-  
-  Inline Suppression — Append '// crenox:ignore' to the preceding line or at the end of the line to ignore false positives.
-  Framework Support  — Compatible with the Python 'pre-commit' ecosystem.
-  CI/CD Integration  — Official GitHub Actions support with native SARIF output.
+  Tier 1 (PATTERN)   — Aho-Corasick automaton matching 125+ secret signatures in O(n) time
+  Tier 2 (ENTROPY)   — Shannon entropy analysis with Look-Up Table (LUT) acceleration
+  Tier 3 (CONTEXT)   — Context classifier suppressing false positives from comments and tests
 
-CLI Commands & Flags:
+Commands:
+  crenox run                  Run pre-commit scan on staged files (invoked by Git hook).
+  crenox scan [path...]       Scan arbitrary files, directories, or full Git commit history.
+  crenox install              Install the pre-commit hook (local repository or --global).
+  crenox uninstall            Remove Crenox binary, hooks, and configuration.
+  crenox update               Update Crenox to the latest release version.
+  crenox version              Print version and build metadata.
 
-  crenox run                  Run the core pre-commit scan on staged files.
-      -c, --config string       Path to .crenox.yaml config file.
-      -f, --format string       Output format: pretty|json|plain|sarif.
-      --fail-fast               Stop after the first finding.
-      -v, --verbose             Enable verbose debug output.
-
-  crenox scan [path...]       Ad-hoc mode to scan arbitrary files or directories.
-      -c, --config string       Path to config file.
-      -f, --format string       Output format: pretty|json|plain|sarif.
-      -o, --output string       Write scan report directly to a file (preserving pretty logs).
-      -r, --recursive           Scan directories recursively.
-      -v, --verbose             Enable verbose output.
-      --history                 Deep scan the entire git commit history.
-
-  crenox install              Install the pre-commit hook into a repository.
-      --global                  Install globally via git core.hooksPath.
-      --repo string             Path to the git repository root.
-      -f, --force               Overwrite an existing hook without prompting.
-
-  crenox uninstall            Completely remove Crenox, binary, and all hooks.
-  crenox update               Update Crenox to the latest stable version.
-      --beta                    Allow updating to pre-release (beta) versions.
-  crenox version              Print Crenox version and build metadata.
+Flags:
+  -c, --config string         Path to .crenox.yaml configuration file.
+  -f, --format string         Output format: pretty | json | plain | sarif | gitlab-sast (default "pretty").
+  -v, --verbose               Enable verbose diagnostic output.
+  -h, --help                  Help for crenox.
 
 Developed by: Khaled Hani | Contact: https://t.me/A245F`,
 		Version:       version.Version,

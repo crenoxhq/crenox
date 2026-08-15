@@ -30,26 +30,27 @@ func NewRunCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "run",
-		Short: "Run the pre-commit security scan (called by git hook)",
-		Long: `Execute the core Crenox scanning pipeline against all staged files.
-This command is designed to be run automatically by Git as a pre-commit hook (or via the Python 'pre-commit' framework).
-It extracts staged file contents, runs the Aho-Corasick trie matching, Shannon entropy analysis, and context validation.
+		Short: "Run the pre-commit security scan on staged files (called by Git hook)",
+		Long: `Execute the core Crenox scanning pipeline against all staged Git changes.
+This command is executed automatically by Git during pre-commit (or via the Python 'pre-commit' framework).
+It extracts staged file modifications, runs the Aho-Corasick automaton (125+ signatures), Shannon entropy analysis, and context filtering.
 
-If findings with CRITICAL or HIGH severity are discovered, the commit is blocked (exits with code 1).
-If no secrets are found, or if they are ignored, the commit proceeds (exits with code 0).
+Commit Blocking Behavior:
+  • CRITICAL / HIGH severity findings will block the commit (exit code 1).
+  • MEDIUM / LOW severity findings are reported as warnings without blocking.
+  • Clean scans or suppressed findings allow the commit to proceed normally (exit code 0).
 
-To bypass a finding on a specific line, add a comment containing '// crenox:ignore' (or '# crenox:ignore') on the preceding line or on the same line.
-
-Custom rules, user-defined signatures, allowlist patterns, and file exclusions are resolved automatically from the '.crenox.yaml' configuration file.`,
+Inline Suppression:
+  Append '// crenox:ignore' or '# crenox:ignore' on or above any line to suppress false positives.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runScan(configPath, format, failFast, verbose)
 		},
 	}
 
-	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .crenox.yaml config file")
-	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain|sarif")
-	cmd.Flags().BoolVar(&failFast, "fail-fast", false, "stop after first finding")
-	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose debug output")
+	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .crenox.yaml configuration file")
+	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty | json | plain | sarif | gitlab-sast")
+	cmd.Flags().BoolVar(&failFast, "fail-fast", false, "stop scanning immediately after the first finding")
+	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose diagnostic output")
 
 	return cmd
 }

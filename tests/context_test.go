@@ -210,3 +210,67 @@ func TestClassify_SafeVersionString_Geohash(t *testing.T) {
 		t.Errorf("expected SafeVersionString for geohash base32, got %s", d)
 	}
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Precision Enhancements — Zero False Negatives on valid key names and paths
+// ──────────────────────────────────────────────────────────────────────────────
+
+func TestClassify_VariableNames_NoFalseNegatives(t *testing.T) {
+	validKeyLines := []struct {
+		varName string
+		line    string
+		token   string
+		sigID   string
+	}{
+		{"valid_api_key", `valid_api_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4", "high-entropy-hex"},
+		{"paid_token", `paid_token := "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8KvM2nXpQrYsT"`, "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8KvM2nXpQrYsT", "high-entropy-base64"},
+		{"guard_secret", `guard_secret := "a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90", "hex"},
+		{"square_key", `square_key = "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8"`, "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8", "base64"},
+		{"redirect_secret", `redirect_secret = "a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90", "hex"},
+	}
+
+	for _, tc := range validKeyLines {
+		d := crenoxcontext.Classify("app/service.go", tc.line, tc.token, tc.sigID)
+		if d != crenoxcontext.Real {
+			t.Errorf("expected Real for variable %q with secret, got %s", tc.varName, d)
+		}
+	}
+}
+
+func TestClassify_VariableNames_TrueNegatives(t *testing.T) {
+	safeIdLines := []struct {
+		varName string
+		line    string
+		token   string
+		sigID   string
+	}{
+		{"client_uuid", `client_uuid = "a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90", "high-entropy-hex"},
+		{"user_id", `user_id = "a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90", "high-entropy-hex"},
+		{"sha256_hash", `sha256_hash = "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90", "high-entropy-hex"},
+		{"file_checksum", `file_checksum = "a1b2c3d4e5f60718293a4b5c6d7e8f90"`, "a1b2c3d4e5f60718293a4b5c6d7e8f90", "hex"},
+	}
+
+	for _, tc := range safeIdLines {
+		d := crenoxcontext.Classify("app/service.go", tc.line, tc.token, tc.sigID)
+		if d != crenoxcontext.SafeVariableName {
+			t.Errorf("expected SafeVariableName for %q, got %s", tc.varName, d)
+		}
+	}
+}
+
+func TestIsTestFilePath_NonTestDirectoriesWithTestSubstring(t *testing.T) {
+	productionPaths := []string{
+		"src/latest/auth.go",
+		"pkg/attestation/keys.go",
+		"services/speedtest/client.go",
+		"app/protest/config.go",
+		"internal/contest/winner.go",
+		"pkg/fastest/algo.go",
+	}
+
+	for _, p := range productionPaths {
+		if crenoxcontext.IsTestFilePath(p) {
+			t.Errorf("expected IsTestFilePath=false for production path %q", p)
+		}
+	}
+}

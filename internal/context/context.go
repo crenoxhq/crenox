@@ -540,19 +540,7 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 	// Reject generic entropy matches when the variable name indicates it is an ID,
 	// UUID, GUID, hash, or message identifier, or points to a path/link/email.
 	if sigID == "hex" || sigID == "base64" || strings.Contains(sigID, "high-entropy") {
-		if strings.Contains(lowerVarName, "id") || strings.Contains(lowerVarName, "uuid") ||
-			strings.Contains(lowerVarName, "guid") || strings.Contains(lowerVarName, "hash") ||
-			strings.Contains(lowerVarName, "md5") || strings.Contains(lowerVarName, "sha") ||
-			strings.Contains(lowerVarName, "sha256") || strings.Contains(lowerVarName, "sha512") ||
-			strings.Contains(lowerVarName, "sha1") || strings.Contains(lowerVarName, "checksum") ||
-			strings.Contains(lowerVarName, "fingerprint") || strings.Contains(lowerVarName, "digest") ||
-			strings.Contains(lowerVarName, "workspace") || strings.Contains(lowerVarName, "path") ||
-			strings.Contains(lowerVarName, "dir") || strings.Contains(lowerVarName, "folder") ||
-			strings.Contains(lowerVarName, "url") || strings.Contains(lowerVarName, "uri") ||
-			strings.Contains(lowerVarName, "host") || strings.Contains(lowerVarName, "link") ||
-			strings.Contains(lowerVarName, "email") || strings.Contains(lowerVarName, "useragent") ||
-			strings.Contains(lowerVarName, "user_agent") || strings.Contains(lowerVarName, "ua") ||
-			strings.Contains(lowerVarName, "device") || strings.Contains(lowerVarName, "model") {
+		if isNonSecretVariableName(lowerVarName) {
 			return SafeVariableName
 		}
 	}
@@ -713,10 +701,13 @@ func IsTestFilePath(path string) bool {
 		if strings.Contains(seg, "mock") || strings.Contains(seg, "fixture") || strings.Contains(seg, "testdata") {
 			return true
 		}
-		// Match segment containing "test" (e.g. testWorkspace) but avoid matching package names containing test (e.g. "testing")
-		// ONLY check this for directory segments (not the last segment/filename)!
+		// Match segment containing "test" ONLY if it starts with "test" or ends with "test" or matches test directory naming:
+		// e.g. "test_", "_test", "test-", "-test", "__tests__", "testworkspace"
+		// DO NOT match words where "test" is embedded inside normal words like "latest", "fastest", "attestation", "contest", "protest", "speedtest"
 		if i < len(segments)-1 {
-			if strings.Contains(seg, "test") && seg != "testing" {
+			if seg == "test" || seg == "tests" || strings.HasPrefix(seg, "test_") || strings.HasPrefix(seg, "test-") ||
+				strings.HasSuffix(seg, "_test") || strings.HasSuffix(seg, "-test") ||
+				(strings.HasPrefix(seg, "test") && seg != "testing" && len(seg) >= 4) {
 				return true
 			}
 		}
@@ -930,6 +921,34 @@ func isVariableReference(token string) bool {
 			if lower == p+s || lower == p+"_"+s || lower == p+"-"+s {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+// isNonSecretVariableName returns true when the variable name clearly represents
+// a non-secret identifier (like a UUID, checksum, digest, link, or path), rather
+// than a secret token. It uses token-boundary matching to avoid false-suppression
+// of legitimate credentials (e.g. valid_token, paid_api_key, guard_secret).
+func isNonSecretVariableName(varName string) bool {
+	if varName == "" {
+		return false
+	}
+	tokens := strings.FieldsFunc(varName, func(r rune) bool {
+		return r == '_' || r == '-' || r == '.' || r == '/' || r == '\\' || r == ':'
+	})
+	for _, tok := range tokens {
+		switch tok {
+		case "id", "uuid", "guid", "hash", "md5", "sha", "sha256", "sha512", "sha1",
+			"checksum", "fingerprint", "digest", "workspace", "path", "dir", "folder",
+			"url", "uri", "host", "link", "email", "useragent", "ua", "device", "model",
+			"userid", "accountid", "clientid", "appid", "deviceid", "repoid", "nodeid",
+			"peerid", "orgid", "tenantid", "sessionid", "requestid", "traceid", "spanid",
+			"msgid", "messageid", "jobid", "taskid", "buildid", "runid", "commitid", "txid":
+			return true
+		}
+		if strings.HasPrefix(tok, "sha") || strings.HasPrefix(tok, "hash") || strings.HasPrefix(tok, "uuid") || strings.HasPrefix(tok, "guid") {
+			return true
 		}
 	}
 	return false

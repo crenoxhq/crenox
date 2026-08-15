@@ -22,14 +22,13 @@ func NewUpdateCmd() *cobra.Command {
 	var allowBeta bool
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update Crenox to the latest version",
-		Long: `Check GitHub for the latest release of Crenox and update the current executable binary.
-This command performs the following actions:
-  1. Detects your operating system (OS) and architecture (e.g. linux/arm64, darwin/amd64).
-  2. Queries the GitHub API for the latest release metadata.
-  3. Downloads the matching binary payload and its SHA-256 checksum.
-  4. Verifies the cryptographic integrity of the downloaded file.
-  5. Atomically replaces the active 'crenox' executable with the new version.`,
+		Short: "Update Crenox to the latest stable version over-the-air",
+		Long: `Check GitHub Releases for the latest version of Crenox and automatically update the active binary.
+This command performs:
+  1. Automatic detection of your operating system and CPU architecture.
+  2. Querying the GitHub Releases API for the latest release tag.
+  3. Downloading the binary and verifying its cryptographic SHA-256 checksum.
+  4. Atomically replacing the active 'crenox' executable without service disruption.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("Updating Crenox to the latest version...")
 

@@ -176,3 +176,55 @@ func TestParseFormat_Default(t *testing.T) {
 		t.Fatalf("expected empty format to default to FormatPretty")
 	}
 }
+
+func TestGitLabSASTReporter(t *testing.T) {
+	if reporter.ParseFormat("gitlab-sast") != reporter.FormatGitLabSAST {
+		t.Fatalf("expected ParseFormat('gitlab-sast') to be FormatGitLabSAST")
+	}
+	if reporter.ParseFormat("sast") != reporter.FormatGitLabSAST {
+		t.Fatalf("expected ParseFormat('sast') to be FormatGitLabSAST")
+	}
+
+	mockFindings := []scanner.Finding{
+		{
+			FilePath:      "server/main.go",
+			Line:          42,
+			Severity:      "CRITICAL",
+			DetectionTier: scanner.TierTrie,
+			SignatureID:   "github-pat",
+			Description:   "GitHub Personal Access Token",
+			Token:         "ghp_0123456789abcdefghijklmnopqrstuvwxyz",
+		},
+	}
+
+	buf := new(bytes.Buffer)
+	rep := reporter.New(buf, reporter.FormatGitLabSAST)
+	rep.PrintSummary(mockFindings, 80*time.Millisecond, 3)
+
+	var report map[string]interface{}
+	if err := json.Unmarshal(buf.Bytes(), &report); err != nil {
+		t.Fatalf("failed to unmarshal GitLab SAST JSON report: %v", err)
+	}
+
+	if report["version"] != "15.0.0" {
+		t.Errorf("expected version 15.0.0, got %v", report["version"])
+	}
+
+	vulns, ok := report["vulnerabilities"].([]interface{})
+	if !ok || len(vulns) != 1 {
+		t.Fatalf("expected 1 vulnerability in GitLab SAST, got %v", report["vulnerabilities"])
+	}
+
+	vuln := vulns[0].(map[string]interface{})
+	if vuln["category"] != "secret_detection" {
+		t.Errorf("expected category secret_detection, got %v", vuln["category"])
+	}
+	if vuln["severity"] != "Critical" {
+		t.Errorf("expected severity Critical, got %v", vuln["severity"])
+	}
+
+	loc := vuln["location"].(map[string]interface{})
+	if loc["file"] != "server/main.go" || loc["start_line"] != float64(42) {
+		t.Errorf("expected location server/main.go:42, got %+v", loc)
+	}
+}

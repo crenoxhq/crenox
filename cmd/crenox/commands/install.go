@@ -44,16 +44,16 @@ func NewInstallCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "Install the pre-commit hook into a git repository",
-		Long: `Install Crenox's pre-commit hook script into your Git repository.
-By default, the hook is installed locally for the current repository. You can choose to install it globally to automatically protect all Git repositories on your system.
+		Short: "Install the pre-commit hook into a Git repository",
+		Long: `Install the Crenox pre-commit hook script into your Git environment.
+By default, the hook is installed locally into the current Git repository. You can optionally install it globally to protect all Git repositories on your system automatically.
 
 Installation Modes:
   1. Local Installation (Default):
-     Writes the executable script to '<repo_root>/.git/hooks/pre-commit'. This applies only to the target repository.
+     Writes the executable hook to '<repo_root>/.git/hooks/pre-commit'.
   
   2. Global Installation (--global):
-     Creates a global Git hooks directory at '~/.config/crenox/hooks' and configures Git (git config --global core.hooksPath) to point to it. Any repository you work on will run Crenox automatically during commits.`,
+     Creates a global Git hooks directory at '~/.config/crenox/hooks' and configures Git (core.hooksPath). Every repository on your machine will automatically run Crenox during commits.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if global {
 				return installGlobal(force)
@@ -62,9 +62,9 @@ Installation Modes:
 		},
 	}
 
-	cmd.Flags().BoolVar(&global, "global", false, "install globally for all repositories")
-	cmd.Flags().StringVar(&repoDir, "repo", ".", "path to the git repository root")
-	cmd.Flags().BoolVarP(&force, "force", "f", false, "overwrite an existing hook without prompting")
+	cmd.Flags().BoolVar(&global, "global", false, "install globally for all repositories via git core.hooksPath")
+	cmd.Flags().StringVar(&repoDir, "repo", ".", "path to the target Git repository root directory")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "overwrite an existing pre-commit hook without prompting")
 
 	return cmd
 }

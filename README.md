@@ -52,8 +52,8 @@ Crenox uses a **three-tier detection pipeline** designed for speed and false pos
 
 | Tier | Engine | Purpose |
 |------|--------|---------|
-| 1 — PATTERN | Aho-Corasick automaton | Matches 112+ known secret signatures in O(n) time, zero allocations |
-| 2 — ENTROPY | Shannon entropy analysis | Catches unknown secrets by measuring information density |
+| 1 — PATTERN | Aho-Corasick automaton | Matches 125+ known secret signatures in O(n) time, zero allocations |
+| 2 — ENTROPY | Shannon entropy analysis | Catches unknown secrets by measuring information density (with Log2 LUT acceleration) |
 | 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, Python descriptors, and placeholders |
 
 A finding must survive all three tiers before it is reported.
@@ -216,7 +216,7 @@ Measured on real-world repositories with Crenox against the most popular alterna
    - File size cap: files > 10 MB skipped
          |
   [Tier 1 — Aho-Corasick Trie  —  internal/trie/trie.go]
-   Built once at startup via trie.Build() — allocation-free DFA matching
+   Built once at startup via trie.Build() — allocation-free DFA matching of 125+ signatures
    Case-insensitive O(n) scan using a branchless 256-byte toLower lookup table
    and sync.Pool-recycled 64 KB streaming buffers to cap heap memory to ~3 MB
    BIP-39 mnemonic detection: 12/15/18/21/24 words validated against 2048-word dictionary
@@ -224,6 +224,8 @@ Measured on real-world repositories with Crenox against the most popular alterna
    Blob aggregation: 3+ consecutive high-entropy lines → single CRITICAL finding
          |
   [Tier 2 — Shannon Entropy  —  internal/entropy/entropy.go]
+   Precomputed Log2 Look-Up Table (LUT) for O(1) symbol entropy arithmetic
+   Single-pass candidate token extractor for Base64 and Hex character sets
    Base64 tokens: entropy >= entropy_threshold (default 4.5 bits/symbol)
    Hex tokens:    entropy >= threshold × (4.0 / 6.0), min floor 3.0
    Skips: tokens < min_secret_length (default 20), all-identical chars, Java-style identifiers
@@ -234,8 +236,8 @@ Measured on real-world repositories with Crenox against the most popular alterna
    Only Real decisions are forwarded to the reporter
          |
   [Reporter  —  internal/reporter/reporter.go]
-   pretty / plain  → stderr    (human-readable, ANSI color)
-   json / sarif    → stdout    (or directly to file if --output is used)
+   pretty / plain         → stderr    (human-readable, ANSI color)
+   json / sarif / gitlab  → stdout    (or directly to file if --output is used)
          |
   exit 0 (CLEAN)  |  exit 1 (BLOCKED)
 ```
@@ -335,14 +337,14 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 
 | Category | Signatures |
 |----------|-----------|
-| **AI & ML Platforms** | Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), OpenAI (`sk-`, `sk-proj-`), Anthropic (`sk-ant-`) |
+| **AI & ML Platforms** | OpenAI (`sk-`, `sk-proj-`), Anthropic (`sk-ant-`), Cohere (`co_`), Together AI (`tog_`), Mistral AI (`mis_`), Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), HuggingFace (`hf_`) |
 | **Cloud Databases & Services** | Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`) |
-| **DevSecOps & Analytics** | PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
+| **DevSecOps & Analytics** | Datadog (`ddp_`), PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
 | **Social & Messaging** | Telegram Bot API Token (`bot<id>:<hash>`), Discord Webhook (`https://discord.com/api/webhooks/`), Slack Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Webhook (`https://hooks.slack.com/services/`) |
 | **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`), Suffix environment tokens (`_GITHUB_TOKEN`) |
 | **Heroku** | API Key (`HEROKU_API_KEY`), OAuth Token (`heroku_oauth_token`) |
 | **GitLab** | Personal Access Token (`glpat-`), Pipeline Trigger (`glptt-`), Runner Registration (`GR1348941`), Runner Token (`glrt-`) |
-| **AWS** | Access Key ID (`AKIA`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`), Secret Access Key variable assignments (`aws_secret`, `aws_key`) |
+| **AWS** | Access Key ID (`AKIA`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`), AppSync (`da2-`), Secret Access Key variable assignments (`aws_secret`, `aws_key`) |
 | **Google Cloud** | Service Account JSON (`"type": "service_account"`), API Key (`AIzaSy`), OAuth Client ID (`.apps.googleusercontent.com`), OAuth Client Secret (`GOCSPX-`) |
 | **Stripe** | Live Secret (`sk_live_`), Live Restricted (`rk_live_`), Test Secret (`sk_test_`) |
 | **Twilio & SendGrid** | Account SID (`AC`), Auth Token (`SK`), SendGrid (`SG.`), Mailgun (`key-`) |
@@ -489,7 +491,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.5 # Replace with the latest release version
+    rev: v2.1.6 # Replace with the latest release version
     hooks:
       - id: crenox
 ```
@@ -673,6 +675,8 @@ crenox scan -f json -r ./src | jq '.findings[] | select(.severity == "CRITICAL")
 # SARIF output saved directly to file (keeps pretty terminal logs)
 crenox scan -f sarif -o crenox.sarif .
 
+# GitLab Secret Detection SAST report
+crenox scan -f gitlab-sast -o gl-secret-detection-report.json .
 ```
 
 > In ad-hoc mode, files are processed concurrently using `max(runtime.NumCPU(), 4)` goroutines.
@@ -705,22 +709,19 @@ To upload the results to GitHub Advanced Security (Code Scanning Alerts), config
 > [!TIP]
 > You can inspect the official [action.yml](action.yml) file in the root of this repository to use as a template or reference for building your own custom GitHub Actions.
 
-
+#### GitLab CI/CD (Secret Detection SAST)
 
 ```yaml
-# GitLab CI
-crenox-scan:
+crenox-secret-detection:
   stage: test
   image: golang:1.22
   before_script:
     - go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest
   script:
-    # Run scan; output JSON to file and print pretty results to console
-    - crenox scan -f pretty -o crenox-report.json .
+    - crenox scan -f gitlab-sast -o gl-secret-detection-report.json .
   artifacts:
-    when: always
-    paths:
-      - crenox-report.json
+    reports:
+      secret_detection: gl-secret-detection-report.json
 ```
 
 ### Command Reference
@@ -733,7 +734,7 @@ Scans staged changes only. Invoked automatically by the Git hook.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-c, --config` | auto-detected | Path to `.crenox.yaml` |
-| `-f, --format` | `pretty` | `pretty` `json` `plain` `sarif` |
+| `-f, --format` | `pretty` | `pretty` `json` `plain` `sarif` `gitlab-sast` |
 | `--fail-fast` | false | Stop after the first finding |
 | `-v, --verbose` | false | Debug output to stderr |
 
@@ -745,7 +746,7 @@ Scans staged changes only. Invoked automatically by the Git hook.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-c, --config` | auto-detected | Path to `.crenox.yaml` |
-| `-f, --format` | `pretty` | `pretty` `json` `plain` `sarif` |
+| `-f, --format` | `pretty` | `pretty` `json` `plain` `sarif` `gitlab-sast` |
 | `-o, --output` | | Write report directly to file, preserving pretty stdout logs |
 | `-r, --recursive` | false | Walk subdirectories |
 | `--history` | false | Scan entire Git commit history |
@@ -832,9 +833,9 @@ A background check runs on each invocation, querying the API at most once per 24
 }
 ```
 
-When clean: `"status": "clean"`, `"findings": []`.
+**SARIF (`-f sarif` — written to stdout):** OASIS SARIF 2.1.0 JSON format, compatible with GitHub Advanced Security Code Scanning.
 
-**SARIF (`-f sarif` — written to stdout):** SARIF 2.1.0, compatible with GitHub Advanced Security Code Scanning.
+**GitLab SAST (`-f gitlab-sast` — written to stdout):** GitLab Secret Detection SAST report schema (v15.0.0), compatible with GitLab CI/CD Security tab.
 
 ---
 

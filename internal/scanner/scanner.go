@@ -172,6 +172,14 @@ var scanBufPool = sync.Pool{
 	},
 }
 
+// seenFindingsPool caches deduplication maps to prevent map allocations per file.
+var seenFindingsPool = sync.Pool{
+	New: func() interface{} {
+		m := make(map[string]bool, 64)
+		return &m
+	},
+}
+
 // ScanContent runs the full three-tier pipeline against the given raw content
 // and returns all confirmed Findings.
 //
@@ -204,7 +212,11 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 	var decBufArray [8192]byte
 	decBuf := decBufArray[:]
 	var searchMatches []trie.Match
-	seenFindings := make(map[string]bool)
+
+	seenFindingsPtr := seenFindingsPool.Get().(*map[string]bool)
+	seenFindings := *seenFindingsPtr
+	clear(seenFindings)
+	defer seenFindingsPool.Put(seenFindingsPtr)
 
 	// Retrieve a reusable 64 KB streaming buffer from the pool
 	bufPtr := scanBufPool.Get().(*[]byte)

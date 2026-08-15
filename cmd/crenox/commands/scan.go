@@ -38,7 +38,7 @@ func NewScanCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "scan [path...]",
-		Short: "Scan files or directories for secrets (ad-hoc mode)",
+		Short: "Scan files, directories, or Git history for secrets (ad-hoc mode)",
 		Long: `Scan arbitrary files, directories, or historical Git commits for secrets in ad-hoc mode.
 Unlike the 'run' command (which only inspects Git-staged modifications), 'scan' allows you to audit entire folders recursively or scan the full commit history of a repository to locate historical credentials leaks.
 
@@ -49,9 +49,15 @@ Scanning Modes:
   2. Git History (--history):
      Audits the entire Git commit log history of the repository. Findings will be prefixed with the triggering Git commit hash (e.g. 5906dee:config/app.json).
 
-You can bypass false positives on specific lines using '// crenox:ignore' comments.
+Output Formats:
+  • pretty       — Human-readable ANSI colored terminal output (default).
+  • json         — Structured machine-readable JSON object.
+  • plain        — Unformatted text output suitable for logs.
+  • sarif        — OASIS SARIF 2.1.0 standard for GitHub Advanced Security.
+  • gitlab-sast  — GitLab Secret Detection SAST report format.
 
-Custom rules, user-defined signatures, allowlist patterns, and file exclusions are resolved automatically from the '.crenox.yaml' configuration file.
+Inline Suppression:
+  Append '// crenox:ignore' or '# crenox:ignore' on or above any line to suppress false positives.
 
 Examples:
   # Scan a folder recursively
@@ -60,8 +66,11 @@ Examples:
   # Scan specific configuration files
   crenox scan config.yaml secrets.env
 
-  # Scan and save report directly to a SARIF file (keeps pretty terminal logs)
+  # Scan and save GitHub SARIF report directly to file (keeps pretty terminal logs)
   crenox scan -f sarif -o crenox.sarif .
+  
+  # Scan and generate GitLab Secret Detection SAST report
+  crenox scan -f gitlab-sast -o gl-secret-detection-report.json .
   
   # Scan the entire Git commit tree history of the current repository
   crenox scan --history .`,
@@ -74,13 +83,13 @@ Examples:
 		},
 	}
 
-	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .crenox.yaml config file")
-	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty|json|plain|sarif")
-	cmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "scan directories recursively")
-	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
-	cmd.Flags().BoolVar(&history, "history", false, "scan entire git commit history")
-	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "write scan report to file")
-	cmd.Flags().BoolVar(&failFast, "fail-fast", false, "stop after first finding")
+	cmd.Flags().StringVarP(&configPath, "config", "c", "", "path to .crenox.yaml configuration file")
+	cmd.Flags().StringVarP(&format, "format", "f", "pretty", "output format: pretty | json | plain | sarif | gitlab-sast")
+	cmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "scan subdirectories recursively")
+	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose diagnostic output")
+	cmd.Flags().BoolVar(&history, "history", false, "deep scan entire Git commit log history")
+	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "write scan report directly to file")
+	cmd.Flags().BoolVar(&failFast, "fail-fast", false, "stop scanning after first finding")
 
 	return cmd
 }

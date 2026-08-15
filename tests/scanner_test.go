@@ -1065,6 +1065,11 @@ func TestScanner_NewModernSignatures_Detected(t *testing.T) {
 		{"Sentry Auth Token", `token := "sntry_1234567890abcdef1234567890abcdef123456"`, "sentry-auth-token"},
 		{"SonarQube Token", `token := "squ_1234567890abcdef1234567890abcdef12345678"`, "sonarqube-token"},
 		{"Telegram Bot Token", `botToken := "bot123456789:ABCdefGHIjklMNOpqrSTUvwxYZ123456789"`, "telegram-bot-token"},
+		{"Cohere API Key", `key := "co_1234567890abcdef1234567890abcdef1234567"`, "cohere-api-key"},
+		{"Together AI Key", `key := "tog_1234567890abcdef1234567890abcdef"`, "together-api-key"},
+		{"Mistral AI Key", `key := "mis_1234567890abcdef1234567890abcdef"`, "mistral-api-key"},
+		{"Datadog API Key", `key := "ddp_1234567890abcdef1234567890abcdef"`, "datadog-api-key"},
+		{"AWS AppSync Key", `key := "da2-1234567890abcdef123456"`, "aws-appsync-api-key"},
 	}
 
 	for _, tc := range tests {

@@ -174,6 +174,61 @@ func TestIsHexLike_False(t *testing.T) {
 	}
 }
 
+func TestShannon_LUT_MathematicalPrecision(t *testing.T) {
+	testStrings := []string{
+		"a1b2c3d4e5f60718293a4b5c6d7e8f90",
+		"Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8",
+		"admin:supersecretpassword123456789",
+		"ghp_0123456789abcdefghijklmnopqrstuvwxyz",
+		strings.Repeat("abcdef123456", 20),
+	}
+
+	for _, s := range testStrings {
+		data := []byte(s)
+		n := float64(len(data))
+		var freq [256]int
+		for _, b := range data {
+			freq[b]++
+		}
+		var expected float64
+		for _, count := range freq {
+			if count > 0 {
+				p := float64(count) / n
+				expected -= p * math.Log2(p)
+			}
+		}
+
+		actual := entropy.Shannon(data)
+		if math.Abs(actual-expected) > 1e-9 {
+			t.Errorf("LUT Shannon precision mismatch on %q: expected %.12f, got %.12f", s, expected, actual)
+		}
+	}
+}
+
+func TestAnalyze_SinglePass_MixedLine(t *testing.T) {
+	content := []byte(
+		`hex_key = "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90"` + "\n" +
+			`b64_key = "Yvk9pNXQJLzR3cW1mEqsTGbHuaOfidw8KvM2nXpQrYsT"` + "\n",
+	)
+	hits := entropy.Analyze(content, 3.5, 20)
+	if len(hits) < 2 {
+		t.Fatalf("expected at least 2 hits, got %d", len(hits))
+	}
+	hasHex := false
+	hasB64 := false
+	for _, h := range hits {
+		if h.Kind == "hex" {
+			hasHex = true
+		}
+		if h.Kind == "base64" {
+			hasB64 = true
+		}
+	}
+	if !hasHex || !hasB64 {
+		t.Errorf("expected both hex and base64 hits, got hex=%t, b64=%t", hasHex, hasB64)
+	}
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Benchmarks
 // ──────────────────────────────────────────────────────────────────────────────
