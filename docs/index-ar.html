@@ -180,7 +180,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.5</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.6</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -188,21 +188,21 @@
                     <tbody>
                         <tr>
                             <td class="spec-label">ذاكرة الوصول العشوائي — فحص الملفات</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">12.5 – 17.3 MB</td>
-                            <td style="direction: ltr; text-align: right;">21.3 – 23.9 MB</td>
-                            <td style="direction: ltr; text-align: right;">40.5 – 69.8 MB</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">13.5 – 17.3 MB</td>
+                            <td style="direction: ltr; text-align: right;">21.6 – 23.9 MB</td>
+                            <td style="direction: ltr; text-align: right;">40.0 – 67.2 MB</td>
                         </tr>
                         <tr>
                             <td class="spec-label">وقت فحص الملفات (متوسط)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">7.8 – 12.4 ms</td>
-                            <td style="direction: ltr; text-align: right;">25.1 – 1749.7 ms</td>
-                            <td style="direction: ltr; text-align: right;">61.1 – 777.3 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">7.0 – 11.8 ms</td>
+                            <td style="direction: ltr; text-align: right;">26.7 – 1822.3 ms</td>
+                            <td style="direction: ltr; text-align: right;">58.2 – 761.0 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">وقت الفحص التاريخي (متوسط)</td>
-                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">5.7 – 11.8 ms</td>
-                            <td style="direction: ltr; text-align: right;">25.0 – 43.5 ms</td>
-                            <td style="direction: ltr; text-align: right;">31.9 – 208.1 ms</td>
+                            <td style="font-weight: 600; color: var(--color-text-primary); direction: ltr; text-align: right;">5.4 – 11.9 ms</td>
+                            <td style="direction: ltr; text-align: right;">23.6 – 42.6 ms</td>
+                            <td style="direction: ltr; text-align: right;">30.9 – 202.6 ms</td>
                         </tr>
                         <tr>
                             <td class="spec-label">دقة الاستدعاء التاريخي (sample_secrets)</td>
@@ -346,6 +346,12 @@ allowlist_patterns:
             <p>مقالات يشاركها المطورون لشرح آليات تحسين وسرعة الكشف والفلسفة الأمنية خلف بناء الأداة.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">15 أغسطس 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.6: توسيع التواقيع إلى 125+، تسريع الإنتروبيا بجدول Log2 LUT بنسبة 41.4%، ودعم تقارير GitLab SAST</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.6 توسيعاً شاملاً لقاعدة التواقيع المدمجة لتتجاوز 125 توقيعاً أمنياً (بإضافة Cohere وTogether AI وMistral AI وDatadog وAWS AppSync)، وتسريع محرك الإنتروبيا بنسبة 41.4% عبر جدول بحث مسبق Log2 LUT، ودمج استخراج الرموز في مسار واحد، وتوليد تقارير GitLab Secret Detection SAST الرسمية (-f gitlab-sast)، إلى جانب تدقيق حدود المتغيرات بدقة لمنع التفويت البرمجي.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">8 أغسطس 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.5: تفوق السرعة بـ 9.8 أضعاف على Gitleaks، مرشح التنوع الرياضي hasDiversity واستبعاد التنبيهات الكاذبة</a></h4>

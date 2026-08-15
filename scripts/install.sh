@@ -114,8 +114,8 @@ if [ -z "${TARGET_TAG}" ]; then
 fi
 
 if [ -z "${TARGET_TAG}" ]; then
-    warn "Could not resolve latest release via API. Falling back to v2.1.5"
-    TARGET_TAG="v2.1.5"
+    warn "Could not resolve latest release via API. Falling back to v2.1.6"
+    TARGET_TAG="v2.1.6"
 fi
 
 info "Installing Crenox version: ${COLOR_BOLD}${TARGET_TAG}${COLOR_RESET}"
