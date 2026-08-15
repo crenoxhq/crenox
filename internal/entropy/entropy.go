@@ -170,40 +170,7 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 					continue
 				}
 
-				processToken := func(tok []byte) {
-					if len(tok) < minLen {
-						return
-					}
-					if isHexLikeBytes(tok) {
-						if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
-							e := Shannon(tok)
-							if e >= hexRawThreshold {
-								hits = append(hits, EntropyHit{
-									Token:       string(tok),
-									Entropy:     e,
-									Line:        lineNum,
-									LineContent: truncateBytes(line, 512),
-									Kind:        "hex",
-								})
-							}
-						}
-					} else {
-						if !isJavaConstant(tok) && !isAllSameChar(tok) && hasDiversity(tok, b64MinUnique) {
-							e := Shannon(tok)
-							if e >= threshold {
-								hits = append(hits, EntropyHit{
-									Token:       string(tok),
-									Entropy:     e,
-									Line:        lineNum,
-									LineContent: truncateBytes(line, 512),
-									Kind:        "base64",
-								})
-							}
-						}
-					}
-				}
-
-				// Single-pass token extraction
+				// Inline Base64 token extraction to avoid closure heap allocation
 				tokStart := -1
 				for idx, b := range line {
 					if base64Set[b] {
@@ -212,13 +179,85 @@ func Analyze(content []byte, threshold float64, minLen int) []EntropyHit {
 						}
 					} else {
 						if tokStart != -1 {
-							processToken(line[tokStart:idx])
+							if idx-tokStart >= minLen {
+								tok := line[tokStart:idx]
+								if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
+									hasDiversity(tok, b64MinUnique) {
+									e := Shannon(tok)
+									if e >= threshold {
+										hits = append(hits, EntropyHit{
+											Token:       string(tok),
+											Entropy:     e,
+											Line:        lineNum,
+											LineContent: truncateBytes(line, 512),
+											Kind:        "base64",
+										})
+									}
+								}
+							}
 							tokStart = -1
 						}
 					}
 				}
-				if tokStart != -1 {
-					processToken(line[tokStart:])
+				if tokStart != -1 && len(line)-tokStart >= minLen {
+					tok := line[tokStart:]
+					if !isJavaConstant(tok) && !isAllSameChar(tok) && !isHexLikeBytes(tok) &&
+						hasDiversity(tok, b64MinUnique) {
+						e := Shannon(tok)
+						if e >= threshold {
+							hits = append(hits, EntropyHit{
+								Token:       string(tok),
+								Entropy:     e,
+								Line:        lineNum,
+								LineContent: truncateBytes(line, 512),
+								Kind:        "base64",
+							})
+						}
+					}
+				}
+
+				// Inline Hex token extraction to avoid closure heap allocation
+				tokStart = -1
+				for idx, b := range line {
+					if hexSet[b] {
+						if tokStart == -1 {
+							tokStart = idx
+						}
+					} else {
+						if tokStart != -1 {
+							if idx-tokStart >= minLen {
+								tok := line[tokStart:idx]
+								if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
+									e := Shannon(tok)
+									if e >= hexRawThreshold {
+										hits = append(hits, EntropyHit{
+											Token:       string(tok),
+											Entropy:     e,
+											Line:        lineNum,
+											LineContent: truncateBytes(line, 512),
+											Kind:        "hex",
+										})
+									}
+								}
+							}
+							tokStart = -1
+						}
+					}
+				}
+				if tokStart != -1 && len(line)-tokStart >= minLen {
+					tok := line[tokStart:]
+					if (len(tok)%2 == 0 || len(tok) >= 32) && hasDiversity(tok, hexMinUnique) {
+						e := Shannon(tok)
+						if e >= hexRawThreshold {
+							hits = append(hits, EntropyHit{
+								Token:       string(tok),
+								Entropy:     e,
+								Line:        lineNum,
+								LineContent: truncateBytes(line, 512),
+								Kind:        "hex",
+							})
+						}
+					}
 				}
 			}
 			if i < len(content) {

@@ -44,6 +44,7 @@ var safeFileSegments = map[string]bool{
 	"__tests__": true, "__mocks__": true, "mock": true, "mocks": true,
 	"sample": true, "samples": true, "docs": true, "doc": true,
 	"spec": true, "specs": true, "seed": true, "seeds": true,
+	"sumdb": true, "download": true, "apt": true, "dpkg": true,
 }
 
 // safeFileSuffixes are filename substrings that indicate the file is a test or doc.
@@ -52,6 +53,7 @@ var safeFileSuffixes = []string{
 	".test.tsx", ".spec.tsx", ".test.jsx", ".spec.jsx",
 	"_spec.js", "_spec.ts", "_spec.tsx", "_spec.jsx",
 	"readme", ".md", ".rst", ".supp", ".po", ".pot", ".mo", ".xliff",
+	".ziphash", ".sum", "go.sum",
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -545,6 +547,40 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 		}
 	}
 
+	// ── Check 17B: Hash, SRI, and Digest Prefixes on Line ─────────────────────
+	// Reject generic entropy matches when the token is preceded by a digest prefix
+	// (e.g. MD5sum:, SHA256:, h1:hash, sha256:hash, sha384-hash, sri-hash, urn:uuid:) or when
+	// the line describes a Subresource Integrity / Checksum / Package index attribute.
+	if sigID == "hex" || sigID == "base64" || strings.Contains(sigID, "high-entropy") {
+		if !isCredAssignment {
+			idx := strings.Index(lineContent, token)
+			if idx > 0 {
+				prefix := strings.TrimSpace(lineContent[:idx])
+				lowerPrefix := strings.ToLower(prefix)
+				if strings.HasSuffix(lowerPrefix, "h1:") || strings.HasSuffix(lowerPrefix, "h2:") ||
+					strings.HasSuffix(lowerPrefix, "sha256:") || strings.HasSuffix(lowerPrefix, "sha512:") ||
+					strings.HasSuffix(lowerPrefix, "sha384:") || strings.HasSuffix(lowerPrefix, "sha1:") ||
+					strings.HasSuffix(lowerPrefix, "md5:") || strings.HasSuffix(lowerPrefix, "md5sum:") ||
+					strings.HasSuffix(lowerPrefix, "sha256-") || strings.HasSuffix(lowerPrefix, "sha384-") ||
+					strings.HasSuffix(lowerPrefix, "sha512-") || strings.HasSuffix(lowerPrefix, "sri-") ||
+					strings.HasSuffix(lowerPrefix, "urn:uuid:") || strings.HasSuffix(lowerPrefix, "urn:") {
+					return SafePlaceholder
+				}
+			}
+			if strings.Contains(lowerLine, "md5sum:") || strings.Contains(lowerLine, "sha256:") ||
+				strings.Contains(lowerLine, "sha512:") || strings.Contains(lowerLine, "sha1:") ||
+				strings.Contains(lowerLine, "checksums-sha256:") || strings.Contains(lowerLine, "checksums-sha512:") ||
+				strings.Contains(lowerLine, "checksums-sha1:") || strings.Contains(lowerLine, "checksums-md5:") ||
+				strings.Contains(lowerLine, "integrity=") || strings.Contains(lowerLine, "integrity:") ||
+				strings.Contains(lowerLine, "checksum") || strings.Contains(lowerLine, "digest") ||
+				strings.Contains(lowerLine, "h1:") || strings.Contains(lowerLine, "ziphash") ||
+				strings.Contains(filePath, "sumdb") || strings.Contains(filePath, "var/lib/apt") ||
+				strings.Contains(filePath, "var/lib/dpkg") {
+				return SafePlaceholder
+			}
+		}
+	}
+
 	// ── Check 18: C++ Mangled Symbols ──────────────────────────────────────────
 	// Mangled C++ symbols (e.g. starting with _ZN or _ZNK) are long alphanumeric
 	// strings that look like high-entropy base64, but are just compiled function names.
@@ -759,6 +795,16 @@ func extractVarName(line, token string) string {
 					continue
 				}
 			}
+			if line[i] == ':' {
+				// Colon is only an assignment operator if part of := or followed by whitespace/quotes
+				if i+1 < len(line) && line[i+1] == '=' {
+					// Part of :=
+				} else if i+1 < len(line) && (line[i+1] == ' ' || line[i+1] == '\t' || line[i+1] == '"' || line[i+1] == '\'') {
+					// Valid YAML/JSON key: val
+				} else {
+					continue
+				}
+			}
 			opIdx = i
 			break
 		}
@@ -927,29 +973,41 @@ func isVariableReference(token string) bool {
 }
 
 // isNonSecretVariableName returns true when the variable name clearly represents
-// a non-secret identifier (like a UUID, checksum, digest, link, or path), rather
-// than a secret token. It uses token-boundary matching to avoid false-suppression
-// of legitimate credentials (e.g. valid_token, paid_api_key, guard_secret).
+// a non-secret identifier (like a UUID, checksum, digest, link, path, URL, host,
+// model, or etag), while ensuring legitimate credentials (e.g. valid_token,
+// paid_api_key, guard_secret) are never suppressed.
 func isNonSecretVariableName(varName string) bool {
 	if varName == "" {
 		return false
 	}
-	tokens := strings.FieldsFunc(varName, func(r rune) bool {
-		return r == '_' || r == '-' || r == '.' || r == '/' || r == '\\' || r == ':'
-	})
-	for _, tok := range tokens {
-		switch tok {
-		case "id", "uuid", "guid", "hash", "md5", "sha", "sha256", "sha512", "sha1",
-			"checksum", "fingerprint", "digest", "workspace", "path", "dir", "folder",
-			"url", "uri", "host", "link", "email", "useragent", "ua", "device", "model",
-			"userid", "accountid", "clientid", "appid", "deviceid", "repoid", "nodeid",
-			"peerid", "orgid", "tenantid", "sessionid", "requestid", "traceid", "spanid",
-			"msgid", "messageid", "jobid", "taskid", "buildid", "runid", "commitid", "txid":
-			return true
-		}
-		if strings.HasPrefix(tok, "sha") || strings.HasPrefix(tok, "hash") || strings.HasPrefix(tok, "uuid") || strings.HasPrefix(tok, "guid") {
-			return true
-		}
+	lower := strings.ToLower(varName)
+
+	// If the variable name explicitly indicates a credential, it is NOT a safe non-secret variable.
+	if strings.Contains(lower, "secret") || strings.Contains(lower, "password") ||
+		strings.Contains(lower, "pass") || strings.Contains(lower, "token") ||
+		strings.Contains(lower, "key") || strings.Contains(lower, "cred") ||
+		strings.Contains(lower, "auth") || strings.Contains(lower, "api") {
+		return false
 	}
+
+	// Direct matching for common non-credential identifiers across camelCase, snake_case, kebab-case
+	if strings.Contains(lower, "id") || strings.Contains(lower, "uuid") ||
+		strings.Contains(lower, "guid") || strings.Contains(lower, "hash") ||
+		strings.Contains(lower, "md5") || strings.Contains(lower, "sha") ||
+		strings.Contains(lower, "checksum") || strings.Contains(lower, "fingerprint") ||
+		strings.Contains(lower, "digest") || strings.Contains(lower, "workspace") ||
+		strings.Contains(lower, "path") || strings.Contains(lower, "dir") ||
+		strings.Contains(lower, "folder") || strings.Contains(lower, "url") ||
+		strings.Contains(lower, "uri") || strings.Contains(lower, "host") ||
+		strings.Contains(lower, "link") || strings.Contains(lower, "email") ||
+		strings.Contains(lower, "useragent") || strings.Contains(lower, "user_agent") ||
+		strings.Contains(lower, "ua") || strings.Contains(lower, "device") ||
+		strings.Contains(lower, "model") || strings.Contains(lower, "etag") ||
+		strings.Contains(lower, "version") || strings.Contains(lower, "sig") ||
+		strings.Contains(lower, "integrity") || strings.Contains(lower, "h1") ||
+		strings.Contains(lower, "h2") || strings.Contains(lower, "sri") {
+		return true
+	}
+
 	return false
 }

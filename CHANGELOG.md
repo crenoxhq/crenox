@@ -18,16 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive Unit & Regression Test Coverage:** Added automated tests across `tests/entropy_test.go`, `tests/reporter_test.go`, `tests/context_test.go`, and `tests/scanner_test.go` covering Shannon LUT accuracy, GitLab SAST serialization, token-boundary variable matching, and new provider signatures.
 
 ### Fixed
-- **False Negative Suppression on Secret Variable Names:** Resolved an issue where valid secret variable names (e.g., `valid_api_key`, `paid_token`, `guard_secret`, `square_key`) were suppressed by substring matches on safe names (`id`, `uid`). Introduced exact token-boundary and compound identifier matching via `isNonSecretVariableName` in `internal/context/context.go`.
+- **Checksum, Hash, and Package Manager Digest False Positives:** Added Check 17B in `internal/context/context.go` and updated default exclusion rules in `internal/config/config.go` to eliminate false positives on Go module checksums (`h1:`, `.ziphash`), Subresource Integrity hashes (`sha256-`, `sha384-`, `sha512-`, `sri-`), and package manager index headers (`MD5sum:`, `SHA256:`, `Checksums-Sha256:` in `/var/lib/apt/` and `/var/lib/dpkg/`).
+- **Assignment Operator Parsing in `extractVarName`:** Fixed backward colon search in `internal/context/context.go` to only treat colons as assignment operators when part of `:=` or followed by whitespace/quotes, preventing strings containing colons (e.g. `h1:`, `https://`, `urn:`) from truncating variable names.
+- **False Negative Suppression on Secret Variable Names:** Resolved an issue where valid secret variable names (e.g., `valid_api_key`, `paid_token`, `guard_secret`, `square_key`) were suppressed by substring matches on safe names (`id`, `uid`). Introduced exact non-credential variable verification via `isNonSecretVariableName` in `internal/context/context.go`.
 - **False Negative Suppression in Path Segment Matching:** Fixed directory matching in `IsTestFilePath` (`internal/context/context.go`) to check exact path boundaries, preventing legitimate production directories containing "test" substrings (e.g., `latest/`, `attestation/`, `speedtest/`, `protest/`, `contest/`) from being treated as test folders.
 - **Path Traversal Protection in Web Server:** Sanitized relative file paths in `handleFindingDetail` (`internal/web/server.go`) to ensure file reads remain strictly bounded within the repository root.
 
 ### Performance
 - **Shannon Entropy Look-Up Table (LUT):** Replaced runtime `math.Log2` floating-point calculations with a precomputed `xLog2xTable [513]float64` array in `internal/entropy/entropy.go`. This delivers **+41.4% faster throughput** in token entropy analysis (measured from 228,153 ns/op to 161,441 ns/op).
-- **Single-Pass Stream Tokenizer:** Unified Base64 and Hex candidate token extraction into a single-pass loop in `Analyze` (`internal/entropy/entropy.go`), eliminating redundant line iterations.
 - **Zero-Allocation Deduplication Pooling:** Added `seenFindingsPool` (`sync.Pool`) in `internal/scanner/scanner.go` to recycle deduplication maps across files, eliminating map heap allocations on the hot path.
 
 ### Changed
+- **Default Exclude Paths & Extensions:** Added `**/go/pkg/mod/**`, `**/var/lib/apt/**`, `**/var/lib/dpkg/**`, `**/*.ziphash` to `ExcludePaths` and `.ziphash` to `ExcludeExtensions` in `internal/config/config.go`.
 - **CLI Help Menus & Options:** Redesigned `--help` documentation across all commands (`crenox`, `scan`, `run`, `install`, `update`, `uninstall`) with concise descriptions, accurate 125+ signature counts, and full documentation for all 5 output formats (`pretty`, `json`, `plain`, `sarif`, `gitlab-sast`).
 
 ## [2.1.5] - 2026-08-07
