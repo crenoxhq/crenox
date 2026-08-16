@@ -1,33 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- 1. Home Page (English - Canonical & x-default) -->
   <url>
     <loc>https://crenoxhq.github.io/crenox/</loc>
-    <lastmod>2026-08-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/" />
+    <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  <url>
-    <loc>https://crenoxhq.github.io/crenox/index.html</loc>
-    <lastmod>2026-08-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
+
+  <!-- 2. Home Page (Arabic Version) -->
   <url>
     <loc>https://crenoxhq.github.io/crenox/index-ar.html</loc>
-    <lastmod>2026-08-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/" />
+    <lastmod>2026-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- 3. In the Wild Disclosures (English) -->
   <url>
     <loc>https://crenoxhq.github.io/crenox/wild.html</loc>
-    <lastmod>2026-08-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/wild.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/wild-ar.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/wild.html" />
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- 4. In the Wild Disclosures (Arabic Version) -->
   <url>
     <loc>https://crenoxhq.github.io/crenox/wild-ar.html</loc>
-    <lastmod>2026-08-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/wild-ar.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/wild.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/wild.html" />
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
 </urlset>
