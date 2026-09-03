@@ -56,6 +56,68 @@ var safeFileSuffixes = []string{
 	".ziphash", ".sum", "go.sum",
 }
 
+// commonPlaceholders lists token substrings that clearly indicate placeholder data.
+var commonPlaceholders = []string{
+	"your-key", "your-token", "your-actual", "your-api", "your-secret",
+	"your-discord", "your-glm", "your-baidu", "actual-key", "actual-openai",
+	"actual-anthropic", "secret-token", "bot-token", "xxx",
+	"not-a-real", "changeme", "lorem", "your-password", "your-secret-token",
+	"your_secret_token", "demo-",
+}
+
+// commonSafeConstants provides O(1) matching for generic configuration constants.
+var commonSafeConstants = map[string]bool{
+	"no_credentials":       true,
+	"invalid_credential":   true,
+	"not_handled":          true,
+	"internal_error":       true,
+	"invalid_api_key":      true,
+	"missing_api_key":      true,
+	"expired_token":        true,
+	"github-token":         true,
+	"auth_selection_model": true,
+	"authenticate":         true,
+	"client_credentials":   true,
+	"authorization_code":   true,
+	"password":             true,
+	"secret":               true,
+	"token":                true,
+	"current-password":     true,
+	"new-password":         true,
+}
+
+// canonicalKeyNames identifies YAML/JSON keys mistakenly parsed as token values.
+var canonicalKeyNames = map[string]bool{
+	"api-key": true, "api_key": true, "auth-key": true, "auth_key": true,
+	"auth-password": true, "auth_password": true, "access-key": true, "access_key": true,
+	"secret-key": true, "secret_key": true, "private-key": true, "private_key": true,
+	"api-token": true, "api_token": true, "auth-token": true, "auth_token": true,
+	"access-token": true, "access_token": true, "secret-token": true, "secret_token": true,
+	"client-id": true, "client_id": true, "client-secret": true, "client_secret": true,
+	"app-key": true, "app_key": true, "app-secret": true, "app_secret": true,
+	"webhook-secret": true, "webhook_secret": true, "signing-key": true, "signing_key": true,
+}
+
+// safeEntropyWords filters out technical code identifiers from entropy detection.
+var safeEntropyWords = []string{
+	"callback", "url", "offline", "download", "decision", "instant",
+	"retry", "cooldown", "switch", "procedure", "metadata", "selection",
+	"provider", "registrar", "executor", "applier",
+}
+
+// declarationPrefixes are stripped from LHS when extracting variable names.
+var declarationPrefixes = []string{"let ", "const ", "var ", "local ", "ref ", "mut "}
+
+// varRefPrefixes and varRefSuffixes identify compound variable identifiers.
+var (
+	varRefPrefixes = []string{
+		"auto", "default", "temp", "mock", "user", "admin", "db", "config", "sys", "old", "new",
+		"test", "fake", "dummy", "local", "client", "server", "raw", "read", "write", "get", "set",
+		"current", "next", "prev", "var", "const", "let", "my", "our", "their", "your",
+	}
+	varRefSuffixes = []string{"password", "token", "secret", "key", "auth"}
+)
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Compiled regular expressions
 // ──────────────────────────────────────────────────────────────────────────────
@@ -201,13 +263,6 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 	}
 
 	// ── Check 0E: Obvious placeholder values and safe constants ─────────────
-	commonPlaceholders := []string{
-		"your-key", "your-token", "your-actual", "your-api", "your-secret",
-		"your-discord", "your-glm", "your-baidu", "actual-key", "actual-openai",
-		"actual-anthropic", "secret-token", "bot-token", "xxx",
-		"not-a-real", "changeme", "lorem", "your-password", "your-secret-token",
-		"your_secret_token", "demo-",
-	}
 	for _, ph := range commonPlaceholders {
 		if strings.Contains(lowerToken, ph) {
 			return SafePlaceholder
@@ -217,25 +272,6 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 		return SafePlaceholder
 	}
 
-	commonSafeConstants := map[string]bool{
-		"no_credentials":       true,
-		"invalid_credential":   true,
-		"not_handled":          true,
-		"internal_error":       true,
-		"invalid_api_key":      true,
-		"missing_api_key":      true,
-		"expired_token":        true,
-		"github-token":         true,
-		"auth_selection_model": true,
-		"authenticate":         true,
-		"client_credentials":   true,
-		"authorization_code":   true,
-		"password":             true,
-		"secret":               true,
-		"token":                true,
-		"current-password":     true,
-		"new-password":         true,
-	}
 	if commonSafeConstants[lowerToken] {
 		return SafePlaceholder
 	}
@@ -243,16 +279,6 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 	// ── Check 0G: Token IS a canonical config key name (not a value) ─────────
 	// Catches cases where a YAML key like "api-key:" has no value and the parser
 	// returns the key name itself. Key names are short, lowercase, hyphenated.
-	canonicalKeyNames := map[string]bool{
-		"api-key": true, "api_key": true, "auth-key": true, "auth_key": true,
-		"auth-password": true, "auth_password": true, "access-key": true, "access_key": true,
-		"secret-key": true, "secret_key": true, "private-key": true, "private_key": true,
-		"api-token": true, "api_token": true, "auth-token": true, "auth_token": true,
-		"access-token": true, "access_token": true, "secret-token": true, "secret_token": true,
-		"client-id": true, "client_id": true, "client-secret": true, "client_secret": true,
-		"app-key": true, "app_key": true, "app-secret": true, "app_secret": true,
-		"webhook-secret": true, "webhook_secret": true, "signing-key": true, "signing_key": true,
-	}
 	if canonicalKeyNames[lowerToken] {
 		return SafePlaceholder
 	}
@@ -328,12 +354,7 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 
 	// ── Check 0F: Programming keywords in high-entropy strings ────────────────
 	if sigID == "hex" || sigID == "base64" || strings.Contains(sigID, "entropy") {
-		safeWords := []string{
-			"callback", "url", "offline", "download", "decision", "instant",
-			"retry", "cooldown", "switch", "procedure", "metadata", "selection",
-			"provider", "registrar", "executor", "applier",
-		}
-		for _, sw := range safeWords {
+		for _, sw := range safeEntropyWords {
 			if strings.Contains(lowerToken, sw) {
 				return SafePlaceholder
 			}
@@ -769,7 +790,7 @@ func extractVarName(line, token string) string {
 	firstOp := strings.IndexAny(token, "=:")
 	if firstOp > 0 && firstOp < len(token)-1 {
 		lhs := strings.TrimSpace(token[:firstOp])
-		for _, prefix := range []string{"let ", "const ", "var ", "local ", "ref ", "ref", "mut "} {
+		for _, prefix := range declarationPrefixes {
 			if strings.HasPrefix(strings.ToLower(lhs), prefix) {
 				lhs = lhs[len(prefix):]
 			}
@@ -820,7 +841,7 @@ func extractVarName(line, token string) string {
 		}
 
 		// Clean up common language keywords/declaration prefixes
-		for _, prefix := range []string{"let ", "const ", "var ", "local ", "ref ", "ref", "mut "} {
+		for _, prefix := range declarationPrefixes {
 			if strings.HasPrefix(strings.ToLower(lhs), prefix) {
 				lhs = lhs[len(prefix):]
 			}
@@ -956,14 +977,8 @@ func isVariableReference(token string) bool {
 		return true
 	}
 	// Common variable prefixes combined with credential suffixes
-	prefixes := []string{
-		"auto", "default", "temp", "mock", "user", "admin", "db", "config", "sys", "old", "new",
-		"test", "fake", "dummy", "local", "client", "server", "raw", "read", "write", "get", "set",
-		"current", "next", "prev", "var", "const", "let", "my", "our", "their", "your",
-	}
-	suffixes := []string{"password", "token", "secret", "key", "auth"}
-	for _, p := range prefixes {
-		for _, s := range suffixes {
+	for _, p := range varRefPrefixes {
+		for _, s := range varRefSuffixes {
 			if lower == p+s || lower == p+"_"+s || lower == p+"-"+s {
 				return true
 			}

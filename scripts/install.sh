@@ -110,12 +110,16 @@ TARGET_TAG="${CUSTOM_VERSION}"
 
 if [ -z "${TARGET_TAG}" ]; then
     info "Fetching latest Crenox version..."
-    TARGET_TAG=$(curl -s --connect-timeout 5 "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || true)
+    TARGET_TAG=$(curl -s --connect-timeout 5 "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || true)
+
+    # If API rate-limited or unavailable, resolve dynamically via HTTP redirect header
+    if [ -z "${TARGET_TAG}" ]; then
+        TARGET_TAG=$(curl -sI --connect-timeout 5 "https://github.com/${REPO}/releases/latest" 2>/dev/null | awk -F'/' '/[Ll]ocation/ {print $NF}' | tr -d '\r\n' || true)
+    fi
 fi
 
 if [ -z "${TARGET_TAG}" ]; then
-    warn "Could not resolve latest release via API. Falling back to v2.1.6"
-    TARGET_TAG="v2.1.6"
+    error "Could not resolve latest release version from GitHub. Please check your internet connection or specify a version explicitly via --version=vX.Y.Z"
 fi
 
 info "Installing Crenox version: ${COLOR_BOLD}${TARGET_TAG}${COLOR_RESET}"

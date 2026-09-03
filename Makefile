@@ -38,9 +38,13 @@ build-full:
 cross:
 	@bash scripts/build.sh cross
 
-## test: Run all tests with race detector
+## test: Run all tests (auto-detecting race detector support)
 test:
-	@go test ./... -v -race -count=1 -timeout 60s
+	@if go test -race -run=^$$ ./cmd/crenox/commands >/dev/null 2>&1; then \
+		go test ./... -v -race -count=1 -timeout 60s; \
+	else \
+		go test ./... -v -count=1 -timeout 60s; \
+	fi
 
 ## bench: Run all benchmarks
 bench:
@@ -75,4 +79,4 @@ clean:
 
 ## help: Show this help message
 help:
-	@grep -E '^## ' Makefile | sed 's/## /  /' | column -t -s ':'
+	@grep -E '^## ' Makefile | sed 's/## //' | awk -F':' '{printf "  %-14s %s\n", $$1, $$2}'

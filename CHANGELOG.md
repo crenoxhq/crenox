@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.7] - 2026-09-03
+
+### Fixed
+- **Android / Termux Seccomp SIGSYS Crash:** Resolved a critical crash (`SIGSYS: bad system call`) on Android/Termux devices where `faccessat2` (syscall 439) is blocked by Android's Linux Seccomp security policy. Configured dedicated `GOOS=android GOARCH=arm64` cross-compilation in `.github/workflows/ci.yml` and `scripts/build.sh`, allowing Go runtime to fall back cleanly to `faccessat` across all Android kernels and Termux environments.
+- **ThreadSanitizer 39-bit VMA Kernel Compatibility:** Fixed `FATAL: ThreadSanitizer: unsupported VMA range (Found 39 - Supported 48)` in `Makefile` on ARM64 devices and Android kernels by implementing an automatic capability check in the `make test` target, running race detection where supported while ensuring 100% test execution everywhere.
+- **Git ANSI Color Escapes Bypassing History & Diff Scans:** Fixed an issue where enabling `color.ui=always` or `color.diff=always` caused Git to output ANSI escape codes on added lines (e.g. `\x1b[32m+`), preventing diff lines from starting with `+` and silently skipping added content. Enforced `--no-color` and `--no-ext-diff` in `cmd/crenox/commands/scan.go` and `internal/git/git.go`, and added defensive `stripANSI` byte sanitation.
+- **Git Mnemonic Prefix Compatibility:** Enhanced diff header parsing in `cmd/crenox/commands/scan.go` to support custom Git prefixes (`diff.mnemonicPrefix=true`) like `+++ w/` and `+++ i/`.
+- **Makefile Portability:** Replaced non-standard `column` utility in `Makefile` with POSIX-compliant `awk`, eliminating `Error 127: column: not found` on minimal Linux containers and Termux.
+
+### Changed
+- **Zero Hardcoded Versions in Installers:** Completely eliminated hardcoded fallback version strings in `scripts/install.sh` and `docs/install.sh`. Latest release version resolution is now 100% dynamic, utilizing GitHub API with an automatic HTTP redirect header (`Location`) fallback to handle API rate limits smoothly.
+- **Documentation & Web Branding:** Integrated official high-resolution isometric logo (`logo.png`) and dedicated `favicon.png` across all documentation portals (`docs/index.html`, `docs/index-ar.html`, `docs/wild.html`, and `docs/wild-ar.html`).
+
+### Performance
+- **Zero-Allocation Tier 3 Context Classifiers:** Hoisted repeatedly allocated slices and maps (`commonPlaceholders`, `commonSafeConstants`, `canonicalKeyNames`, `safeEntropyWords`, `declarationPrefixes`, `varRefPrefixes`, `varRefSuffixes`) to package-level unexported variables in `internal/context/context.go`. This eliminates per-token heap allocations on hot paths, resulting in zero-allocation Shannon token scanning (`0 B/op, 0 allocs/op`) and 23.1x faster deep Git history audits over competitors.
+
+### Added
+- **Unit & Regression Test Coverage:**
+  - Added `TestStripANSI` in `cmd/crenox/commands/commands_test.go` verifying complete removal of ANSI color sequences.
+  - Added `TestGitCommands_InRepo` in `internal/git/git_test.go` testing repository status and file staging.
+  - Added tests for `MatchesExcludePath`, `HasExcludedExtension`, and `IsBinary` in `internal/scanner/scanner_internal_test.go`.
+  - Added multiline macro SHA suppression verification in `tests/context_test.go`.
+
 ## [2.1.6] - 2026-08-15
 
 ### Added

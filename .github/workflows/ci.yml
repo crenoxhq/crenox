@@ -99,11 +99,27 @@ jobs:
             -o dist/crenox-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ steps.suffix.outputs.suffix }} \
             ./cmd/crenox
 
-      - name: Duplicate for Android/Termux
-        if: matrix.goos == 'linux' && (matrix.goarch == 'arm64' || matrix.goarch == 'arm')
+      - name: Build for Android/Termux
+        if: matrix.goos == 'linux' && matrix.goarch == 'arm64'
+        env:
+          CGO_ENABLED: 0
+        run: |
+          VERSION=$(git describe --tags --always --dirty)
+          COMMIT=$(git rev-parse --short HEAD)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          LDFLAGS="-s -w \
+            -X github.com/crenoxhq/crenox/v2/pkg/version.Version=${VERSION} \
+            -X github.com/crenoxhq/crenox/v2/pkg/version.Commit=${COMMIT} \
+            -X github.com/crenoxhq/crenox/v2/pkg/version.Date=${DATE}"
+          GOOS=android GOARCH=arm64 go build -trimpath -ldflags "${LDFLAGS}" \
+            -o dist/crenox-${VERSION}-android-arm64 \
+            ./cmd/crenox
+
+      - name: Duplicate for Android/Termux (arm 32-bit fallback)
+        if: matrix.goos == 'linux' && matrix.goarch == 'arm'
         run: |
           cd dist
-          for f in crenox-*-linux-${{ matrix.goarch }}; do
+          for f in crenox-*-linux-arm; do
             if [ -f "$f" ]; then
               cp "$f" "${f/-linux-/-android-}"
             fi

@@ -35,7 +35,7 @@ func ListStagedFiles() ([]StagedFile, error) {
 // Only the added lines (lines beginning with '+') are returned, because those
 // represent new content being introduced into the repository.
 func GetStagedDiff(path string) ([]byte, error) {
-	out, err := runGit("diff", "--cached", "--", path)
+	out, err := runGit("diff", "--no-color", "--cached", "--", path)
 	if err != nil {
 		return nil, fmt.Errorf("git diff for %q: %w", path, err)
 	}

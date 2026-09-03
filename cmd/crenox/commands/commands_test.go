@@ -87,3 +87,12 @@ func TestNewUninstallCmd(t *testing.T) {
 		t.Errorf("expected Use to start with 'uninstall', got %q", cmd.Use)
 	}
 }
+
+func TestStripANSI(t *testing.T) {
+	input := []byte("\x1b[32m+apiKey := \"sk_live_1234567890abcdef\"\x1b[m")
+	want := []byte("+apiKey := \"sk_live_1234567890abcdef\"")
+	got := stripANSI(input)
+	if !bytes.Equal(got, want) {
+		t.Errorf("stripANSI() = %q; want %q", string(got), string(want))
+	}
+}

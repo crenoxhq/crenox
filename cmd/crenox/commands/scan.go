@@ -175,7 +175,7 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		if _, err := os.Stat(filepath.Join(targetDir, ".git")); os.IsNotExist(err) {
 			return fmt.Errorf("%q is not a git repository (no .git directory found)", targetDir)
 		}
-		cmd := exec.Command("git", "log", "--all", "-p")
+		cmd := exec.Command("git", "log", "--all", "-p", "--no-color", "--no-ext-diff")
 		cmd.Dir = targetDir
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
@@ -238,6 +238,11 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			}
 			line := bufScanner.Bytes()
 
+			// Strip any unexpected ANSI escape sequences defensively
+			if bytes.Contains(line, []byte("\x1b[")) {
+				line = stripANSI(line)
+			}
+
 			if bytes.HasPrefix(line, []byte("commit ")) {
 				processChunk()
 				currentCommit = string(line[7:])
@@ -252,8 +257,14 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 				continue
 			}
 
-			if bytes.HasPrefix(line, []byte("+++ b/")) {
-				currentFile = string(line[6:])
+			if bytes.HasPrefix(line, []byte("+++ ")) {
+				target := line[4:]
+				// Handle standard b/ prefix or custom git mnemonic prefixes (b/, w/, i/)
+				if len(target) >= 2 && target[1] == '/' {
+					currentFile = string(target[2:])
+				} else {
+					currentFile = string(target)
+				}
 				continue
 			}
 
@@ -460,4 +471,26 @@ func fastRelPath(root, path string) string {
 		return rel
 	}
 	return path
+}
+
+// stripANSI removes ANSI escape color sequences from byte slices
+// to prevent git log or diff color codes from breaking scanner parsing.
+func stripANSI(b []byte) []byte {
+	out := make([]byte, 0, len(b))
+	inEscape := false
+	for i := 0; i < len(b); i++ {
+		if b[i] == 0x1b && i+1 < len(b) && b[i+1] == '[' {
+			inEscape = true
+			i++
+			continue
+		}
+		if inEscape {
+			if (b[i] >= 'a' && b[i] <= 'z') || (b[i] >= 'A' && b[i] <= 'Z') {
+				inEscape = false
+			}
+			continue
+		}
+		out = append(out, b[i])
+	}
+	return out
 }

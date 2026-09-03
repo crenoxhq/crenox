@@ -17,6 +17,8 @@
     <link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/">
     <link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html">
     <link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="logo.png">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -45,7 +47,7 @@
       "description": "فاحص أسرار وخطاف pre-commit أمني فائق السرعة بلغة Go لكشف تسريب المفاتيح وكلمات المرور والرموز السرية في Git محلياً.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.6",
+      "softwareVersion": "2.1.7",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -117,7 +119,7 @@
     <nav class="nav-bar">
         <div class="container-nav nav-wrapper">
             <a href="#" class="nav-logo">
-                <svg class="logo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <img src="logo.png" alt="شعار كرينوكس" class="logo-img">
                 <span class="logo-text">Crenox</span>
             </a>
             
@@ -227,7 +229,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.6</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.7</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -393,6 +395,12 @@ allowlist_patterns:
             <p>مقالات يشاركها المطورون لشرح آليات تحسين وسرعة الكشف والفلسفة الأمنية خلف بناء الأداة.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">3 سبتمبر 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.7: إصلاح توافقية أندرويد وTermux Seccomp، تسريع المسار الساخن بانعدام حجز الذاكرة، وتنقية ألوان Git ANSI</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.7 بناءً مخصصاً لبيئة Android/Termux لمعالجة قيود أمان Seccomp التي كانت تسبب انهيار (SIGSYS) بسبب faccessat2 على مختلف أنوية أندرويد، ويلغي تخصيص الذاكرة نهائياً في مصفوفات السياق الأمني للوصول إلى انعدام تام لحجز الذاكرة (Zero-Allocations) في المسار الساخن، إلى جانب تنقية نصوص ومخرجات Git diff تلقائياً من رموز ألوان ANSI لمنع تفويت أي تسريبات في الفحص التاريخي.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">15 أغسطس 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.6: توسيع التواقيع إلى 125+، تسريع الإنتروبيا بجدول Log2 LUT، وتصفية الإنذارات الكاذبة للتجزئات</a></h4>

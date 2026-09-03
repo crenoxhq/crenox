@@ -307,15 +307,24 @@ html[dir="rtl"] .btn:hover .btn-icon {
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     text-decoration: none;
     color: var(--color-text-primary);
     flex-shrink: 0;
 }
 
+.logo-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .logo-text {
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1rem;
     letter-spacing: -0.01em;
 }
 

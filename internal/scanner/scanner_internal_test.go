@@ -163,3 +163,55 @@ func TestExtractRHS(t *testing.T) {
 		}
 	}
 }
+
+func TestHasExcludedExtension(t *testing.T) {
+	excluded := []string{".png", ".jpg", ".zip"}
+	if !HasExcludedExtension("image.PNG", excluded) {
+		t.Error("expected case-insensitive extension match")
+	}
+	if !HasExcludedExtension("/path/to/archive.zip", excluded) {
+		t.Error("expected .zip to be excluded")
+	}
+	if HasExcludedExtension("main.go", excluded) {
+		t.Error("did not expect .go to be excluded")
+	}
+}
+
+func TestMatchesExcludePath(t *testing.T) {
+	patterns := []string{
+		"vendor/**",
+		"node_modules/**",
+		"dist/*",
+		"*.lock",
+	}
+
+	cases := []struct {
+		path string
+		want bool
+	}{
+		{"vendor/github.com/pkg/errors/errors.go", true},
+		{"src/node_modules/express/index.js", true},
+		{"dist/crenox", true},
+		{"yarn.lock", true},
+		{"package.json", false},
+		{"src/main.go", false},
+	}
+
+	for _, tc := range cases {
+		if got := MatchesExcludePath(tc.path, patterns); got != tc.want {
+			t.Errorf("MatchesExcludePath(%q) = %t; want %t", tc.path, got, tc.want)
+		}
+	}
+}
+
+func TestIsBinary(t *testing.T) {
+	text := []byte("package main\n\nfunc main() {}\n")
+	if IsBinary(text) {
+		t.Error("expected text to not be identified as binary")
+	}
+
+	bin := []byte("GIF89a\x00\x01\x00\x01\x80\x00\x00")
+	if !IsBinary(bin) {
+		t.Error("expected null bytes to be identified as binary")
+	}
+}

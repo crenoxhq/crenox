@@ -60,6 +60,7 @@ case "${1:-local}" in
     build_for linux   amd64
     build_for linux   arm64
     build_for linux   arm    ""   # ARM v6/v7 for Raspberry Pi / Termux
+    build_for android arm64  ""   # Dedicated Android/Termux ARM64 target (prevents faccessat2 seccomp SIGSYS)
     build_for darwin  amd64
     build_for darwin  arm64
     build_for windows amd64  ".exe"

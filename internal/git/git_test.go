@@ -46,3 +46,23 @@ index 83db48f..1234567 100644
 		t.Errorf("expected %q, got %q", string(expected), string(result))
 	}
 }
+
+func TestGitCommands_InRepo(t *testing.T) {
+	if !IsInsideWorkTree() {
+		t.Skip("not running inside a git repository")
+	}
+
+	root, err := RepoRoot()
+	if err != nil {
+		t.Fatalf("RepoRoot failed: %v", err)
+	}
+	if root == "" {
+		t.Fatal("expected non-empty RepoRoot")
+	}
+
+	staged, err := ListStagedFiles()
+	if err != nil {
+		t.Fatalf("ListStagedFiles failed: %v", err)
+	}
+	_ = staged
+}

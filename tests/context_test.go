@@ -274,3 +274,19 @@ func TestIsTestFilePath_NonTestDirectoriesWithTestSubstring(t *testing.T) {
 		}
 	}
 }
+
+func TestClassifyWithPrev(t *testing.T) {
+	prev := `#define HF_L3_FRAME_PLAN_SHA256 \`
+	curr := `"b4422b629310b822c54f5c6e8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b"`
+	tok := `b4422b629310b822c54f5c6e8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b`
+
+	d := crenoxcontext.ClassifyWithPrev("driver/core.c", curr, prev, tok, "high-entropy-hex")
+	if d != crenoxcontext.SafeVariableName {
+		t.Errorf("expected SafeVariableName for multiline C macro SHA, got %s", d)
+	}
+
+	dReal := crenoxcontext.ClassifyWithPrev("driver/core.c", curr, prev, tok, "github-pat")
+	if dReal != crenoxcontext.Real {
+		t.Errorf("expected Real for pattern signature, got %s", dReal)
+	}
+}
