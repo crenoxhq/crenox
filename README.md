@@ -123,43 +123,43 @@ asciinema play https://crenoxhq.github.io/crenox/demo.cast
 
 Measured on real-world repositories with Crenox against the most popular alternatives, on a standard **GitHub Actions Ubuntu cloud runner** — the same infrastructure used in real-world CI/CD pipelines.
 
-<details>
-<summary>Filesystem Scan Results (Standard Mode)</summary>
+<details open>
+<summary>Filesystem Scan Results (Standard Mode Averages)</summary>
 
-| Repository | Tool | Avg Time | Peak RAM | Findings |
-|:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **7.0 ms** | **17.2 MB** | **3** |
-| | Gitleaks v8.18.2 | 26.7 ms | 21.6 MB | 1 |
-| | Betterleaks v1.6.1 | 58.2 ms | 40.0 MB | 2 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **9.5 ms** | **17.2 MB** | **0** |
-| | Gitleaks v8.18.2 | 37.3 ms | 21.7 MB | 1 |
-| | Betterleaks v1.6.1 | 77.6 ms | 42.8 MB | 1 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **8.3 ms** | **17.2 MB** | **6** |
-| | Gitleaks v8.18.2 | 27.0 ms | 23.0 MB | 2 |
-| | Betterleaks v1.6.1 | 213.8 ms | 59.1 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **11.8 ms** | **17.3 MB** | **0** |
-| | Gitleaks v8.18.2 | 1822.3 ms | 23.9 MB | 1 |
-| | Betterleaks v1.6.1 | 761.0 ms | 67.2 MB | 2 |
+| Repository | Tool | Avg Scan Time (s) | Avg CPU Time (s) | Peak RAM (MB) | Findings |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **0.0070 s** | **0.0086 s** | **17.6 MB** | **3** |
+| | Gitleaks v8.18.2 | 0.0210 s | 0.0268 s | 23.1 MB | 1 |
+| | Betterleaks v1.6.1 | 0.0787 s | 0.1052 s | 43.7 MB | 2 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **0.0069 s** | **0.0092 s** | **17.4 MB** | **0** |
+| | Gitleaks v8.18.2 | 0.0296 s | 0.0381 s | 22.1 MB | 1 |
+| | Betterleaks v1.6.1 | 0.1027 s | 0.1425 s | 48.1 MB | 1 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **0.0068 s** | **0.0093 s** | **17.4 MB** | **6** |
+| | Gitleaks v8.18.2 | 0.0227 s | 0.0325 s | 23.1 MB | 2 |
+| | Betterleaks v1.6.1 | 0.2038 s | 0.3766 s | 66.7 MB | 2 |
+| **large_file_test (10 MB)** | **Crenox** | **0.0110 s** | **0.0129 s** | **17.5 MB** | **0** |
+| | Gitleaks v8.18.2 | 1.3597 s | 1.3806 s | 25.8 MB | 1 |
+| | Betterleaks v1.6.1 | 0.6063 s | 0.6722 s | 73.3 MB | 2 |
 
 </details>
 
 <details>
-<summary>Git History Scan Results (History Mode)</summary>
+<summary>Git History Scan Results (History Mode Averages)</summary>
 
-| Repository | Tool | Avg Time | Peak RAM | Findings |
-|:---|:---|:---:|:---:|:---:|
-| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **9.4 ms** | **17.2 MB** | **9** |
-| | Gitleaks v8.18.2 | 26.2 ms | 23.1 MB | 5 |
-| | Betterleaks v1.6.1 | 202.6 ms | 57.4 MB | 5 |
-| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **11.9 ms** | **17.2 MB** | **3** |
-| | Gitleaks v8.18.2 | 42.6 ms | 21.8 MB | 6 |
-| | Betterleaks v1.6.1 | 86.1 ms | 44.3 MB | 8 |
-| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **11.2 ms** | **17.2 MB** | **6** |
-| | Gitleaks v8.18.2 | 31.2 ms | 23.1 MB | 2 |
-| | Betterleaks v1.6.1 | 197.3 ms | 58.9 MB | 1 |
-| **large_file_test (10 MB)** | **Crenox** | **5.4 ms** | **13.5 MB** | **0** |
-| | Gitleaks v8.18.2 | 23.6 ms | 23.2 MB | 0 |
-| | Betterleaks v1.6.1 | 30.9 ms | 29.5 MB | 0 |
+| Repository | Tool | Avg Scan Time (s) | Avg CPU Time (s) | Peak RAM (MB) | Findings |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| [sample_secrets](https://github.com/GitGuardian/sample_secrets) | **Crenox** | **0.0086 s** | **0.0115 s** | **17.5 MB** | **9** |
+| | Gitleaks v8.18.2 | 0.0232 s | 0.0313 s | 23.2 MB | 5 |
+| | Betterleaks v1.6.1 | 0.2300 s | 0.4211 s | 67.8 MB | 6 |
+| [truffleHogRegexes](https://github.com/dxa4481/truffleHogRegexes) | **Crenox** | **0.0108 s** | **0.0180 s** | **17.5 MB** | **3** |
+| | Gitleaks v8.18.2 | 0.0350 s | 0.0478 s | 23.2 MB | 6 |
+| | Betterleaks v1.6.1 | 0.1198 s | 0.2166 s | 50.3 MB | 8 |
+| [serverless-node-api-boilerplate](https://github.com/crenoxhq/serverless-node-api-boilerplate) | **Crenox** | **0.0086 s** | **0.0128 s** | **17.5 MB** | **6** |
+| | Gitleaks v8.18.2 | 0.0259 s | 0.0387 s | 23.0 MB | 2 |
+| | Betterleaks v1.6.1 | 0.2124 s | 0.3814 s | 66.3 MB | 2 |
+| **large_file_test (10 MB)** | **Crenox** | **0.0047 s** | **0.0044 s** | **13.8 MB** | **0** |
+| | Gitleaks v8.18.2 | 0.0206 s | 0.0256 s | 23.1 MB | 0 |
+| | Betterleaks v1.6.1 | 0.0257 s | 0.0306 s | 31.8 MB | 0 |
 
 </details>
 
@@ -169,8 +169,8 @@ Measured on real-world repositories with Crenox against the most popular alterna
 
 | Metric | vs Gitleaks | vs Betterleaks |
 |--------|-------------|---------------|
-| **Speed** | **3.8x to 154x faster** | **3x to 121x faster** |
-| **Memory** | **1.4x to 1.6x less RAM** | **1.9x to 4.6x less RAM** |
+| **Speed** | **2.7x to 124x faster** | **3.5x to 55x faster** |
+| **Memory** | **1.3x to 1.7x less RAM** | **2.3x to 4.9x less RAM** |
 | **Recall (Accuracy)** | Finds obfuscated & encoded secrets ignored by Gitleaks | Finds critical secrets missed by Betterleaks |
 
 ---
