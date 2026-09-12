@@ -150,9 +150,43 @@ func isLogIndicator(line []byte) bool {
 	if len(line) < 30 {
 		return false
 	}
-	lower := bytes.ToLower(line)
-	return bytes.Contains(lower, []byte("bearer ")) ||
-		bytes.Contains(lower, []byte("authorization:"))
+	return bytesContainsLower(line, "bearer ") || bytesContainsLower(line, "authorization:")
+}
+
+// bytesContainsLower checks whether b contains lowerSub (which must be lowercase ASCII)
+// with zero heap allocations.
+func bytesContainsLower(b []byte, lowerSub string) bool {
+	if len(lowerSub) == 0 {
+		return true
+	}
+	if len(b) < len(lowerSub) {
+		return false
+	}
+	sub0 := lowerSub[0]
+	max := len(b) - len(lowerSub)
+	for i := 0; i <= max; i++ {
+		c := b[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 32
+		}
+		if c == sub0 {
+			match := true
+			for j := 1; j < len(lowerSub); j++ {
+				cj := b[i+j]
+				if cj >= 'A' && cj <= 'Z' {
+					cj += 32
+				}
+				if cj != lowerSub[j] {
+					match = false
+					break
+				}
+			}
+			if match {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 var (
@@ -426,7 +460,8 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 		if !s.opts.DisableTrie && s.automaton != nil {
 			// CRITICAL: We search the FULL lineTrim to catch leaked tokens in logs,
 			// raw JSON, or unstructured text, bypassing the strict assignment rules.
-			matches := s.automaton.Search(lineTrim, searchMatches)
+			searchMatches = s.automaton.Search(lineTrim, searchMatches)
+			matches := searchMatches
 			hasMatches := len(matches) > 0
 			for _, m := range matches {
 				// Whole-word boundary check: skip matches embedded inside a larger
@@ -533,7 +568,8 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 
 			// Process compMatches if needed
 			if !hasMatches && cLen > 0 && cLen < vLen {
-				compMatches := s.automaton.Search(compVal, searchMatches)
+				searchMatches = s.automaton.Search(compVal, searchMatches)
+				compMatches := searchMatches
 				for _, m := range compMatches {
 					{
 						startIdx := m.Offset - len(m.Sig.Prefix) + 1
@@ -614,7 +650,8 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 				}
 				if err == nil {
 					if !s.opts.DisableTrie && s.automaton != nil {
-						decMatches := s.automaton.Search(decodedVal, searchMatches)
+						searchMatches = s.automaton.Search(decodedVal, searchMatches)
+						decMatches := searchMatches
 						for _, m := range decMatches {
 							{
 								startIdx := m.Offset - len(m.Sig.Prefix) + 1
@@ -686,29 +723,28 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 							lhs = lineTrim[:idx]
 						}
 						if len(lhs) > 0 {
-							lowerLHS := strings.ToLower(string(lhs))
-							if strings.Contains(lowerLHS, "token") ||
-								strings.Contains(lowerLHS, "secret") ||
-								strings.Contains(lowerLHS, "password") ||
-								strings.Contains(lowerLHS, "passwd") ||
-								strings.Contains(lowerLHS, "pass") ||
-								strings.Contains(lowerLHS, "pwd") ||
-								strings.Contains(lowerLHS, "auth") ||
-								strings.Contains(lowerLHS, "credential") ||
-								strings.Contains(lowerLHS, "api_key") ||
-								strings.Contains(lowerLHS, "apikey") ||
-								strings.Contains(lowerLHS, "secret_key") ||
-								strings.Contains(lowerLHS, "secretkey") ||
-								strings.Contains(lowerLHS, "private_key") ||
-								strings.Contains(lowerLHS, "privatekey") ||
-								strings.Contains(lowerLHS, "access_key") ||
-								strings.Contains(lowerLHS, "accesskey") ||
-								strings.Contains(lowerLHS, "auth_key") ||
-								strings.Contains(lowerLHS, "authkey") ||
-								strings.Contains(lowerLHS, "app_key") ||
-								strings.Contains(lowerLHS, "appkey") ||
-								strings.Contains(lowerLHS, "master_key") ||
-								strings.Contains(lowerLHS, "masterkey") {
+							if bytesContainsLower(lhs, "token") ||
+								bytesContainsLower(lhs, "secret") ||
+								bytesContainsLower(lhs, "password") ||
+								bytesContainsLower(lhs, "passwd") ||
+								bytesContainsLower(lhs, "pass") ||
+								bytesContainsLower(lhs, "pwd") ||
+								bytesContainsLower(lhs, "auth") ||
+								bytesContainsLower(lhs, "credential") ||
+								bytesContainsLower(lhs, "api_key") ||
+								bytesContainsLower(lhs, "apikey") ||
+								bytesContainsLower(lhs, "secret_key") ||
+								bytesContainsLower(lhs, "secretkey") ||
+								bytesContainsLower(lhs, "private_key") ||
+								bytesContainsLower(lhs, "privatekey") ||
+								bytesContainsLower(lhs, "access_key") ||
+								bytesContainsLower(lhs, "accesskey") ||
+								bytesContainsLower(lhs, "auth_key") ||
+								bytesContainsLower(lhs, "authkey") ||
+								bytesContainsLower(lhs, "app_key") ||
+								bytesContainsLower(lhs, "appkey") ||
+								bytesContainsLower(lhs, "master_key") ||
+								bytesContainsLower(lhs, "masterkey") {
 								threshold = 4.0
 							}
 						}
@@ -754,52 +790,49 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 							}
 							h.Entropy = e
 
-							idx := strings.Index(string(rawLine), h.Token)
+							idx := bytes.Index(rawLine, []byte(h.Token))
 							if idx > 0 && rawLine[idx-1] == '@' {
 								continue
 							}
 							// Skip SHA-256 / OCI container digest lines (e.g. sha256:<hex>)
-							if h.Kind == "hex" && strings.Contains(string(rawLine), "sha256:") {
+							if h.Kind == "hex" && bytesContainsLower(rawLine, "sha256:") {
 								continue
 							}
 							// Skip hashes of length 40 or 64 that appear in code/configuration lines
 							// containing metadata keywords (e.g. git commit SHAs, file checksums).
 							if h.Kind == "hex" && (len(h.Token) == 40 || len(h.Token) == 64) {
-								rl := strings.ToLower(string(rawLine))
-								if strings.Contains(rl, "hash") || strings.Contains(rl, "sha") ||
-									strings.Contains(rl, "digest") || strings.Contains(rl, "commit") ||
-									strings.Contains(rl, "parent") || strings.Contains(rl, "rev") ||
-									strings.Contains(rl, "fingerprint") || strings.Contains(rl, "checksum") ||
-									strings.Contains(rl, "manifest") {
+								if bytesContainsLower(rawLine, "hash") || bytesContainsLower(rawLine, "sha") ||
+									bytesContainsLower(rawLine, "digest") || bytesContainsLower(rawLine, "commit") ||
+									bytesContainsLower(rawLine, "parent") || bytesContainsLower(rawLine, "rev") ||
+									bytesContainsLower(rawLine, "fingerprint") || bytesContainsLower(rawLine, "checksum") ||
+									bytesContainsLower(rawLine, "manifest") {
 									continue
 								}
 							}
 							// Skip OAuth client IDs / App IDs from being flagged as hex entropy secrets.
 							if h.Kind == "hex" {
-								rl := strings.ToLower(string(rawLine))
-								if strings.Contains(rl, "client_id") || strings.Contains(rl, "client-id") ||
-									strings.Contains(rl, "clientid") || strings.Contains(rl, "appid") ||
-									strings.Contains(rl, "app_id") {
+								if bytesContainsLower(rawLine, "client_id") || bytesContainsLower(rawLine, "client-id") ||
+									bytesContainsLower(rawLine, "clientid") || bytesContainsLower(rawLine, "appid") ||
+									bytesContainsLower(rawLine, "app_id") {
 									continue
 								}
 							}
 							// Skip checksum verification lines in Dockerfiles/shell scripts
 							// (e.g. "echo '<hash>  file' | sha256sum -c" or "--sha256 <hash>")
 							if h.Kind == "hex" {
-								rl := strings.ToLower(string(rawLine))
-								if strings.Contains(rl, "sha256sum") || strings.Contains(rl, "sha512sum") ||
-									strings.Contains(rl, "--sha256") || strings.Contains(rl, "--checksum") ||
-									strings.Contains(rl, "checksum:") || strings.Contains(rl, "integrity:") {
+								if bytesContainsLower(rawLine, "sha256sum") || bytesContainsLower(rawLine, "sha512sum") ||
+									bytesContainsLower(rawLine, "--sha256") || bytesContainsLower(rawLine, "--checksum") ||
+									bytesContainsLower(rawLine, "checksum:") || bytesContainsLower(rawLine, "integrity:") {
 									continue
 								}
 							}
 							// Skip explicit programmatic hex decode constants (e.g. hex.DecodeString("..."))
-							if h.Kind == "hex" && (strings.Contains(string(rawLine), "hex.DecodeString(") || strings.Contains(string(rawLine), "hex.Decode(")) {
+							if h.Kind == "hex" && (bytes.Contains(rawLine, []byte("hex.DecodeString(")) || bytes.Contains(rawLine, []byte("hex.Decode("))) {
 								continue
 							}
 							// Skip base64 tokens containing dots: real base64 never includes dots,
 							// but Go/C qualified names like ssa.OpARM64LoweredAtomicExchange32 do.
-							if h.Kind == "base64" && strings.ContainsRune(h.Token, '.') {
+							if h.Kind == "base64" && strings.IndexByte(h.Token, '.') != -1 {
 								continue
 							}
 							// Skip CamelCase identifiers (Go/Java type/method names).
@@ -859,18 +892,17 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 								}
 							}
 							// Skip Linux kernel sysfs documentation paths (/sys/bus/..., /sys/class/...)
-							if strings.HasPrefix(string(compVal), "/sys/") {
+							if bytes.HasPrefix(compVal, []byte("/sys/")) {
 								continue
 							}
 							// Skip JSON schema $ref paths and operationId strings (OpenAPI specs)
-							if strings.Contains(string(rawLine), `"$ref":`) || strings.Contains(string(rawLine), `"operationId":`) {
+							if bytes.Contains(rawLine, []byte(`"$ref":`)) || bytes.Contains(rawLine, []byte(`"operationId":`)) {
 								continue
 							}
 							// Skip cryptographic signature/digest/checksum/fingerprint JSON fields
 							if h.Kind == "hex" {
-								ll := strings.ToLower(string(rawLine))
-								if strings.Contains(ll, `"signature":`) || strings.Contains(ll, `"digest":`) ||
-									strings.Contains(ll, `"checksum":`) || strings.Contains(ll, `"fingerprint":`) {
+								if bytesContainsLower(rawLine, `"signature":`) || bytesContainsLower(rawLine, `"digest":`) ||
+									bytesContainsLower(rawLine, `"checksum":`) || bytesContainsLower(rawLine, `"fingerprint":`) {
 									continue
 								}
 							}
@@ -1313,7 +1345,7 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourc
 	}
 
 	var after []byte
-	if sig.IsAssignmentOrKeyword {
+	if sig.IsAssignmentOrKeyword && !strings.HasSuffix(sig.Prefix, "=") && !strings.HasSuffix(sig.Prefix, ":") {
 		after = val[offset+1:]
 		i := 0
 		for i < len(after) {
@@ -1357,12 +1389,17 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourc
 		return string(after) // fallback
 	}
 
-	after = bytes.TrimLeft(after, "=:,() \t\n\r")
-
 	// Explicitly handle quotes so we don't accidentally consume empty strings like "" or ''
 	hasQuote := false
 	var quoteCh byte
-	if len(after) > 0 && (after[0] == '"' || after[0] == '\'' || after[0] == '`') {
+	if start > 0 && (val[start-1] == '"' || val[start-1] == '\'' || val[start-1] == '`') {
+		hasQuote = true
+		quoteCh = val[start-1]
+	}
+
+	after = bytes.TrimLeft(after, "=:,() \t\n\r")
+
+	if !hasQuote && len(after) > 0 && (after[0] == '"' || after[0] == '\'' || after[0] == '`') {
 		hasQuote = true
 		quoteCh = after[0]
 		after = after[1:]
@@ -1408,9 +1445,9 @@ func extractTokenFromOffset(val []byte, sig *trie.Signature, offset int, isSourc
 	// Optimize: find the end of the first field without allocating a full fields slice via bytes.FieldsFunc
 	endIdx := -1
 	for i, b := range after {
-		isTerm := b == ' ' || b == '\t' || b == '\n' || b == '\r'
+		isTerm := b == ' ' || b == '\t' || b == '\n' || b == '\r' || (!hasQuote && b == ';')
 		if !strings.Contains(sig.ID, "-dsn") && !strings.Contains(sig.ID, "url-basic-auth") && !strings.Contains(sig.ID, "webhook") {
-			if b == '@' || b == '/' || b == '?' || b == '&' {
+			if b == '@' || (!hasQuote && b == '/') || b == '?' || b == '&' {
 				isTerm = true
 			}
 		}
@@ -1466,17 +1503,28 @@ func cleanToken(tok string) string {
 // It must be precisely 12, 15, 18, 21, or 24 words long, separated by single spaces,
 // and contain ONLY valid words from the BIP-39 list. No punctuation allowed.
 func isStrictBip39Mnemonic(val string) bool {
-	fields := strings.Split(val, " ")
-	count := len(fields)
-	if count != 12 && count != 15 && count != 18 && count != 21 && count != 24 {
-		return false
-	}
-	for _, word := range fields {
+	count := 0
+	start := 0
+	valLen := len(val)
+	for start < valLen {
+		end := strings.IndexByte(val[start:], ' ')
+		var word string
+		if end == -1 {
+			word = val[start:]
+			start = valLen
+		} else {
+			word = val[start : start+end]
+			start += end + 1
+		}
+		if word == "" {
+			return false
+		}
 		if !trie.IsBIP39Word(word) {
 			return false
 		}
+		count++
 	}
-	return true
+	return count == 12 || count == 15 || count == 18 || count == 21 || count == 24
 }
 
 // isPlausibleSecretToken returns true when the token is a plausible secret
@@ -1614,11 +1662,6 @@ func isPlausibleSecretToken(token, prefix, sigID string, minLen int) bool {
 			return false
 		}
 	}
-	// Reject function-call expressions (contain parentheses).
-	// Real secrets never contain ( or ) — these are code identifiers or calls.
-	if strings.ContainsAny(token, "()") {
-		return false
-	}
 	// Reject Rust/C++ path expressions containing the :: separator.
 	if strings.Contains(token, "::") {
 		return false
@@ -1653,9 +1696,8 @@ func isPlausibleSecretToken(token, prefix, sigID string, minLen int) bool {
 	if token == prefix {
 		return false
 	}
-	// Removed bare PEM header rejection because the test expects it and it's needed for single-line matching.
-	// For short prefixes, apply stricter checks.
-	if len(prefix) > 0 && len(prefix) <= 3 {
+	// For short letter-only prefixes (e.g. AC, SK), apply stricter checks to avoid CamelCase code identifiers.
+	if len(prefix) > 0 && len(prefix) <= 3 && isPureIdentifier(prefix) {
 		suffix := token
 		if strings.HasPrefix(strings.ToLower(token), strings.ToLower(prefix)) {
 			suffix = token[len(prefix):]
@@ -1688,6 +1730,22 @@ func isPureIdentifier(s string) bool {
 	return !hasNonAlpha
 }
 
+// knownKeyNames identifies YAML/JSON keys mistakenly parsed as token values.
+var knownKeyNames = map[string]bool{
+	"api-key": true, "api_key": true, "auth-key": true, "auth_key": true,
+	"auth-password": true, "auth_password": true, "access-key": true, "access_key": true,
+	"secret-key": true, "secret_key": true, "private-key": true, "private_key": true,
+	"api-token": true, "api_token": true, "auth-token": true, "auth_token": true,
+	"access-token": true, "access_token": true, "secret-token": true, "secret_token": true,
+	"bearer-token": true, "bearer_token": true, "client-id": true, "client_id": true,
+	"client-secret": true, "client_secret": true, "app-key": true, "app_key": true,
+	"app-secret": true, "app_secret": true, "db-password": true, "db_password": true,
+	"database-password": true, "database_password": true, "redis-password": true, "redis_password": true,
+	"mysql-password": true, "mysql_password": true, "admin-password": true, "admin_password": true,
+	"user-password": true, "user_password": true, "webhook-secret": true, "webhook_secret": true,
+	"signing-secret": true, "signing_key": true,
+}
+
 // isKeyNameToken returns true when a token looks like a YAML/config key name
 // rather than a secret value. Key names are typically short, hyphenated or
 // underscored lowercase words (e.g. "api-key", "auth-password", "secret-key").
@@ -1697,36 +1755,19 @@ func isKeyNameToken(token string) bool {
 	if len(token) > 30 {
 		return false
 	}
-	// Must be all lowercase letters with hyphens or underscores only
-	for _, r := range token {
-		if !((r >= 'a' && r <= 'z') || r == '-' || r == '_') {
+	hasSep := false
+	for i := 0; i < len(token); i++ {
+		c := token[i]
+		if c == '-' || c == '_' {
+			hasSep = true
+		} else if !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') {
 			return false
 		}
 	}
-	// Must contain at least one separator (hyphens/underscores make it a key name)
-	if !strings.ContainsAny(token, "-_") {
+	if !hasSep {
 		return false
 	}
-	// Known key-name patterns that are NEVER secret values
-	keyNames := []string{
-		"api-key", "api_key", "auth-key", "auth_key", "auth-password", "auth_password",
-		"access-key", "access_key", "secret-key", "secret_key", "private-key", "private_key",
-		"api-token", "api_token", "auth-token", "auth_token", "access-token", "access_token",
-		"secret-token", "secret_token", "bearer-token", "bearer_token",
-		"client-id", "client_id", "client-secret", "client_secret",
-		"app-key", "app_key", "app-secret", "app_secret",
-		"db-password", "db_password", "database-password", "database_password",
-		"redis-password", "redis_password", "mysql-password", "mysql_password",
-		"admin-password", "admin_password", "user-password", "user_password",
-		"webhook-secret", "webhook_secret", "signing-secret", "signing_key",
-	}
-	lower := strings.ToLower(token)
-	for _, kn := range keyNames {
-		if lower == kn {
-			return true
-		}
-	}
-	return false
+	return knownKeyNames[strings.ToLower(token)]
 }
 
 // entropySeverity maps an entropy value to a severity level.
@@ -1805,7 +1846,7 @@ func aggregateBlobs(findings []Finding) []Finding {
 func isSourceCodeFile(filePath string) bool {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
-	case ".go", ".rb", ".js", ".ts", ".jsx", ".tsx", ".py", ".java", ".scala", ".kt", ".c", ".cpp", ".h", ".cs", ".php", ".pl", ".sh", ".bash", ".zsh":
+	case ".go", ".rb", ".js", ".ts", ".jsx", ".tsx", ".py", ".java", ".scala", ".kt", ".c", ".cpp", ".h", ".cs", ".php", ".pl", ".sh", ".bash", ".zsh", ".rs", ".swift", ".dart", ".lua", ".m", ".mm", ".ex", ".exs", ".erl":
 		return true
 	}
 	return false

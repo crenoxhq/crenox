@@ -8,9 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
-	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 
@@ -95,10 +94,34 @@ Examples:
 }
 
 func runAdHocScan(paths []string, configPath, format string, recursive, verbose, history bool, outputPath string, failFast bool) error {
+	parsedFormat, err := reporter.ValidateFormat(format)
+	if err != nil {
+		return err
+	}
+
+	if !history {
+		for _, p := range paths {
+			if _, err := os.Stat(p); err != nil {
+				return fmt.Errorf("the path %q does not exist or is inaccessible", p)
+			}
+		}
+	} else {
+		targetDir := "."
+		if len(paths) > 0 {
+			targetDir = paths[0]
+		}
+		if _, err := os.Stat(targetDir); err != nil {
+			return fmt.Errorf("the path %q does not exist or is inaccessible", targetDir)
+		}
+		if _, err := os.Stat(filepath.Join(targetDir, ".git")); os.IsNotExist(err) {
+			return fmt.Errorf("%q is not a git repository (no .git directory found)", targetDir)
+		}
+	}
+
 	updateChan := updater.CheckForUpdateAsync()
 	startTime := time.Now()
 
-	cfg, err := config.Load(configPath)
+	cfg, err := config.Load(configPath, paths...)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
@@ -118,41 +141,21 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			return fmt.Errorf("failed to create output file: %w", err)
 		}
 		defer file.Close()
-		fileReporter = reporter.New(file, reporter.ParseFormat(format))
-		format = "pretty"
+		fileReporter = reporter.New(file, parsedFormat)
+		parsedFormat = reporter.FormatPretty
 	}
 
 	// JSON is machine-readable output — write to stdout so it can be piped/redirected.
 	// Human-readable formats (pretty, plain) go to stderr so progress messages
 	// and findings are visible even when stdout is redirected.
 	outStream := os.Stderr
-	parsedFormat := reporter.ParseFormat(format)
 	if parsedFormat == reporter.FormatJSON || parsedFormat == reporter.FormatSARIF {
 		outStream = os.Stdout
 	}
 	rep := reporter.New(outStream, parsedFormat)
 	rep.PrintHeader()
 
-	sigs := make([]trie.Signature, len(trie.BuiltinSignatures))
-	copy(sigs, trie.BuiltinSignatures)
-	for _, cs := range cfg.CustomSignatures {
-		var val *regexp.Regexp
-		if cs.Regex != "" {
-			val = regexp.MustCompile(cs.Regex)
-		}
-		sev := cs.Severity
-		if sev == "" {
-			sev = "HIGH"
-		}
-		sigs = append(sigs, trie.Signature{
-			ID:          cs.ID,
-			Description: cs.Description,
-			Prefix:      cs.Prefix,
-			Severity:    sev,
-			Validator:   val,
-		})
-	}
-	automaton := trie.Build(sigs)
+	automaton := trie.BuildWithCustom(cfg.CustomSignatures)
 	scanOpts := scanner.Options{
 		EntropyThreshold:  cfg.EntropyThreshold,
 		MinSecretLength:   cfg.MinSecretLength,
@@ -175,7 +178,10 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		if _, err := os.Stat(filepath.Join(targetDir, ".git")); os.IsNotExist(err) {
 			return fmt.Errorf("%q is not a git repository (no .git directory found)", targetDir)
 		}
-		cmd := exec.Command("git", "log", "--all", "-p", "--no-color", "--no-ext-diff")
+
+		// --full-history prevents Git from pruning merge histories.
+		// -m expands merge commits so secrets committed during merges are caught.
+		cmd := exec.Command("git", "log", "--all", "--full-history", "-p", "-m", "--no-color", "--no-ext-diff")
 		cmd.Dir = targetDir
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
@@ -185,6 +191,51 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			return fmt.Errorf("git log start: %w", err)
 		}
 
+		type historyJob struct {
+			displayPath string
+			content     []byte
+		}
+
+		var wg sync.WaitGroup
+		var mu sync.Mutex
+
+		numWorkers := runtime.NumCPU()
+		if numWorkers < 4 {
+			numWorkers = 4
+		}
+
+		jobs := make(chan historyJob, 512)
+
+		// Concurrent workers for parallel history scanning
+		for i := 0; i < numWorkers; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for job := range jobs {
+					if cfg.FailFast {
+						mu.Lock()
+						hasFindings := len(allFindings) > 0
+						mu.Unlock()
+						if hasFindings {
+							continue
+						}
+					}
+
+					findings := sec.ScanContent(job.displayPath, job.content)
+					if len(findings) > 0 {
+						mu.Lock()
+						for _, f := range findings {
+							if _, exists := seenTokens[f.Token]; !exists {
+								seenTokens[f.Token] = struct{}{}
+								allFindings = append(allFindings, f)
+							}
+						}
+						mu.Unlock()
+					}
+				}
+			}()
+		}
+
 		bufScanner := bufio.NewScanner(stdout)
 		buf := make([]byte, 64*1024)
 		bufScanner.Buffer(buf, 10*1024*1024) // 10MB max line length
@@ -192,49 +243,72 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		var currentChunk []byte
 		var currentFile string
 		var currentCommit string
+		var commitMsgChunk []byte
 		var chunkTooLarge bool
 
-		processChunk := func() {
+		processFileChunk := func() {
 			if chunkTooLarge {
-				currentChunk = nil
+				currentChunk = currentChunk[:0]
 				chunkTooLarge = false
 				return
 			}
 			if len(currentChunk) == 0 || currentFile == "" {
+				currentChunk = currentChunk[:0]
 				return
 			}
-			if cfg.FailFast && len(allFindings) > 0 {
-				return
+			if cfg.FailFast {
+				mu.Lock()
+				hasFindings := len(allFindings) > 0
+				mu.Unlock()
+				if hasFindings {
+					currentChunk = currentChunk[:0]
+					return
+				}
 			}
 			displayPath := currentCommit + ":" + currentFile
 			if scanner.HasExcludedExtension(displayPath, cfg.ExcludeExtensions) {
+				currentChunk = currentChunk[:0]
 				return
 			}
 			if scanner.MatchesExcludePath(currentFile, cfg.ExcludePaths) {
+				currentChunk = currentChunk[:0]
 				return
 			}
 			if int64(len(currentChunk)) > cfg.MaxFileSizeBytes {
+				currentChunk = currentChunk[:0]
 				return
 			}
+
+			mu.Lock()
 			scannedCount++
-			findings := sec.ScanContent(displayPath, currentChunk)
-			for _, f := range findings {
-				if _, exists := seenTokens[f.Token]; !exists {
-					seenTokens[f.Token] = struct{}{}
-					allFindings = append(allFindings, f)
-				}
+			mu.Unlock()
+
+			contentCopy := make([]byte, len(currentChunk))
+			copy(contentCopy, currentChunk)
+			jobs <- historyJob{displayPath: displayPath, content: contentCopy}
+			currentChunk = currentChunk[:0]
+		}
+
+		processCommitMsg := func() {
+			if len(commitMsgChunk) == 0 || currentCommit == "" {
+				commitMsgChunk = commitMsgChunk[:0]
+				return
 			}
-			if scannedCount%250 == 0 {
-				currentChunk = nil
-				debug.FreeOSMemory()
-			} else {
-				currentChunk = currentChunk[:0]
-			}
+			displayPath := currentCommit + ":commit-message"
+			contentCopy := make([]byte, len(commitMsgChunk))
+			copy(contentCopy, commitMsgChunk)
+			jobs <- historyJob{displayPath: displayPath, content: contentCopy}
+			commitMsgChunk = commitMsgChunk[:0]
 		}
 
 		for bufScanner.Scan() {
-			if cfg.FailFast && len(allFindings) > 0 {
-				break
+			if cfg.FailFast {
+				mu.Lock()
+				hasFindings := len(allFindings) > 0
+				mu.Unlock()
+				if hasFindings {
+					break
+				}
 			}
 			line := bufScanner.Bytes()
 
@@ -244,8 +318,14 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			}
 
 			if bytes.HasPrefix(line, []byte("commit ")) {
-				processChunk()
-				currentCommit = string(line[7:])
+				processFileChunk()
+				processCommitMsg()
+				currentFile = ""
+				rawCommit := string(line[7:])
+				if idx := strings.IndexByte(rawCommit, ' '); idx != -1 {
+					rawCommit = rawCommit[:idx]
+				}
+				currentCommit = rawCommit
 				if len(currentCommit) > 7 {
 					currentCommit = currentCommit[:7]
 				}
@@ -253,12 +333,29 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			}
 
 			if bytes.HasPrefix(line, []byte("diff --git")) {
-				processChunk()
+				processFileChunk()
+				processCommitMsg()
+				currentFile = ""
+				continue
+			}
+
+			// Capture commit message lines (indented with 4 spaces) before any diff
+			if currentFile == "" && currentCommit != "" && bytes.HasPrefix(line, []byte("    ")) {
+				commitMsgChunk = append(commitMsgChunk, line[4:]...)
+				commitMsgChunk = append(commitMsgChunk, '\n')
 				continue
 			}
 
 			if bytes.HasPrefix(line, []byte("+++ ")) {
-				target := line[4:]
+				target := bytes.TrimSpace(line[4:])
+				// Unquote path if quoted by git
+				if len(target) >= 2 && target[0] == '"' && target[len(target)-1] == '"' {
+					target = target[1 : len(target)-1]
+				}
+				if bytes.Equal(target, []byte("/dev/null")) {
+					currentFile = ""
+					continue
+				}
 				// Handle standard b/ prefix or custom git mnemonic prefixes (b/, w/, i/)
 				if len(target) >= 2 && target[1] == '/' {
 					currentFile = string(target[2:])
@@ -281,11 +378,11 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			}
 		}
 
-		// If the scanner failed (e.g. token too long), we must close the pipe
-		// so git log gets SIGPIPE and exits, otherwise cmd.Wait() deadlocks.
 		stdout.Close()
-
-		processChunk()
+		processFileChunk()
+		processCommitMsg()
+		close(jobs)
+		wg.Wait()
 		cmd.Wait()
 	} else {
 		type scanJob struct {
@@ -386,7 +483,6 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			for _, p := range paths {
 				info, err := os.Stat(p)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "crenox: the path %q does not exist or is inaccessible\n", p)
 					continue
 				}
 				absP, err := filepath.Abs(p)
@@ -458,9 +554,11 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 			file.Close()
 		}
 	}
-	os.Exit(1)
+	exitFunc(1)
 	return nil
 }
+
+var exitFunc = os.Exit
 
 func fastRelPath(root, path string) string {
 	if len(path) > len(root) {

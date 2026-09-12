@@ -290,3 +290,51 @@ func TestClassifyWithPrev(t *testing.T) {
 		t.Errorf("expected Real for pattern signature, got %s", dReal)
 	}
 }
+
+func TestClassify_ContainerImageDigest_Suppressed(t *testing.T) {
+	line := `image: "ghcr.io/crenoxhq/crenox@sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b3f7d5830f0f917e4f3a74313f4"`
+	tok := "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b3f7d5830f0f917e4f3a74313f4"
+	d := crenoxcontext.Classify("deploy/k8s.yaml", line, tok, "high-entropy-hex")
+	if d != crenoxcontext.SafeVersionString {
+		t.Errorf("expected SafeVersionString for container digest, got %s", d)
+	}
+}
+
+func TestClassify_SVGPathData_Suppressed(t *testing.T) {
+	line := `<path d="M12 34 L56 78 M90 12 L34 56 Z" fill="currentColor" />`
+	tok := "M1234L5678M9012L3456Z"
+	d := crenoxcontext.Classify("assets/icon.svg", line, tok, "high-entropy-base64")
+	if d != crenoxcontext.SafePlaceholder {
+		t.Errorf("expected SafePlaceholder for SVG path vector, got %s", d)
+	}
+}
+
+func TestIsTestFilePath_SampleEnvFiles(t *testing.T) {
+	sampleFiles := []string{
+		".env.example",
+		".env.sample",
+		".env.template",
+		"config/.example.env",
+	}
+	for _, sf := range sampleFiles {
+		if !crenoxcontext.IsTestFilePath(sf) {
+			t.Errorf("expected IsTestFilePath=true for sample env file %q", sf)
+		}
+	}
+}
+
+func TestClassify_SafeVariableName_TempPrefix(t *testing.T) {
+	tests := []struct {
+		line  string
+		token string
+	}{
+		{`temp_secret := "sk-proj-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"`, "sk-proj-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"},
+		{`tmp_token = "ghp_1234567890abcdef1234567890abcdef"`, "ghp_1234567890abcdef1234567890abcdef"},
+	}
+	for _, tc := range tests {
+		d := crenoxcontext.Classify("service.go", tc.line, tc.token, "generic-token")
+		if d != crenoxcontext.SafeVariableName {
+			t.Errorf("expected SafeVariableName for line %q, got %s", tc.line, d)
+		}
+	}
+}

@@ -10,6 +10,8 @@ package trie
 import (
 	"regexp"
 	"strings"
+
+	"github.com/crenoxhq/crenox/v2/internal/config"
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -262,6 +264,14 @@ var BuiltinSignatures = []Signature{
 
 	// ── Social & Communications ───────────────────────────────────────────────
 	{ID: "telegram-bot-token", Description: "Telegram Bot API Token", Prefix: "bot", Severity: "CRITICAL", Validator: regexp.MustCompile(`^bot[0-9]{8,10}:[a-zA-Z0-9_-]{35}$`)},
+
+	// ── Additional Modern Cloud & AI Signatures ───────────────────────────────
+	{ID: "alibaba-access-key", Description: "Alibaba Cloud / Aliyun AccessKey ID", Prefix: "LTAI", Severity: "CRITICAL", Validator: regexp.MustCompile(`^LTAI[A-Za-z0-9]{16,24}$`)},
+	{ID: "azure-storage-key", Description: "Azure Storage Account Key", Prefix: "AccountKey=", Severity: "CRITICAL", Validator: regexp.MustCompile(`^(AccountKey=)?[A-Za-z0-9+/=]{40,100}$`)},
+	{ID: "grafana-cloud-token", Description: "Grafana Cloud API Token", Prefix: "glc_", Severity: "HIGH", Validator: regexp.MustCompile(`^glc_[A-Za-z0-9+/=_-]{30,80}$`)},
+	{ID: "terraform-cloud-token", Description: "Terraform Cloud User Token", Prefix: "atlasv1.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^atlasv1\.[A-Za-z0-9_-]{50,90}$`)},
+	{ID: "infracost-api-key", Description: "Infracost API Key", Prefix: "ico_", Severity: "HIGH", Validator: regexp.MustCompile(`^ico_[a-zA-Z0-9]{30,50}$`)},
+	{ID: "deepseek-api-key", Description: "DeepSeek API Key", Prefix: "sk-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sk-[a-fA-F0-9]{32}$`)},
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -364,6 +374,31 @@ func Build(sigs []Signature) *Automaton {
 	return &Automaton{nodes: nodes}
 }
 
+// BuildWithCustom compiles the Aho-Corasick automaton with all builtin signatures
+// along with any custom signatures specified in user configuration.
+func BuildWithCustom(customSigs []config.CustomSignature) *Automaton {
+	sigs := make([]Signature, len(BuiltinSignatures), len(BuiltinSignatures)+len(customSigs))
+	copy(sigs, BuiltinSignatures)
+	for _, cs := range customSigs {
+		var val *regexp.Regexp
+		if cs.Regex != "" {
+			val = regexp.MustCompile(cs.Regex)
+		}
+		sev := cs.Severity
+		if sev == "" {
+			sev = "HIGH"
+		}
+		sigs = append(sigs, Signature{
+			ID:          cs.ID,
+			Description: cs.Description,
+			Prefix:      cs.Prefix,
+			Severity:    sev,
+			Validator:   val,
+		})
+	}
+	return Build(sigs)
+}
+
 // Search scans content and returns all Signature matches found.
 // It operates in O(n) time. The returned Match values contain Sig and Offset
 // only — the caller is responsible for line-number tracking.
@@ -408,15 +443,14 @@ func toLower(b byte) byte {
 }
 
 // isAssignmentOrKeyword checks case-insensitively if prefix contains '=' or ':',
-// or matches one of the WordPress custom key/salt definitions,
+// or matches common credential variable keywords or WordPress salt configurations.
 func isAssignmentOrKeyword(s string) bool {
 	upper := strings.ToUpper(s)
-	if upper == "PASSWORD" || upper == "SECRET" || upper == "API_KEY" || upper == "TOKEN" || upper == "AUTH" || upper == "PASS" || upper == "PWD" {
-		return true
-	}
-	if strings.Contains(upper, "PASSWORD") || strings.Contains(upper, "SECRET") || strings.Contains(upper, "TOKEN") ||
-		strings.Contains(upper, "AUTH") || strings.Contains(upper, "HEROKU") || strings.Contains(upper, "GITHUB") ||
-		strings.Contains(upper, "PASS") || strings.Contains(upper, "PWD") {
+	if strings.Contains(upper, "PASSWORD") || strings.Contains(upper, "SECRET") ||
+		strings.Contains(upper, "TOKEN") || strings.Contains(upper, "AUTH") ||
+		strings.Contains(upper, "HEROKU") || strings.Contains(upper, "GITHUB") ||
+		strings.Contains(upper, "PASS") || strings.Contains(upper, "PWD") ||
+		strings.Contains(upper, "API_KEY") {
 		return true
 	}
 	for i := 0; i < len(s); i++ {
@@ -429,11 +463,9 @@ func isAssignmentOrKeyword(s string) bool {
 			return true
 		}
 	}
-	// Check for exact WordPress config keywords (case-insensitive)
-	return strings.Contains(upper, "AUTH_KEY") ||
-		strings.Contains(upper, "LOGGED_IN_KEY") ||
+	// Check for WordPress config salt/key keywords
+	return strings.Contains(upper, "LOGGED_IN_KEY") ||
 		strings.Contains(upper, "NONCE_KEY") ||
-		strings.Contains(upper, "AUTH_SALT") ||
 		strings.Contains(upper, "LOGGED_IN_SALT") ||
 		strings.Contains(upper, "NONCE_SALT")
 }

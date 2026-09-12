@@ -29,7 +29,7 @@ var safeVariableWords = []string{
 	"your_", "your-", "insert_", "replace_", "changeme",
 	"redacted", "sanitized", "censored",
 	"test", "example", "demo", "alphabet", "charset",
-	"digits", "table", "chars",
+	"digits", "table", "chars", "temp_", "tmp_",
 }
 
 // safeCommentPrefixes are line prefixes (after trimming whitespace) that
@@ -45,6 +45,7 @@ var safeFileSegments = map[string]bool{
 	"sample": true, "samples": true, "docs": true, "doc": true,
 	"spec": true, "specs": true, "seed": true, "seeds": true,
 	"sumdb": true, "download": true, "apt": true, "dpkg": true,
+	"node_modules": true, "vendor": true,
 }
 
 // safeFileSuffixes are filename substrings that indicate the file is a test or doc.
@@ -54,6 +55,7 @@ var safeFileSuffixes = []string{
 	"_spec.js", "_spec.ts", "_spec.tsx", "_spec.jsx",
 	"readme", ".md", ".rst", ".supp", ".po", ".pot", ".mo", ".xliff",
 	".ziphash", ".sum", "go.sum",
+	".env.example", ".env.sample", ".env.template", ".example.env",
 }
 
 // commonPlaceholders lists token substrings that clearly indicate placeholder data.
@@ -257,9 +259,15 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 		return SafePlaceholder
 	}
 
-	// ── Check 0D: Git commit SHA / reference in workflows ────────────────────
-	if strings.Contains(lineContent, "@"+token) {
+	// ── Check 0D: Git commit SHA / container digest reference ────────────────
+	if strings.Contains(lineContent, "@"+token) || (strings.Contains(lowerLine, "image:") && strings.Contains(lowerLine, "@sha256:")) {
 		return SafeVersionString
+	}
+
+	// ── Check 0D2: SVG Path vector coordinates ──────────────────────────────
+	if (strings.Contains(lowerLine, "<path") || strings.Contains(lowerLine, "<svg")) &&
+		(strings.Contains(lowerLine, " d=\"m") || strings.Contains(lowerLine, " d='m") || strings.Contains(lowerLine, "d=\"m") || strings.Contains(lowerLine, "d='m")) {
+		return SafePlaceholder
 	}
 
 	// ── Check 0E: Obvious placeholder values and safe constants ─────────────
@@ -748,9 +756,26 @@ func IsTestFilePath(path string) bool {
 
 	// Normalize path separators
 	lower = strings.ReplaceAll(lower, "\\", "/")
-	segments := strings.Split(lower, "/")
 
-	for i, seg := range segments {
+	// Scan path segments without slice allocations
+	start := 0
+	for start < len(lower) {
+		end := strings.IndexByte(lower[start:], '/')
+		var seg string
+		isLast := false
+		if end == -1 {
+			seg = lower[start:]
+			isLast = true
+			start = len(lower)
+		} else {
+			seg = lower[start : start+end]
+			start += end + 1
+		}
+
+		if seg == "" {
+			continue
+		}
+
 		if safeFileSegments[seg] {
 			return true
 		}
@@ -761,7 +786,7 @@ func IsTestFilePath(path string) bool {
 		// Match segment containing "test" ONLY if it starts with "test" or ends with "test" or matches test directory naming:
 		// e.g. "test_", "_test", "test-", "-test", "__tests__", "testworkspace"
 		// DO NOT match words where "test" is embedded inside normal words like "latest", "fastest", "attestation", "contest", "protest", "speedtest"
-		if i < len(segments)-1 {
+		if !isLast {
 			if seg == "test" || seg == "tests" || strings.HasPrefix(seg, "test_") || strings.HasPrefix(seg, "test-") ||
 				strings.HasSuffix(seg, "_test") || strings.HasSuffix(seg, "-test") ||
 				(strings.HasPrefix(seg, "test") && seg != "testing" && len(seg) >= 4) {
@@ -869,12 +894,13 @@ func extractVarName(line, token string) string {
 
 // isAllAlpha returns true when s contains only ASCII letters.
 func isAllAlpha(s string) bool {
-	for _, r := range s {
-		if !unicode.IsLetter(r) {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
 			return false
 		}
 	}
-	return true
+	return len(s) > 0
 }
 
 // cleanIdentifier returns a lowercased version of s containing only letters and digits.
@@ -892,16 +918,30 @@ func cleanIdentifier(s string) string {
 		return s
 	}
 
-	s = strings.ToLower(s)
 	var sb strings.Builder
 	sb.Grow(len(s)) // Pre-allocate buffer to prevent intermediate allocations
 	for i := 0; i < len(s); i++ {
 		c := s[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 32 // Convert to lowercase in-place with zero intermediate allocations
+		}
 		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
-			sb.WriteByte(c) // WriteByte is faster than WriteRune (ASCII-only)
+			sb.WriteByte(c)
 		}
 	}
 	return sb.String()
+}
+
+var geohashTable [256]int8
+
+func init() {
+	for i := range geohashTable {
+		geohashTable[i] = -1
+	}
+	const geohashBase32 = "0123456789bcdefghjkmnpqrstuvwxyz"
+	for idx := 0; idx < len(geohashBase32); idx++ {
+		geohashTable[geohashBase32[idx]] = int8(idx)
+	}
 }
 
 // isSequential returns true when the token contains long runs of sequential characters,
@@ -911,19 +951,28 @@ func isSequential(s string) bool {
 	if len(s) < 6 {
 		return false
 	}
-	// Lowercase and remove consecutive duplicates
-	var cleaned []rune
-	for _, r := range strings.ToLower(s) {
-		if len(cleaned) == 0 || r != cleaned[len(cleaned)-1] {
-			cleaned = append(cleaned, r)
+
+	var stackBuf [256]byte
+	var cleaned []byte
+	if len(s) <= len(stackBuf) {
+		cleaned = stackBuf[:0]
+	} else {
+		cleaned = make([]byte, 0, len(s))
+	}
+
+	// Lowercase and remove consecutive duplicates without heap allocations
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 32
+		}
+		if len(cleaned) == 0 || c != cleaned[len(cleaned)-1] {
+			cleaned = append(cleaned, c)
 		}
 	}
 	if len(cleaned) < 6 {
 		return false
 	}
-
-	const alphanumeric = "0123456789abcdefghijklmnopqrstuvwxyz"
-	const geohashBase32 = "0123456789bcdefghjkmnpqrstuvwxyz"
 
 	maxRun := 1
 	currentRun := 1
@@ -936,8 +985,20 @@ func isSequential(s string) bool {
 		isSeqASCII := diffASCII == 1 || diffASCII == -1
 
 		// Check sequential in custom alphanumeric alphabet
-		idx1 := strings.IndexRune(alphanumeric, r1)
-		idx2 := strings.IndexRune(alphanumeric, r2)
+		idx1 := -1
+		if r1 >= '0' && r1 <= '9' {
+			idx1 = int(r1 - '0')
+		} else if r1 >= 'a' && r1 <= 'z' {
+			idx1 = int(10 + r1 - 'a')
+		}
+
+		idx2 := -1
+		if r2 >= '0' && r2 <= '9' {
+			idx2 = int(r2 - '0')
+		} else if r2 >= 'a' && r2 <= 'z' {
+			idx2 = int(10 + r2 - 'a')
+		}
+
 		isSeqAlpha := false
 		if idx1 >= 0 && idx2 >= 0 {
 			diffAlpha := idx2 - idx1
@@ -945,8 +1006,8 @@ func isSequential(s string) bool {
 		}
 
 		// Check sequential in geohash base32 alphabet
-		idx1Geo := strings.IndexRune(geohashBase32, r1)
-		idx2Geo := strings.IndexRune(geohashBase32, r2)
+		idx1Geo := int(geohashTable[r1])
+		idx2Geo := int(geohashTable[r2])
 		isSeqGeo := false
 		if idx1Geo >= 0 && idx2Geo >= 0 {
 			diffGeo := idx2Geo - idx1Geo
@@ -991,36 +1052,35 @@ func isVariableReference(token string) bool {
 // a non-secret identifier (like a UUID, checksum, digest, link, path, URL, host,
 // model, or etag), while ensuring legitimate credentials (e.g. valid_token,
 // paid_api_key, guard_secret) are never suppressed.
-func isNonSecretVariableName(varName string) bool {
-	if varName == "" {
+func isNonSecretVariableName(lowerVarName string) bool {
+	if lowerVarName == "" {
 		return false
 	}
-	lower := strings.ToLower(varName)
 
 	// If the variable name explicitly indicates a credential, it is NOT a safe non-secret variable.
-	if strings.Contains(lower, "secret") || strings.Contains(lower, "password") ||
-		strings.Contains(lower, "pass") || strings.Contains(lower, "token") ||
-		strings.Contains(lower, "key") || strings.Contains(lower, "cred") ||
-		strings.Contains(lower, "auth") || strings.Contains(lower, "api") {
+	if strings.Contains(lowerVarName, "secret") || strings.Contains(lowerVarName, "password") ||
+		strings.Contains(lowerVarName, "pass") || strings.Contains(lowerVarName, "token") ||
+		strings.Contains(lowerVarName, "key") || strings.Contains(lowerVarName, "cred") ||
+		strings.Contains(lowerVarName, "auth") || strings.Contains(lowerVarName, "api") {
 		return false
 	}
 
 	// Direct matching for common non-credential identifiers across camelCase, snake_case, kebab-case
-	if strings.Contains(lower, "id") || strings.Contains(lower, "uuid") ||
-		strings.Contains(lower, "guid") || strings.Contains(lower, "hash") ||
-		strings.Contains(lower, "md5") || strings.Contains(lower, "sha") ||
-		strings.Contains(lower, "checksum") || strings.Contains(lower, "fingerprint") ||
-		strings.Contains(lower, "digest") || strings.Contains(lower, "workspace") ||
-		strings.Contains(lower, "path") || strings.Contains(lower, "dir") ||
-		strings.Contains(lower, "folder") || strings.Contains(lower, "url") ||
-		strings.Contains(lower, "uri") || strings.Contains(lower, "host") ||
-		strings.Contains(lower, "link") || strings.Contains(lower, "email") ||
-		strings.Contains(lower, "useragent") || strings.Contains(lower, "user_agent") ||
-		strings.Contains(lower, "ua") || strings.Contains(lower, "device") ||
-		strings.Contains(lower, "model") || strings.Contains(lower, "etag") ||
-		strings.Contains(lower, "version") || strings.Contains(lower, "sig") ||
-		strings.Contains(lower, "integrity") || strings.Contains(lower, "h1") ||
-		strings.Contains(lower, "h2") || strings.Contains(lower, "sri") {
+	if strings.Contains(lowerVarName, "id") || strings.Contains(lowerVarName, "uuid") ||
+		strings.Contains(lowerVarName, "guid") || strings.Contains(lowerVarName, "hash") ||
+		strings.Contains(lowerVarName, "md5") || strings.Contains(lowerVarName, "sha") ||
+		strings.Contains(lowerVarName, "checksum") || strings.Contains(lowerVarName, "fingerprint") ||
+		strings.Contains(lowerVarName, "digest") || strings.Contains(lowerVarName, "workspace") ||
+		strings.Contains(lowerVarName, "path") || strings.Contains(lowerVarName, "dir") ||
+		strings.Contains(lowerVarName, "folder") || strings.Contains(lowerVarName, "url") ||
+		strings.Contains(lowerVarName, "uri") || strings.Contains(lowerVarName, "host") ||
+		strings.Contains(lowerVarName, "link") || strings.Contains(lowerVarName, "email") ||
+		strings.Contains(lowerVarName, "useragent") || strings.Contains(lowerVarName, "user_agent") ||
+		strings.Contains(lowerVarName, "ua") || strings.Contains(lowerVarName, "device") ||
+		strings.Contains(lowerVarName, "model") || strings.Contains(lowerVarName, "etag") ||
+		strings.Contains(lowerVarName, "version") || strings.Contains(lowerVarName, "sig") ||
+		strings.Contains(lowerVarName, "integrity") || strings.Contains(lowerVarName, "h1") ||
+		strings.Contains(lowerVarName, "h2") || strings.Contains(lowerVarName, "sri") {
 		return true
 	}
 

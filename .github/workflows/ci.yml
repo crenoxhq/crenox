@@ -148,6 +148,16 @@ jobs:
           path: dist/
           merge-multiple: true
 
+      - name: Generate Checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt 2>/dev/null || true
+          for f in crenox-*; do
+            if [ -f "$f" ] && [[ "$f" != *.sha256 ]] && [[ "$f" != "checksums.txt" ]]; then
+              sha256sum "$f" | awk '{print $1}' > "$f.sha256"
+            fi
+          done
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

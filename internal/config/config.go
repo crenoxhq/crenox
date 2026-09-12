@@ -139,15 +139,15 @@ func defaultConfig() Config {
 }
 
 // Load reads configuration from the given path, merging it on top of the
-// built-in defaults.  If path is empty, Load searches the repository root
-// (current directory) and the user home directory in that order.
+// built-in defaults.  If path is empty, Load searches the target directory (if provided),
+// the current working directory, and the user home directory in that order.
 // If no config file is found, the defaults are returned without error.
-func Load(path string) (*Config, error) {
+func Load(path string, targetDirs ...string) (*Config, error) {
 	cfg := defaultConfig()
 
 	candidate := path
 	if candidate == "" {
-		candidate = findConfigFile()
+		candidate = findConfigFile(targetDirs...)
 	}
 
 	if candidate == "" {
@@ -171,12 +171,28 @@ func Load(path string) (*Config, error) {
 	return cfg.validate()
 }
 
-// findConfigFile searches the current working directory and the home directory.
-func findConfigFile() string {
+// findConfigFile searches the provided target directories, the current working
+// directory, and the user's home directory in that order.
+func findConfigFile(targetDirs ...string) string {
+	for _, dir := range targetDirs {
+		if dir == "" {
+			continue
+		}
+		checkDir := dir
+		info, err := os.Stat(dir)
+		if err == nil && !info.IsDir() {
+			checkDir = filepath.Dir(dir)
+		}
+		p := filepath.Join(checkDir, DefaultConfigFileName)
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+			return p
+		}
+	}
+
 	cwd, err := os.Getwd()
 	if err == nil {
 		p := filepath.Join(cwd, DefaultConfigFileName)
-		if _, err := os.Stat(p); err == nil {
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
 			return p
 		}
 	}
@@ -184,7 +200,7 @@ func findConfigFile() string {
 	home, err := os.UserHomeDir()
 	if err == nil {
 		p := filepath.Join(home, DefaultConfigFileName)
-		if _, err := os.Stat(p); err == nil {
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
 			return p
 		}
 	}

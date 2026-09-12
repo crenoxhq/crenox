@@ -1070,6 +1070,12 @@ func TestScanner_NewModernSignatures_Detected(t *testing.T) {
 		{"Mistral AI Key", `key := "mis_1234567890abcdef1234567890abcdef"`, "mistral-api-key"},
 		{"Datadog API Key", `key := "ddp_1234567890abcdef1234567890abcdef"`, "datadog-api-key"},
 		{"AWS AppSync Key", `key := "da2-1234567890abcdef123456"`, "aws-appsync-api-key"},
+		{"Alibaba AccessKey", `key := "LTAI5t7example123456789"`, "alibaba-access-key"},
+		{"Azure Storage Key", `key := "AccountKey=dGhpcy1pcy1hLWZha2UtYXp1cmUtc3RvcmFnZS1rZXktZm9yLXRlc3RpbmctcHVycG9zZXMtb25seQ=="`, "azure-storage-key"},
+		{"Grafana Cloud Token", `token := "glc_eyJvIjoiMTIzNDUiLCJuIjoiYWRtaW4iLCJrIjoi"`, "grafana-cloud-token"},
+		{"Terraform Cloud Token", `token := "atlasv1.abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz12"`, "terraform-cloud-token"},
+		{"Infracost API Key", `key := "ico_abcdefghijklmnopqrstuvwxyz1234"`, "infracost-api-key"},
+		{"DeepSeek API Key", `key := "` + strings.Join([]string{"sk", "0123456789abcdef0123456789abcdef"}, "-") + `"`, "deepseek-api-key"},
 	}
 
 	for _, tc := range tests {

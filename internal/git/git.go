@@ -117,12 +117,20 @@ func parseStagedFiles(raw []byte) []StagedFile {
 // starting with '+') excluding the diff header lines ('+++').
 func FilterAddedLines(diff []byte) []byte {
 	var buf bytes.Buffer
-	lines := bytes.Split(diff, []byte("\n"))
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
+	buf.Grow(len(diff) / 2)
+	start := 0
+	diffLen := len(diff)
+	for start < diffLen {
+		end := bytes.IndexByte(diff[start:], '\n')
+		var line []byte
+		if end == -1 {
+			line = diff[start:]
+			start = diffLen
+		} else {
+			line = diff[start : start+end]
+			start += end + 1
 		}
-		if line[0] == '+' && !bytes.HasPrefix(line, []byte("+++")) {
+		if len(line) > 0 && line[0] == '+' && !bytes.HasPrefix(line, []byte("+++")) {
 			// Strip the leading '+' so the scanner sees the raw content.
 			buf.Write(line[1:])
 			buf.WriteByte('\n')

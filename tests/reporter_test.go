@@ -228,3 +228,88 @@ func TestGitLabSASTReporter(t *testing.T) {
 		t.Errorf("expected location server/main.go:42, got %+v", loc)
 	}
 }
+
+func TestValidateFormat(t *testing.T) {
+	tests := []struct {
+		input   string
+		wantFmt reporter.Format
+		wantErr bool
+	}{
+		{"pretty", reporter.FormatPretty, false},
+		{"", reporter.FormatPretty, false},
+		{"json", reporter.FormatJSON, false},
+		{"plain", reporter.FormatPlain, false},
+		{"text", reporter.FormatPlain, false},
+		{"sarif", reporter.FormatSARIF, false},
+		{"gitlab", reporter.FormatGitLabSAST, false},
+		{"gitlab-sast", reporter.FormatGitLabSAST, false},
+		{"sast", reporter.FormatGitLabSAST, false},
+		{"nope", reporter.FormatPretty, true},
+		{"invalid", reporter.FormatPretty, true},
+	}
+
+	for _, tc := range tests {
+		got, err := reporter.ValidateFormat(tc.input)
+		if tc.wantErr && err == nil {
+			t.Errorf("ValidateFormat(%q) expected error, got nil", tc.input)
+		}
+		if !tc.wantErr && err != nil {
+			t.Errorf("ValidateFormat(%q) unexpected error: %v", tc.input, err)
+		}
+		if !tc.wantErr && got != tc.wantFmt {
+			t.Errorf("ValidateFormat(%q) = %v; want %v", tc.input, got, tc.wantFmt)
+		}
+	}
+}
+
+func TestRedactLineContent(t *testing.T) {
+	rawSecret := "AKIAIOSFODNN7EXAMPLE"
+	rawLine := "AWS_ACCESS_KEY_ID=" + rawSecret
+	redacted := reporter.RedactLineContent(rawLine, rawSecret)
+
+	expected := "AWS_ACCESS_KEY_ID=AKIAIO**********MPLE"
+	if redacted != expected {
+		t.Errorf("RedactLineContent() = %q; want %q", redacted, expected)
+	}
+	if bytes.Contains([]byte(redacted), []byte(rawSecret)) {
+		t.Errorf("RedactLineContent still contains raw secret: %s", redacted)
+	}
+}
+
+func TestJSONReporter_RedactsSecret(t *testing.T) {
+	rawSecret := "AKIAIOSFODNN7EXAMPLE"
+	mockFindings := []scanner.Finding{
+		{
+			FilePath:      "config.env",
+			Line:          1,
+			Severity:      "CRITICAL",
+			DetectionTier: scanner.TierTrie,
+			SignatureID:   "aws-access-key",
+			Description:   "AWS Access Key",
+			Token:         rawSecret,
+			LineContent:   "AWS_ACCESS_KEY_ID=" + rawSecret,
+		},
+	}
+
+	buf := new(bytes.Buffer)
+	rep := reporter.New(buf, reporter.FormatJSON)
+	rep.PrintSummary(mockFindings, 50*time.Millisecond, 1)
+
+	output := buf.String()
+	if bytes.Contains([]byte(output), []byte(rawSecret)) {
+		t.Fatalf("JSON report leaked raw secret: %s", output)
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
+		t.Fatalf("failed to unmarshal JSON: %v", err)
+	}
+	findings := parsed["findings"].([]interface{})
+	f0 := findings[0].(map[string]interface{})
+	if f0["token"] != "AKIAIO**********MPLE" {
+		t.Errorf("expected masked token in JSON, got %v", f0["token"])
+	}
+	if f0["line_snippet"] != "AWS_ACCESS_KEY_ID=AKIAIO**********MPLE" {
+		t.Errorf("expected masked line_snippet in JSON, got %v", f0["line_snippet"])
+	}
+}

@@ -35,20 +35,28 @@ const (
 	FormatGitLabSAST
 )
 
+// ValidateFormat validates the format string and returns the parsed Format or an error.
+func ValidateFormat(s string) (Format, error) {
+	switch strings.ToLower(s) {
+	case "pretty", "":
+		return FormatPretty, nil
+	case "json":
+		return FormatJSON, nil
+	case "plain", "text":
+		return FormatPlain, nil
+	case "sarif":
+		return FormatSARIF, nil
+	case "gitlab", "gitlab-sast", "sast":
+		return FormatGitLabSAST, nil
+	default:
+		return FormatPretty, fmt.Errorf("unsupported output format: %s\nSupported formats: pretty, plain, json, sarif, gitlab-sast", s)
+	}
+}
+
 // ParseFormat converts a string to a Format constant.
 func ParseFormat(s string) Format {
-	switch strings.ToLower(s) {
-	case "json":
-		return FormatJSON
-	case "plain", "text":
-		return FormatPlain
-	case "sarif":
-		return FormatSARIF
-	case "gitlab", "gitlab-sast", "sast":
-		return FormatGitLabSAST
-	default:
-		return FormatPretty
-	}
+	f, _ := ValidateFormat(s)
+	return f
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -212,7 +220,7 @@ func (r *Reporter) printOneFinding(f scanner.Finding) {
 	}
 
 	// Print a snippet of the offending line, redacting the token.
-	snippet := truncateForDisplay(f.LineContent, 120)
+	snippet := truncateForDisplay(RedactLineContent(f.LineContent, f.Token), 120)
 	fmt.Fprintf(r.w, "  %s    %s %s\n",
 		strings.Repeat(" ", len(f.Severity)+2),
 		dimColor.Sprint("→"),
@@ -301,7 +309,7 @@ func (r *Reporter) jsonSummary(findings []scanner.Finding, elapsed time.Duration
 			Description: f.Description,
 			Token:       maskToken(f.Token),
 			Entropy:     f.Entropy,
-			LineSnippet: truncateForDisplay(f.LineContent, 200),
+			LineSnippet: truncateForDisplay(RedactLineContent(f.LineContent, f.Token), 200),
 		})
 	}
 
@@ -321,6 +329,12 @@ func (r *Reporter) jsonSummary(findings []scanner.Finding, elapsed time.Duration
 // Utility helpers
 // ──────────────────────────────────────────────────────────────────────────────
 
+// MaskToken partially redacts a token for display, preserving the first 6 and
+// last 4 characters. Short tokens are fully masked.
+func MaskToken(tok string) string {
+	return maskToken(tok)
+}
+
 // maskToken partially redacts a token for display, preserving the first 6 and
 // last 4 characters.  Short tokens are fully masked.
 func maskToken(tok string) string {
@@ -330,6 +344,23 @@ func maskToken(tok string) string {
 	visible := 6
 	suffix := 4
 	return tok[:visible] + strings.Repeat("*", len(tok)-visible-suffix) + tok[len(tok)-suffix:]
+}
+
+// RedactLineContent masks occurrences of token within lineContent using maskToken.
+func RedactLineContent(lineContent, token string) string {
+	if token == "" || lineContent == "" {
+		return lineContent
+	}
+	masked := maskToken(token)
+	if strings.Contains(lineContent, token) {
+		return strings.ReplaceAll(lineContent, token, masked)
+	}
+	lowerLine := strings.ToLower(lineContent)
+	lowerToken := strings.ToLower(token)
+	if idx := strings.Index(lowerLine, lowerToken); idx != -1 {
+		return lineContent[:idx] + masked + RedactLineContent(lineContent[idx+len(token):], token)
+	}
+	return lineContent
 }
 
 // severityBadge returns a coloured badge for the given severity string.

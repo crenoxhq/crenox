@@ -47,7 +47,7 @@
       "description": "فاحص أسرار وخطاف pre-commit أمني فائق السرعة بلغة Go لكشف تسريب المفاتيح وكلمات المرور والرموز السرية في Git محلياً.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.7",
+      "softwareVersion": "2.1.8",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -61,7 +61,7 @@
       },
       "featureList": [
         "فاحص أسرار محلي فائق السرعة في أقل من 20 مللي ثانية",
-        "أكثر من 125 توقيع كشف مدمج لمزودي السحابة والذكاء الاصطناعي",
+        "أكثر من 130 توقيع كشف مدمج لمزودي السحابة والذكاء الاصطناعي",
         "حساب الإنتروبيا بجدول Shannon Log2 LUT فائق الكفاءة",
         "توليد تقارير GitLab Secret Detection SAST الرسمية و GitHub SARIF",
         "انعدام استهلاك الذاكرة في المسار الحرج (Zero Allocations)"
@@ -88,7 +88,7 @@
           "name": "ما الفرق بين كرينوكس وأداة Gitleaks؟",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "كرينوكس أسرع بما بين 3.8 إلى 154 مرة من Gitleaks، ويستهلك ذاكرة ثابتة (13-17 MB) دون أي تخصيصات في المسار الحرج، مع دعم أكثر من 125 توقيعاً مدمجاً وفلترة سياقية متطورة تمنع الإنذارات الكاذبة."
+            "text": "كرينوكس أسرع بما بين 3.8 إلى 154 مرة من Gitleaks، ويستهلك ذاكرة ثابتة (13-17 MB) دون أي تخصيصات في المسار الحرج، مع دعم أكثر من 130 توقيعاً مدمجاً وفلترة سياقية متطورة تمنع الإنذارات الكاذبة."
           }
         },
         {
@@ -229,7 +229,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.7</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.8</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -395,6 +395,12 @@ allowlist_patterns:
             <p>مقالات يشاركها المطورون لشرح آليات تحسين وسرعة الكشف والفلسفة الأمنية خلف بناء الأداة.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">12 سبتمبر 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.8: حجب الأسرار بالنجوم، تأمين سكربت التثبيت، فحص تاريخ Git المتوازي، و6 تواقيع حديثة</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.8 حجب الأسرار التلقائي بالنجوم (****) في كافة التقارير (Zero-Plaintext Masking)، وترقية سكربت التثبيت السريع بأعلى معايير الأمان والتحقق التشفيري بـ SHA-256 والسقوط الآمن بدون صلاحيات جذر، وفحص تاريخ Git المتوازي بعدد أنوية المعالج مع شمول دمج الفروع (Merge Commits) ورسائل الـ Commits، والتحقق المبكر من المسارات وصيغ الإخراج، مع إضافة 6 تواقيع جديدة تشمل DeepSeek وAlibaba AccessKey وAzure Storage وGrafana Cloud وTerraform Cloud وInfracost.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">3 سبتمبر 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.7: إصلاح توافقية أندرويد وTermux Seccomp، تسريع المسار الساخن بانعدام حجز الذاكرة، وتنقية ألوان Git ANSI</a></h4>

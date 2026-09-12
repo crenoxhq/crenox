@@ -6,7 +6,7 @@
     <title>Crenox (كرينوكس) — Ultra-Fast Git Secret Scanner & Pre-Commit Hook | Gitleaks Alternative</title>
     
     <!-- Meta Descriptions for SEO -->
-    <meta name="description" content="Crenox is a zero-dependency, ultra-fast Git secret scanner and pre-commit hook written in Go. Detect leaked API keys, tokens, and credentials in under 20ms with 125+ signatures and GitLab SAST / GitHub SARIF reporting.">
+    <meta name="description" content="Crenox is a zero-dependency, ultra-fast Git secret scanner and pre-commit hook written in Go. Detect leaked API keys, tokens, and credentials in under 20ms with 130+ signatures and GitLab SAST / GitHub SARIF reporting.">
     <meta name="keywords" content="secret scanner, git secret scanner, secret detection tool, gitleaks alternative, git-secrets alternative, detect api keys, detect leaked passwords, pre-commit secret scanner, gitlab secret detection sast, sarif secret scanner, go secret scanner, devsecops secret scanner, فاحص أسرار, فحص الأسرار البرمجية">
     <meta name="author" content="Khaled Hani">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -47,7 +47,7 @@
       "description": "A high-performance zero-dependency Git pre-commit secret scanner and credentials detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.7",
+      "softwareVersion": "2.1.8",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -61,7 +61,7 @@
       },
       "featureList": [
         "Sub-20ms local Git pre-commit secret scanning",
-        "125+ built-in modern provider and AI signatures",
+        "130+ built-in modern provider and AI signatures",
         "Precomputed Shannon Entropy Log2 Look-Up Table",
         "GitLab Secret Detection SAST v15.0.0 and GitHub SARIF 2.1.0 output formats",
         "Zero-allocation hot scanning path"
@@ -88,7 +88,7 @@
           "name": "How does Crenox compare to Gitleaks?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Crenox is 3.8x to 154x faster than Gitleaks, maintains a strictly bounded 13-17 MB RAM footprint, eliminates heap allocations in the hot search path, and includes 125+ built-in signatures."
+            "text": "Crenox is 3.8x to 154x faster than Gitleaks, maintains a strictly bounded 13-17 MB RAM footprint, eliminates heap allocations in the hot search path, and includes 130+ built-in signatures."
           }
         },
         {
@@ -229,7 +229,7 @@
                     <thead>
                         <tr>
                             <th>Audited Metric</th>
-                            <th>Crenox (<span class="latest-version">v2.1.7</span>)</th>
+                            <th>Crenox (<span class="latest-version">v2.1.8</span>)</th>
                             <th>Gitleaks (v8.18.2)</th>
                             <th>Betterleaks (v1.6.1)</th>
                         </tr>
@@ -395,6 +395,12 @@ allowlist_patterns:
             <p>Articles written by the developers covering the design, optimization, and security philosophy of Crenox.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 12, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.8: Defensive Secret Masking, Hardened Installer, Multi-Worker Git History & 6 New Signatures</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.8 introduces defensive zero-plaintext secret masking across text, JSON, and SARIF reports, a hardened and cryptographically verified installer (featuring SHA-256 integrity checks, script truncation protection, rootless fallback, and /dev/tty interactive support), multi-worker parallel Git history auditing with merge commit and commit message coverage, pre-scan format and path validations, 6 new modern cloud & AI signatures (DeepSeek, Alibaba AccessKey, Azure Storage, Grafana Cloud, Terraform Cloud, Infracost), and zero-allocation stack optimizations.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 3, 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/dev/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.7: Android Seccomp Fix, Zero-Allocation Context Classifiers & Git ANSI Sanitization</a></h4>

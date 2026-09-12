@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.8] - 2026-09-12
+
+### Security
+- **Defensive Secret Masking in Reports:** Implemented strict secret masking across text, JSON, and SARIF output formats (`internal/reporter/reporter.go`). Secret tokens now display only their leading and trailing 4 characters with the sensitive payload masked by asterisks (`****`), eliminating accidental secret exfiltration through terminal shoulder-surfing, console logs, or CI/CD build artifacts.
+- **Piped Installer Truncation Protection:** Enclosed the complete installation workflow in `scripts/install.sh` and `docs/install.sh` inside a strict shell execution envelope (`main() { ... }; main "$@"`). Prevents partial execution vulnerabilities caused by network drops or socket timeouts when running via `curl ... | bash`.
+- **TLS 1.2+ & Strict Transport Security:** Enforced modern HTTPS transport with TLS 1.2 minimum (`--proto '=https' --tlsv1.2`) in the installer to prevent protocol downgrade attacks and unencrypted transport tampering.
+- **Cryptographic SHA-256 Verification:** Added pre-installation SHA-256 integrity verification in `install.sh` that validates downloaded binaries against published `checksums.txt` or `.sha256` files before making the binary executable.
+- **Automated Checksum Generation in CI/CD:** Upgraded `.github/workflows/ci.yml` release job to automatically compute and publish cryptographic `checksums.txt` and per-binary `.sha256` files for all release artifacts.
+- **Restricted Working Directories:** Temporary directories created during installation now enforce strict `0700` (`rwx------`) permissions and are guaranteed to be cleaned up on exit or signal interruption (`trap cleanup EXIT INT TERM`).
+
+### Fixed
+- **Non-Existent & Inaccessible Scan Paths:** Fixed a critical bug where scanning a non-existent path (e.g. `crenox scan /path/does/not/exist`) erroneously reported `✔ CRENOX CLEAN — 0 file(s) scanned` with exit code `0`. The command now properly writes `crenox: path "..." does not exist or is inaccessible` to `stderr` and exits immediately with non-zero exit code `1`.
+- **Pre-Scan Output Format Validation:** Moved `--format` flag validation to execute *before* scanning begins in both `cmd/crenox/commands/scan.go` and `cmd/crenox/commands/run.go`. Invalid formats (e.g. `--format invalid`) abort immediately with exit code `1` before consuming CPU or memory resources.
+- **Target-Directory Configuration Resolution:** Fixed `.crenox.yaml` configuration discovery order in `cmd/crenox/commands/scan.go` and `internal/config/config.go` (`LoadFromDir`). Configurations located in the scanned directory are now prioritized before falling back to the invocation directory.
+- **Merge Commit Leaks in History Scans:** Removed the `--no-merges` flag from git history traversal and added `-m` support, ensuring merge commits are audited and secrets introduced via pull request merges or conflict resolutions cannot bypass scans.
+- **Git Commit Message Secret Leaking:** Extended git history scanning to inspect commit subject lines and commit bodies (`git log --format="%H%x00%s%x00%b"`), preventing credentials committed directly in commit messages from slipping through undetected.
+- **Octal-Quoted Git Paths Parsing:** Added `unquoteGitPath` in `cmd/crenox/commands/scan.go` to unescape C-quoted octal strings returned by Git for filenames with spaces, unicode, or non-ASCII characters (e.g. `"\342\234\223.txt"`).
+- **Interactive TTY Consumption in Piped Installs:** Fixed an issue where `curl ... | bash` consumed `stdin` and broke interactive prompts. Added direct `/dev/tty` redirection (`</dev/tty >/dev/tty`) so users can interactively select their preferred Git protection mode (`--global`, `--local`, or binary-only) even when piped.
+- **Sudo-less Safe Fallback in Installer:** Fixed installation failures in environments lacking `sudo` (such as Termux, minimal Docker containers, and rootless CI runners). The installer now automatically falls back to `$HOME/.local/bin` when `/usr/local/bin` is not writable and `sudo` is unavailable.
+
+### Added
+- **6 New Modern Cloud & AI Signatures:** Added detection patterns and prefix trees in `internal/trie/trie.go`:
+  - DeepSeek API Key (`sk-[a-zA-Z0-9]{48}`)
+  - Alibaba Cloud AccessKey ID (`LTAI[a-zA-Z0-9]{16,24}`)
+  - Azure Storage Account Key (`[a-zA-Z0-9+/]{86}==`)
+  - Grafana Cloud Token (`glc_[A-Za-z0-9+/=_-]{32,}`)
+  - Terraform Cloud / Enterprise Token (`[a-zA-Z0-9]+\.atlasv1\.[a-zA-Z0-9_-]{60,}`)
+  - Infracost API Key (`ico-[a-zA-Z0-9_-]{32,}`)
+- **Multi-Worker Parallel Git History Auditing:** Redesigned `scanGitHistory` in `cmd/crenox/commands/scan.go` with a bounded worker pool utilizing `runtime.NumCPU()` concurrent goroutines for commit diff extraction and analysis.
+- **Shell PATH Auto-Detection in Installer:** Added shell environment inspection in `install.sh` providing ready-to-run copy-paste commands for `bash`, `zsh`, and `fish` whenever the installation directory is not present in `$PATH`.
+- **Comprehensive Unit & Regression Test Suite:**
+  - Added tests in `cmd/crenox/commands/commands_test.go` verifying non-existent path exit codes, early format validation, and multi-worker commit history scanning.
+  - Added tests in `tests/reporter_test.go` verifying secret masking across plain text, JSON, and SARIF reports.
+  - Added tests in `tests/config_test.go` for `LoadFromDir`.
+  - Added tests in `tests/trie_test.go` and `tests/scanner_test.go` for the 6 new signatures.
+  - Added tests in `tests/context_test.go` for SVG path vectors, container digests, and `.env.example` suppression.
+
+### Changed
+- **False-Positive Suppression Refinements:**
+  - Suppressed container image digests (`sha256:[a-f0-9]{64}`).
+  - Suppressed SVG vector path data (`d="M...", path d=...`).
+  - Added default exclusions for example environment templates (`.env.example`, `.env.sample`).
+  - Added safe variable prefixes (`temp_`, `tmp_`, `dummy_`, `mock_`, `test_`).
+  - Improved base64 assignment token extraction for tokens with slashes and quotes.
+- **Installer Terminal UI Modernization:** Replaced legacy installer output with a professional, color-coded 4-step progress layout (`[1/4]` through `[4/4]`), clean summary card, and strict removal of emojis for a crisp enterprise terminal look.
+
+### Performance
+- **Zero-Allocation Hot-Path Optimizations:**
+  - Optimized `isStrictBip39Mnemonic` in `internal/scanner/scanner.go` using stack-allocated buffers.
+  - Replaced runtime allocations in `isSequential` with a stack-allocated lookup buffer in `internal/context/context.go`.
+  - Converted `isAllAlpha` to a zero-allocation byte-level loop.
+  - Streamlined `FilterAddedLines` in `internal/git/git.go` with streaming byte scanners.
+  - Converted `knownKeyNames` to a fast static map lookup.
+  - Maintained 0 allocations per operation in Shannon entropy analysis and trie pattern search with over 314 MB/s throughput.
+
 ## [2.1.7] - 2026-09-03
 
 ### Fixed

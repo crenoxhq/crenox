@@ -4,7 +4,6 @@ package commands
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -57,11 +56,17 @@ Inline Suppression:
 
 // runScan is the core scanning logic used by both `run` and `scan` commands.
 func runScan(configPath, format string, failFast, verbose bool) error {
+	parsedFormat, err := reporter.ValidateFormat(format)
+	if err != nil {
+		return err
+	}
+
 	updateChan := updater.CheckForUpdateAsync()
 	startTime := time.Now()
 
 	// ── Load configuration ────────────────────────────────────────────────────
-	cfg, err := config.Load(configPath)
+	repoRoot, _ := git.RepoRoot()
+	cfg, err := config.Load(configPath, repoRoot)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
@@ -73,7 +78,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	}
 
 	// ── Initialise reporter ───────────────────────────────────────────────────
-	rep := reporter.New(os.Stderr, reporter.ParseFormat(format))
+	rep := reporter.New(os.Stderr, parsedFormat)
 	rep.PrintHeader()
 
 	// ── Verify we are inside a git repository ────────────────────────────────
@@ -92,26 +97,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	}
 
 	// ── Build Aho-Corasick automaton once ─────────────────────────────────────
-	sigs := make([]trie.Signature, len(trie.BuiltinSignatures))
-	copy(sigs, trie.BuiltinSignatures)
-	for _, cs := range cfg.CustomSignatures {
-		var val *regexp.Regexp
-		if cs.Regex != "" {
-			val = regexp.MustCompile(cs.Regex)
-		}
-		sev := cs.Severity
-		if sev == "" {
-			sev = "HIGH"
-		}
-		sigs = append(sigs, trie.Signature{
-			ID:          cs.ID,
-			Description: cs.Description,
-			Prefix:      cs.Prefix,
-			Severity:    sev,
-			Validator:   val,
-		})
-	}
-	automaton := trie.Build(sigs)
+	automaton := trie.BuildWithCustom(cfg.CustomSignatures)
 
 	// ── Construct scanner ─────────────────────────────────────────────────────
 	scanOpts := scanner.Options{
@@ -210,6 +196,6 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	}
 
 	// Exit 1 to block the commit.
-	os.Exit(1)
+	exitFunc(1)
 	return nil
 }

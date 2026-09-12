@@ -67,3 +67,42 @@ func TestConfigLoad_InvalidFile(t *testing.T) {
 		t.Errorf("expected default entropy threshold 4.5, got %f", cfg.EntropyThreshold)
 	}
 }
+
+func TestConfigLoad_TargetDirectory(t *testing.T) {
+	tmpDir := t.TempDir()
+	cfgPath := filepath.Join(tmpDir, ".crenox.yaml")
+	yamlContent := `
+entropy_threshold: 2.5
+custom_signatures:
+  - id: custom-rule
+    description: "Custom Rule"
+    prefix: "corp_sec_"
+    severity: "CRITICAL"
+`
+	if err := os.WriteFile(cfgPath, []byte(yamlContent), 0644); err != nil {
+		t.Fatalf("failed to write temp config file: %v", err)
+	}
+
+	// Loading with target directory specified
+	cfg, err := config.Load("", tmpDir)
+	if err != nil {
+		t.Fatalf("expected no error loading config from target directory, got %v", err)
+	}
+	if cfg.EntropyThreshold != 2.5 {
+		t.Errorf("expected entropy threshold 2.5, got %f", cfg.EntropyThreshold)
+	}
+	if len(cfg.CustomSignatures) != 1 || cfg.CustomSignatures[0].ID != "custom-rule" {
+		t.Errorf("expected custom signature custom-rule, got %+v", cfg.CustomSignatures)
+	}
+
+	// Loading with target file in subdirectory
+	subFile := filepath.Join(tmpDir, "sub", "file.txt")
+	cfg2, err := config.Load("", subFile)
+	if err != nil {
+		t.Fatalf("expected no error loading config from target file's parent, got %v", err)
+	}
+	// sub directory doesn't have .crenox.yaml, so it falls back to cwd / default
+	if cfg2 == nil {
+		t.Fatalf("expected non-nil config")
+	}
+}

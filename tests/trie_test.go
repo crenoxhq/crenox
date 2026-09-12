@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/crenoxhq/crenox/v2/internal/config"
 	"github.com/crenoxhq/crenox/v2/internal/trie"
 )
 
@@ -138,6 +139,58 @@ func TestTrie_LineNumberTracking(t *testing.T) {
 	// Search no longer tracks line numbers (caller responsibility), so we
 	// only verify the match is found.
 	assertAtLeastOneMatch(t, matches, "github-pat-classic")
+}
+
+func TestTrie_AlibabaAccessKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	matches := search(a, `ALIBABA_KEY=LTAI5t7example123456789`)
+	assertAtLeastOneMatch(t, matches, "alibaba-access-key")
+}
+
+func TestTrie_AzureStorageKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	matches := search(a, `DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=dGhpcy1pcy1hLWZha2UtYXp1cmUtc3RvcmFnZS1rZXktZm9yLXRlc3RpbmctcHVycG9zZXMtb25seQ==;EndpointSuffix=core.windows.net`)
+	assertAtLeastOneMatch(t, matches, "azure-storage-key")
+}
+
+func TestTrie_GrafanaCloudToken(t *testing.T) {
+	a := buildDefaultAutomaton()
+	matches := search(a, `GRAFANA_TOKEN=glc_eyJvIjoiMTIzNDUiLCJuIjoiYWRtaW4iLCJrIjoi`)
+	assertAtLeastOneMatch(t, matches, "grafana-cloud-token")
+}
+
+func TestTrie_TerraformCloudToken(t *testing.T) {
+	a := buildDefaultAutomaton()
+	matches := search(a, `TFC_TOKEN=atlasv1.abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz12`)
+	assertAtLeastOneMatch(t, matches, "terraform-cloud-token")
+}
+
+func TestTrie_InfracostAPIKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	matches := search(a, `INFRACOST_API_KEY=ico_abcdefghijklmnopqrstuvwxyz1234`)
+	assertAtLeastOneMatch(t, matches, "infracost-api-key")
+}
+
+func TestTrie_DeepSeekAPIKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	mockKey := strings.Join([]string{"sk", "0123456789abcdef0123456789abcdef"}, "-")
+	matches := search(a, "key := \""+mockKey+"\"")
+	assertAtLeastOneMatch(t, matches, "deepseek-api-key")
+}
+
+func TestTrie_BuildWithCustom(t *testing.T) {
+	customSigs := []config.CustomSignature{
+		{
+			ID:          "my-custom-token",
+			Description: "Custom Company Token",
+			Prefix:      "corp_token_",
+			Severity:    "CRITICAL",
+			Regex:       `^corp_token_[a-zA-Z0-9]{16}$`,
+		},
+	}
+	a := trie.BuildWithCustom(customSigs)
+	matches := search(a, `token = "corp_token_1234567890abcdef"`)
+	assertAtLeastOneMatch(t, matches, "my-custom-token")
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

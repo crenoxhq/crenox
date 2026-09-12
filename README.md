@@ -52,9 +52,9 @@ Crenox uses a **three-tier detection pipeline** designed for speed and false pos
 
 | Tier | Engine | Purpose |
 |------|--------|---------|
-| 1 — PATTERN | Aho-Corasick automaton | Matches 125+ known secret signatures in O(n) time, zero allocations |
+| 1 — PATTERN | Aho-Corasick automaton | Matches 130+ known secret signatures in O(n) time, zero allocations |
 | 2 — ENTROPY | Shannon entropy analysis | Catches unknown secrets by measuring information density (with Log2 LUT acceleration) |
-| 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, Python descriptors, and placeholders |
+| 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, container digests, and placeholders |
 
 A finding must survive all three tiers before it is reported.
 
@@ -216,7 +216,7 @@ Measured on real-world repositories with Crenox against the most popular alterna
    - File size cap: files > 10 MB skipped
          |
   [Tier 1 — Aho-Corasick Trie  —  internal/trie/trie.go]
-   Built once at startup via trie.Build() — allocation-free DFA matching of 125+ signatures
+   Built once at startup via trie.Build() — allocation-free DFA matching of 130+ signatures
    Case-insensitive O(n) scan using a branchless 256-byte toLower lookup table
    and sync.Pool-recycled 64 KB streaming buffers to cap heap memory to ~3 MB
    BIP-39 mnemonic detection: 12/15/18/21/24 words validated against 2048-word dictionary
@@ -337,9 +337,9 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 
 | Category | Signatures |
 |----------|-----------|
-| **AI & ML Platforms** | OpenAI (`sk-`, `sk-proj-`), Anthropic (`sk-ant-`), Cohere (`co_`), Together AI (`tog_`), Mistral AI (`mis_`), Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), HuggingFace (`hf_`) |
-| **Cloud Databases & Services** | Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`) |
-| **DevSecOps & Analytics** | Datadog (`ddp_`), PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
+| **AI & ML Platforms** | OpenAI (`sk-`, `sk-proj-`), DeepSeek (`sk-`), Anthropic (`sk-ant-`), Cohere (`co_`), Together AI (`tog_`), Mistral AI (`mis_`), Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), HuggingFace (`hf_`) |
+| **Cloud Databases & Services** | Alibaba Cloud AccessKey ID (`LTAI`), Azure Storage Account Key, Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`), Terraform Cloud (`atlasv1`) |
+| **DevSecOps & Analytics** | Grafana Cloud Token (`glc_`), Infracost API Key (`ico-`), Datadog (`ddp_`), PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
 | **Social & Messaging** | Telegram Bot API Token (`bot<id>:<hash>`), Discord Webhook (`https://discord.com/api/webhooks/`), Slack Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Webhook (`https://hooks.slack.com/services/`) |
 | **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`), Suffix environment tokens (`_GITHUB_TOKEN`) |
 | **Heroku** | API Key (`HEROKU_API_KEY`), OAuth Token (`heroku_oauth_token`) |
@@ -397,13 +397,19 @@ Show that your repository is actively protected against hardcoded secrets by emb
 
 ### One-Line Automatic Installer (Recommended)
 
-Install Crenox in under 5 seconds (Linux, macOS, Termux):
+Install Crenox in under 5 seconds (Linux, macOS, Termux, Windows Git Bash):
 
 ```bash
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash
 ```
 
-**Installer Options / Flags:**
+> **Security & Reliability Built-In:**
+> - **Truncation Protection:** Wrapped inside a syntax closure to prevent partial script execution if connection drops.
+> - **Integrity Verification:** Automatically checks SHA-256 cryptographic checksums against release metadata before execution.
+> - **Zero Root Requirement:** Automatically falls back to `$HOME/.local/bin` without crashing if `sudo` is absent.
+> - **Interactive `/dev/tty`:** Supports interactive hook selection even when piped from `curl`.
+
+**Automation & Non-Interactive Flags:**
 
 ```bash
 # Install binary & automatically protect current Git repository:
@@ -414,6 +420,9 @@ curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --global
 
 # Install binary only (skip Git hook setup):
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
+
+# Pin to a specific version or custom directory:
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.8 --dir=/usr/local/bin
 ```
 
 ### Pre-compiled Binary (Manual Download)
@@ -491,7 +500,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.6 # Replace with the latest release version
+    rev: v2.1.8 # Replace with the latest release version
     hooks:
       - id: crenox
 ```
@@ -503,8 +512,9 @@ repos:
 Crenox searches for `.crenox.yaml` in this order:
 
 1. `--config` / `-c` flag value
-2. `.crenox.yaml` in the current working directory (repository root)
-3. `~/.crenox.yaml` in the home directory
+2. `.crenox.yaml` in the scanned target directory or repository root
+3. `.crenox.yaml` in the current working directory
+4. `~/.crenox.yaml` in the home directory
 
 With no config file, built-in defaults apply. The file is merged on top of defaults, so omitted fields keep their default values.
 
@@ -553,6 +563,12 @@ exclude_paths:
   - "**/i18n/**"
   - "**/*.min.js"
   - "**/*.min.css"
+  - "**/go/pkg/mod/**"
+  - "**/var/lib/apt/**"
+  - "**/var/lib/dpkg/**"
+  - "**/*.ziphash"
+  - "**/.env.example"
+  - "**/.env.sample"
 
 # File extensions to skip (case-insensitive).
 # Default includes images, fonts, audio, video, archives, binaries, office documents.
@@ -666,7 +682,7 @@ crenox scan ./config
 # Directory, recursive (skips .git, build, node_modules automatically)
 crenox scan -r ./src
 
-# Full Git history audit (streams git log --all -p; deduplicates by token)
+# Full Git history audit (streams git log --all --full-history -p -m; scans file diffs, commit messages, and merge commits)
 crenox scan --history .
 
 # JSON output — written to stdout for piping
@@ -679,8 +695,8 @@ crenox scan -f sarif -o crenox.sarif .
 crenox scan -f gitlab-sast -o gl-secret-detection-report.json .
 ```
 
-> In ad-hoc mode, files are processed concurrently using `max(runtime.NumCPU(), 4)` goroutines.
-> In history mode, the Git log is streamed with a 10 MB line buffer; unique findings are deduplicated by token value.
+> In both ad-hoc directory mode and full Git history mode, scans are processed concurrently using `max(runtime.NumCPU(), 4)` worker pools.
+> In history mode, Git log diffs and commit messages across all branches and merge commits are streamed with chunk deduplication by token value.
 
 ### CI Integration
 
@@ -854,6 +870,10 @@ Tier 3 automatically eliminates the vast majority of false positives. For persis
 | **Rust/C++ Generic Type Filter** | Tokens containing `<` or `>` (e.g. `Option<u64>`, `Vec<T>`) are never reported as secrets |
 | **Lowercase Identifier Filter** | Tokens composed entirely of lowercase letters and underscores (e.g. `pass_summaries`) are rejected by generic rules |
 | **Git Commit SHA Filter** | 20-char and 40-char pure hex tokens are rejected by the `high-entropy-hex` rule to eliminate dependency pinning hashes |
+| **Container Digest Filter** | Docker and OCI container image digests (`sha256:[a-f0-9]{64}`) are automatically suppressed |
+| **SVG Vector Path Filter** | High-entropy SVG path coordinates (`d="M..."`) are automatically recognized and ignored |
+| **Example Env Template Filter** | Sample configurations (`.env.example`, `.env.sample`) are excluded from scanning by default |
+| **Temporary Variable Filter** | Variables prefixed with `temp_` or `tmp_` are treated as safe runtime placeholders |
 | **YAML Key Name Filter** | Key names without values (e.g. `api-key:`) are detected and discarded before being reported |
 | **Seed Directory Suppression** | Files inside `seed/` or `seeds/` directories are treated as safe test data automatically |
 | `allowlist_patterns` in config | Known safe tokens used repeatedly across the codebase |
