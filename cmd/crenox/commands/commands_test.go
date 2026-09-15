@@ -159,7 +159,7 @@ func TestScanCmd_History_GitRepo(t *testing.T) {
 		}
 	}
 
-	runGit("init")
+	runGit("init", "-b", "master")
 	runGit("config", "user.email", "test@example.com")
 	runGit("config", "user.name", "Test")
 
