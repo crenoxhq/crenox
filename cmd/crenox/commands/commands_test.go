@@ -162,6 +162,7 @@ func TestScanCmd_History_GitRepo(t *testing.T) {
 	runGit("init", "-b", "master")
 	runGit("config", "user.email", "test@example.com")
 	runGit("config", "user.name", "Test")
+	runGit("config", "core.hooksPath", "")
 
 	// Commit 1: Secret in regular file
 	f1 := filepath.Join(tmpDir, "file1.txt")

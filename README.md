@@ -94,7 +94,7 @@ That is all. No configuration file required. No runtime dependencies. Works on L
 asciinema play https://crenoxhq.github.io/crenox/demo.cast
 ```
 
-![Crenox Demo](docs/demo.gif?v=2.1.4)
+![Crenox Demo](docs/demo.gif?v=2.1.8)
 
 ---
 
