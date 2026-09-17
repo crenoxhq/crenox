@@ -47,7 +47,7 @@
       "description": "فاحص أسرار وخطاف pre-commit أمني فائق السرعة بلغة Go لكشف تسريب المفاتيح وكلمات المرور والرموز السرية في Git محلياً.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.8",
+      "softwareVersion": "2.1.9",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -144,7 +144,6 @@
                 <a href="#benchmarks" class="nav-link">الأداء والأرقام</a>
                 <a href="#installation" class="nav-link">التثبيت والدمج</a>
                 <a href="#configuration" class="nav-link">الإعدادات</a>
-                <a href="#masterpieces" class="nav-link">المشاريع</a>
                 <a href="#blog" class="nav-link">المدونة</a>
                 <a href="#community" class="nav-link">الدعم والمجتمع</a>
                 <a href="wild-ar.html" class="nav-link" style="font-weight: bold; color: var(--color-text-primary);">في الميدان</a>
@@ -234,7 +233,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.8</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.9</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -401,6 +400,12 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">17 سبتمبر 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.9: معالجة تكرار السطر الواحد، تقارير الملفات المتعددة، تسريع فحص خطافات Git، ومحلل DNS مرن</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يعالج الإصدار 2.1.9 حالات حافة دقيقة في نواة المحرك ويحسن زمن الاستجابة: يصحح مشكلة استبدال النتائج عند تواجد أكثر من سر مختلف في نفس السطر، ويضمن إبلاغ الفحص عن الأسرار المكررة عبر الملفات المنفصلة بدلاً من إخفائها كلياً، ويختزل عمليات استدعاء subprocess لـ Git عند تشغيل pre-commit hook، ويمنع الانهيار (Panic) عند إدخال قواعد Regex مخصصة غير صالحة، ويضيف آلية DNS مزدوجة احتياطية للبيئات المقيدة شبكياً، مع كتم تنبيهات الإنتروبيا المكررة عند تطابق قواعد الأنماط الصريحة، وتوسيع تصنيف مسارات الاختبارات لتشمل بيئات Pytest وBun.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">12 سبتمبر 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.8: حجب الأسرار بالنجوم، تأمين سكربت التثبيت، فحص تاريخ Git المتوازي، و6 تواقيع حديثة</a></h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.8 حجب الأسرار التلقائي بالنجوم (****) في كافة التقارير (Zero-Plaintext Masking)، وترقية سكربت التثبيت السريع بأعلى معايير الأمان والتحقق التشفيري بـ SHA-256 والسقوط الآمن بدون صلاحيات جذر، وفحص تاريخ Git المتوازي بعدد أنوية المعالج مع شمول دمج الفروع (Merge Commits) ورسائل الـ Commits، والتحقق المبكر من المسارات وصيغ الإخراج، مع إضافة 6 تواقيع جديدة تشمل DeepSeek وAlibaba AccessKey وAzure Storage وGrafana Cloud وTerraform Cloud وInfracost.</p>
@@ -468,36 +473,10 @@ allowlist_patterns:
             </div>
         </section>
 
-        <!-- Chapter 8: Other Projects -->
-        <section id="masterpieces" class="section scroll-fade">
-            <div class="eyebrow">
-                08 / المشاريع الأخرى
-            </div>
-            <h2>مشاريع برمجية أخرى</h2>
-            <p>قائمة ببعض المشاريع والبرمجيات الأخرى المتاحة في نفس البيئة التقنية.</p>
-
-            <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-ar); font-size: 1.25rem; font-weight: 600;"><a href="https://nexusfi-web.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">NexusFi <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted); direction: ltr; display: inline-block;">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">بيئة سحابية وشبكية متكاملة ومستقلة ثلاثية الطبقات مصممة للعمل بشكل أصلي على أجهزة أندرويد المعززة بصلاحيات الروت. تربط محركات قطع اتصال L2، استكشاف الـ OTG التلقائي، وتجزئة سرعة النطاق الترددي.</p>
-                </div>
-                
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-ar); font-size: 1.25rem; font-weight: 600;"><a href="https://net-anatomy.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">NetAnatomy <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted); direction: ltr; display: inline-block;">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">أداة متقدمة لتصور الشبكات والتخطيط التشريحي للطبولوجيا المعقدة للبنية التحتية. متوفرة عبر لوحة تحكم ويب تشخيصية.</p>
-                </div>
-
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-ar); font-size: 1.25rem; font-weight: 600;"><a href="https://decisify-web.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">Decisify <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted); direction: ltr; display: inline-block;">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">محرك اتخاذ قرارات متطور وإطار لتحديد الأولويات مصمم للتحليل السريع للخيارات والنمذجة المنطقية.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Chapter 9: Community & User Discussions -->
+        <!-- Chapter 8: Community & User Discussions -->
         <section id="community" class="section scroll-fade">
             <div class="eyebrow">
-                09 / مجتمع المطورين والدعم
+                08 / مجتمع المطورين والدعم
             </div>
             <h2>تواصل معنا وناقش تفاصيل الحماية البرمجية</h2>
             <p>كرينوكس هو مشروع مفتوح المصدر تم تطويره بالكامل بمجهود فردي. نهتم جداً بمراجعاتكم واقتراحاتكم لتحديث القواعد وزيادة فاعلية الكشف.</p>

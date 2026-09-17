@@ -244,3 +244,45 @@ func TestScanCmd_History_GitRepo(t *testing.T) {
 		t.Errorf("expected merge commit secret in history scan report: %s", reportStr)
 	}
 }
+
+func TestScanCmd_MultipleFilesWithSameSecret_AllReported(t *testing.T) {
+	tmpDir := t.TempDir()
+	f1 := filepath.Join(tmpDir, "file1.txt")
+	f2 := filepath.Join(tmpDir, "file2.txt")
+	secretContent := []byte("aws_key = \"AKIAIOSFODNN7EXAMPLE\"\n")
+	if err := os.WriteFile(f1, secretContent, 0644); err != nil {
+		t.Fatalf("write f1: %v", err)
+	}
+	if err := os.WriteFile(f2, secretContent, 0644); err != nil {
+		t.Fatalf("write f2: %v", err)
+	}
+
+	oldExit := exitFunc
+	exitCode := 0
+	exitFunc = func(code int) {
+		exitCode = code
+	}
+	defer func() { exitFunc = oldExit }()
+
+	outFile := filepath.Join(tmpDir, "report.json")
+	err := runAdHocScan([]string{f1, f2}, "", "json", false, false, false, outFile, false)
+	if err != nil {
+		t.Fatalf("runAdHocScan error: %v", err)
+	}
+	if exitCode != 1 {
+		t.Errorf("expected exit code 1, got %d", exitCode)
+	}
+
+	reportBytes, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("failed to read report file: %v", err)
+	}
+	reportStr := string(reportBytes)
+
+	if !strings.Contains(reportStr, "file1.txt") {
+		t.Errorf("expected report to contain file1.txt, got: %s", reportStr)
+	}
+	if !strings.Contains(reportStr, "file2.txt") {
+		t.Errorf("expected report to contain file2.txt, got: %s", reportStr)
+	}
+}

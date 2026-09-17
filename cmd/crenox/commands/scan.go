@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -465,8 +466,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 					if len(findings) > 0 {
 						mu.Lock()
 						for _, f := range findings {
-							if _, exists := seenTokens[f.Token]; !exists {
-								seenTokens[f.Token] = struct{}{}
+							key := f.FilePath + ":" + strconv.Itoa(f.Line) + ":" + f.Token
+							if _, exists := seenTokens[key]; !exists {
+								seenTokens[key] = struct{}{}
 								allFindings = append(allFindings, f)
 							}
 						}

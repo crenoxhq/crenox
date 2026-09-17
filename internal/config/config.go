@@ -110,6 +110,8 @@ func defaultConfig() Config {
 			"package-lock.json",
 			"pnpm-lock.yaml",
 			"yarn.lock",
+			"bun.lock",
+			"bun.lockb",
 			"**/locales/**",
 			"**/i18n/**",
 			"**/*.min.js",

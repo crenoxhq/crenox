@@ -241,7 +241,8 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 		ext == ".patch" || ext == ".diff" || ext == ".plist" || ext == ".editorconfig" ||
 		strings.Contains(filePath, "package-lock.json") ||
 		strings.Contains(filePath, "yarn.lock") ||
-		strings.Contains(filePath, "pnpm-lock.yaml")
+		strings.Contains(filePath, "pnpm-lock.yaml") ||
+		strings.Contains(filePath, "bun.lock")
 
 	var decBufArray [8192]byte
 	decBuf := decBufArray[:]
@@ -518,7 +519,7 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 					if s.isDuplicateMatch(seenFindings, newMatch) {
 						replaced := false
 						for idx, existing := range findings {
-							if existing.Line == newMatch.Line {
+							if existing.Line == newMatch.Line && existing.Token == newMatch.Token {
 								// Prioritize Pattern (TierTrie) over Entropy (TierEntropy) on the same line
 								if existing.DetectionTier == TierEntropy && newMatch.DetectionTier == TierTrie {
 									findings[idx] = newMatch
@@ -920,6 +921,18 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 							if s.isDuplicateMatch(seenFindings, newMatch) {
 								continue
 							}
+							alreadyCovered := false
+							for _, existing := range findings {
+								if existing.Line == newMatch.Line && existing.DetectionTier == TierTrie {
+									if existing.Token == newMatch.Token || strings.Contains(existing.Token, newMatch.Token) || strings.Contains(newMatch.Token, existing.Token) {
+										alreadyCovered = true
+										break
+									}
+								}
+							}
+							if alreadyCovered {
+								continue
+							}
 							findings = append(findings, newMatch)
 						}
 					}
@@ -978,7 +991,18 @@ func (s *Scanner) ScanReader(filePath string, r io.Reader) []Finding {
 											Severity:      entropySeverity(h.Entropy),
 										}
 										if !s.isDuplicateMatch(seenFindings, newMatch) {
-											findings = append(findings, newMatch)
+											alreadyCovered := false
+											for _, existing := range findings {
+												if existing.Line == newMatch.Line && existing.DetectionTier == TierTrie {
+													if existing.Token == newMatch.Token || strings.Contains(existing.Token, newMatch.Token) || strings.Contains(newMatch.Token, existing.Token) {
+														alreadyCovered = true
+														break
+													}
+												}
+											}
+											if !alreadyCovered {
+												findings = append(findings, newMatch)
+											}
 										}
 									}
 								}

@@ -47,7 +47,7 @@
       "description": "A high-performance zero-dependency Git pre-commit secret scanner and credentials detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.8",
+      "softwareVersion": "2.1.9",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -144,7 +144,6 @@
                 <a href="#benchmarks" class="nav-link">Performance</a>
                 <a href="#installation" class="nav-link">Install</a>
                 <a href="#configuration" class="nav-link">Config</a>
-                <a href="#masterpieces" class="nav-link">Projects</a>
                 <a href="#blog" class="nav-link">Blog</a>
                 <a href="#community" class="nav-link">Community</a>
                 <a href="wild.html" class="nav-link" style="font-weight: bold; color: var(--color-text-primary);">In the Wild</a>
@@ -234,7 +233,7 @@
                     <thead>
                         <tr>
                             <th>Audited Metric</th>
-                            <th>Crenox (<span class="latest-version">v2.1.8</span>)</th>
+                            <th>Crenox (<span class="latest-version">v2.1.9</span>)</th>
                             <th>Gitleaks (v8.18.2)</th>
                             <th>Betterleaks (v1.6.1)</th>
                         </tr>
@@ -401,6 +400,12 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 17, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.9: Line Deduplication Fix, Multi-File Reporting, Subprocess Overhead Reduction & Dual DNS</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.9 addresses core engine edge cases and optimizes execution latency: fixes a deduplication bug where multiple distinct secrets on the same line overwrote each other, ensures ad-hoc scans report repeated secrets across different files instead of suppressing them globally, eliminates redundant Git subprocess invocations in pre-commit hook runs, prevents unhandled panics on malformed custom regex rules, adds resilient DNS fallback for offline or firewalled environments, suppresses duplicate Shannon entropy hits on lines already matched by specific pattern rules, and extends test-path classification to pytest and Bun ecosystems.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 12, 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.8: Defensive Secret Masking, Hardened Installer, Multi-Worker Git History & 6 New Signatures</a></h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.8 introduces defensive zero-plaintext secret masking across text, JSON, and SARIF reports, a hardened and cryptographically verified installer (featuring SHA-256 integrity checks, script truncation protection, rootless fallback, and /dev/tty interactive support), multi-worker parallel Git history auditing with merge commit and commit message coverage, pre-scan format and path validations, 6 new modern cloud & AI signatures (DeepSeek, Alibaba AccessKey, Azure Storage, Grafana Cloud, Terraform Cloud, Infracost), and zero-allocation stack optimizations.</p>
@@ -468,36 +473,10 @@ allowlist_patterns:
             </div>
         </section>
 
-        <!-- Chapter 8: Other Projects -->
-        <section id="masterpieces" class="section scroll-fade">
-            <div class="eyebrow">
-                08 / Other Projects
-            </div>
-            <h2>Other software projects</h2>
-            <p>Explore other security, networking, and system-level applications built in our network ecosystem.</p>
-
-            <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-en); font-size: 1.25rem; font-weight: 600;"><a href="https://nexusfi-web.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">NexusFi <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted);">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">A self-contained, 3-tier Micro-ISP and Local Cloud Ecosystem engineered to run natively on rooted Android devices. Connects L2 deauth daemons, OTG auto-telemetry, and HTB shaping.</p>
-                </div>
-                
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-en); font-size: 1.25rem; font-weight: 600;"><a href="https://net-anatomy.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">NetAnatomy <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted);">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">An advanced network visualization and anatomical mapping tool for complex infrastructural topologies. Delivered via a diagnostic web dashboard.</p>
-                </div>
-
-                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
-                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-sans-en); font-size: 1.25rem; font-weight: 600;"><a href="https://decisify-web.vercel.app" target="_blank" style="color: inherit; text-decoration: none;">Decisify <span style="font-weight: 400; font-size: 0.95rem; color: var(--color-text-muted);">↗</span></a></h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">A sophisticated decision-making engine and prioritization framework designed for rapid choice analysis and logic modeling.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Chapter 9: Community & User Discussions -->
+        <!-- Chapter 8: Community & User Discussions -->
         <section id="community" class="section scroll-fade">
             <div class="eyebrow">
-                09 / Community & Feedback
+                08 / Community & Feedback
             </div>
             <h2>Get in touch & discuss security</h2>
             <p>Crenox is an open-source security tool developed as an individual effort. We value feedback, rule suggestions, and reports from all users.</p>

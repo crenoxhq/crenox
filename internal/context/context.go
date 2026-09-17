@@ -754,6 +754,11 @@ func IsTestFilePath(path string) bool {
 		}
 	}
 
+	base := filepath.Base(lower)
+	if strings.HasPrefix(base, "test_") || strings.HasPrefix(base, "test-") || base == "conftest.py" {
+		return true
+	}
+
 	// Normalize path separators
 	lower = strings.ReplaceAll(lower, "\\", "/")
 

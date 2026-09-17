@@ -64,8 +64,13 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	updateChan := updater.CheckForUpdateAsync()
 	startTime := time.Now()
 
+	// ── Verify we are inside a git repository and get root ─────────────────
+	repoRoot, err := git.RepoRoot()
+	if err != nil {
+		return fmt.Errorf("not inside a git repository. Please navigate to a repository or use 'crenox scan' for ad-hoc scanning")
+	}
+
 	// ── Load configuration ────────────────────────────────────────────────────
-	repoRoot, _ := git.RepoRoot()
 	cfg, err := config.Load(configPath, repoRoot)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
@@ -80,11 +85,6 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	// ── Initialise reporter ───────────────────────────────────────────────────
 	rep := reporter.New(os.Stderr, parsedFormat)
 	rep.PrintHeader()
-
-	// ── Verify we are inside a git repository ────────────────────────────────
-	if !git.IsInsideWorkTree() {
-		return fmt.Errorf("not inside a git repository. Please navigate to a repository or use 'crenox scan' for ad-hoc scanning")
-	}
 
 	// ── List staged files ─────────────────────────────────────────────────────
 	stagedFiles, err := git.ListStagedFiles()

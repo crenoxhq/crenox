@@ -382,7 +382,11 @@ func BuildWithCustom(customSigs []config.CustomSignature) *Automaton {
 	for _, cs := range customSigs {
 		var val *regexp.Regexp
 		if cs.Regex != "" {
-			val = regexp.MustCompile(cs.Regex)
+			var err error
+			val, err = regexp.Compile(cs.Regex)
+			if err != nil {
+				val = nil
+			}
 		}
 		sev := cs.Severity
 		if sev == "" {

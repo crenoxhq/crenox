@@ -193,6 +193,27 @@ func TestTrie_BuildWithCustom(t *testing.T) {
 	assertAtLeastOneMatch(t, matches, "my-custom-token")
 }
 
+func TestTrie_BuildWithCustom_InvalidRegexNoPanic(t *testing.T) {
+	customSigs := []config.CustomSignature{
+		{
+			ID:          "invalid-regex-sig",
+			Description: "Invalid Regex Signature",
+			Prefix:      "bad_token_",
+			Severity:    "HIGH",
+			Regex:       `[invalid-regex(`,
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("BuildWithCustom panicked on invalid regex: %v", r)
+		}
+	}()
+	a := trie.BuildWithCustom(customSigs)
+	if a == nil {
+		t.Fatal("expected non-nil automaton")
+	}
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Unit tests — true negatives (should NOT trigger)
 // ──────────────────────────────────────────────────────────────────────────────

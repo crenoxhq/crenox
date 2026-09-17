@@ -94,7 +94,7 @@ That is all. No configuration file required. No runtime dependencies. Works on L
 asciinema play https://crenoxhq.github.io/crenox/demo.cast
 ```
 
-![Crenox Demo](docs/demo.gif?v=2.1.8)
+![Crenox Demo](docs/demo.gif?v=2.1.9)
 
 ---
 
@@ -257,7 +257,8 @@ The scanner applies additional logic on top of the raw trie results:
 - **BIP-39 mnemonics** — line is tested for 12/15/18/21/24 space-separated words, all validated against `bip39.go`.
 - **Single-layer Base64 decoding** — extracted values are decoded and re-fed through the trie to catch masked secrets (e.g. Kubernetes Secret manifests).
 - **Blob aggregation** — 3+ consecutive lines of the same entropy class are collapsed into one `CRITICAL` finding (`massive-base64-blob` / `massive-hex-blob`) to prevent alert fatigue.
-- **Deduplication** — if a generic and a specific signature match the same token, the generic finding is promoted to the specific signature's ID and severity.
+- **Same-Line & Cross-Signature Deduplication** — preserves distinct secrets occurring on the same line without overwriting, while upgrading lower-priority matches when a higher-severity signature covers the exact same token.
+- **Tier 1 Precedence over Entropy** — tokens already matched by specific Tier 1 pattern rules suppress redundant Tier 2 Shannon entropy alerts on the same line.
 
 </details>
 
@@ -294,7 +295,7 @@ Pre-filters applied before entropy computation: Java-style identifiers (all lett
 |----------|-----------|
 | `Real` | None of the suppression checks matched |
 | `SafeComment` | Line begins with `//` `#` `*` `/*` `<!--` `--` `;` `%` `!` |
-| `SafeTestFile` | Path ends with `_test.go` `_spec.rb` `.test.js` `.spec.ts` `.md` `.rst`, or contains directory: `test` `tests` `testdata` `fixtures` `__tests__` `__mocks__` `mock` `mocks` `sample` `samples` `docs` `doc` |
+| `SafeTestFile` | Path ends with `_test.go` `_spec.rb` `.test.js` `.spec.ts` `.md` `.rst` `_test.py` `conftest.py`, starts with `test_` (`.py`), begins with `test-`, or contains directory: `test` `tests` `testdata` `fixtures` `__tests__` `__mocks__` `mock` `mocks` `sample` `samples` `docs` `doc` |
 | `SafeVariableName` | Variable name (left of `=` / `:=`) contains: `dummy` `fake` `mock` `placeholder` `sample` `fixture` `stub` `lorem` `foobar` `your_` `your-` `insert_` `replace_` `changeme` `redacted` `sanitized` `censored` |
 | `SafePlaceholder` | Token matches `$VAR`, `${VAR}`, `<...>`, `[[...]]`, `{{...}}`, `${{...}}` |
 | `SafeUUID` | Token matches UUID v4 pattern `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
@@ -422,7 +423,7 @@ curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --global
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
 
 # Pin to a specific version or custom directory:
-curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.8 --dir=/usr/local/bin
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.9 --dir=/usr/local/bin
 ```
 
 ### Pre-compiled Binary (Manual Download)
@@ -500,7 +501,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.8 # Replace with the latest release version
+    rev: v2.1.9 # Replace with the latest release version
     hooks:
       - id: crenox
 ```
@@ -559,6 +560,8 @@ exclude_paths:
   - "package-lock.json"
   - "pnpm-lock.yaml"
   - "yarn.lock"
+  - "bun.lock"
+  - "bun.lockb"
   - "**/locales/**"
   - "**/i18n/**"
   - "**/*.min.js"
@@ -640,6 +643,7 @@ fail_fast: false
 verbose: false
 
 # Custom signatures compiled into the Aho-Corasick automaton alongside builtins.
+# Regular expressions are safely validated during initialization (malformed regexes are skipped with a warning).
 # Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW  (defaults to HIGH if omitted).
 custom_signatures:
   - id: "internal-api-key"
@@ -696,6 +700,7 @@ crenox scan -f gitlab-sast -o gl-secret-detection-report.json .
 ```
 
 > In both ad-hoc directory mode and full Git history mode, scans are processed concurrently using `max(runtime.NumCPU(), 4)` worker pools.
+> Multi-file reporting guarantees that identical secrets appearing across separate files are each reported with their exact file path and line location.
 > In history mode, Git log diffs and commit messages across all branches and merge commits are streamed with chunk deduplication by token value.
 
 ### CI Integration
@@ -785,7 +790,7 @@ Scans staged changes only. Invoked automatically by the Git hook.
 <details>
 <summary>crenox update — OTA self-updater</summary>
 
-Downloads the latest stable release for the current OS/arch from the GitHub Releases API, verifies the binary, and atomically replaces the running executable. Falls back to `go install` if no pre-compiled binary matches the platform.
+Downloads the latest stable release for the current OS/arch from the GitHub Releases API, verifies the binary, and atomically replaces the running executable. Features a dual-resolver network stack (standard system DNS with fallback to Google DNS `8.8.8.8`) for reliable updates in restricted, mobile, or Termux environments. Falls back to `go install` if no pre-compiled binary matches the platform.
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -873,6 +878,9 @@ Tier 3 automatically eliminates the vast majority of false positives. For persis
 | **Container Digest Filter** | Docker and OCI container image digests (`sha256:[a-f0-9]{64}`) are automatically suppressed |
 | **SVG Vector Path Filter** | High-entropy SVG path coordinates (`d="M..."`) are automatically recognized and ignored |
 | **Example Env Template Filter** | Sample configurations (`.env.example`, `.env.sample`) are excluded from scanning by default |
+| **Bun Lockfile Filter** | Bun lockfiles (`bun.lock`, `bun.lockb`) are automatically excluded from scans by default alongside npm, yarn, and pnpm lockfiles |
+| **Pytest & Test Framework Filter** | Python test naming conventions (`test_*.py`, `*_test.py`, `conftest.py`, `test-*`) are automatically recognized as test paths |
+| **Tier 1 Pattern Precedence** | Lines matched by specific Tier 1 pattern rules automatically suppress duplicate Tier 2 Shannon entropy alerts |
 | **Temporary Variable Filter** | Variables prefixed with `temp_` or `tmp_` are treated as safe runtime placeholders |
 | **YAML Key Name Filter** | Key names without values (e.g. `api-key:`) are detected and discarded before being reported |
 | **Seed Directory Suppression** | Files inside `seed/` or `seeds/` directories are treated as safe test data automatically |

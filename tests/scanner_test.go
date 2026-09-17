@@ -1089,3 +1089,53 @@ func TestScanner_NewModernSignatures_Detected(t *testing.T) {
 	}
 }
 
+func TestScanner_MultipleDistinctSecretsSameLine_Preserved(t *testing.T) {
+	s := defaultScanner()
+	content := `ghp_token := "ghp_111111111111111111111111111111111111", aws_key := "AKIAIOSFODNN7EXAMPLE"`
+	findings := scan(s, "main.go", content)
+	if len(findings) < 2 {
+		t.Fatalf("expected at least 2 distinct findings on the same line, got %d", len(findings))
+	}
+	hasGH := false
+	hasAWS := false
+	for _, f := range findings {
+		if strings.Contains(f.SignatureID, "github-pat") {
+			hasGH = true
+		}
+		if strings.Contains(f.SignatureID, "aws-access-key") {
+			hasAWS = true
+		}
+	}
+	if !hasGH {
+		t.Error("expected GitHub PAT finding to be preserved")
+	}
+	if !hasAWS {
+		t.Error("expected AWS access key finding to be preserved")
+	}
+}
+
+func TestScanner_EntropySuppressedWhenTier1Covers(t *testing.T) {
+	s := defaultScanner()
+	content := `githubToken := "ghp_REALTOKEN1234567890abcdef"`
+	findings := scan(s, "main.go", content)
+	if len(findings) != 1 {
+		t.Fatalf("expected exactly 1 finding (Tier 1 pattern), got %d: %+v", len(findings), findings)
+	}
+	if findings[0].DetectionTier != scanner.TierTrie {
+		t.Errorf("expected TierTrie, got %v", findings[0].DetectionTier)
+	}
+}
+
+func TestScanner_PythonTestFileSuppression(t *testing.T) {
+	s := defaultScanner()
+	content := `ghp_token := "ghp_111111111111111111111111111111111111"`
+	findingsTestPy := scan(s, "test_auth.py", content)
+	if len(findingsTestPy) != 0 {
+		t.Errorf("expected test_auth.py to be suppressed as test file, got %d findings", len(findingsTestPy))
+	}
+	findingsConftest := scan(s, "conftest.py", content)
+	if len(findingsConftest) != 0 {
+		t.Errorf("expected conftest.py to be suppressed as test file, got %d findings", len(findingsConftest))
+	}
+}
+

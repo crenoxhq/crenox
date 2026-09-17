@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.9] - 2026-09-17
+
+### Fixed
+- **Same-Line Deduplication Overwrite Bug:** Fixed a logic bug in `internal/scanner/scanner.go` where deduplication only checked line numbers (`existing.Line == newMatch.Line`), causing lines with multiple distinct secrets (e.g. AWS key and GitHub PAT) to overwrite one secret with another. Now strictly checks both line number and token identity (`existing.Line == newMatch.Line && existing.Token == newMatch.Token`).
+- **Cross-File Finding Suppression in Ad-Hoc Scan:** Fixed an issue in `cmd/crenox/commands/scan.go` where the deduplication set was keyed on token value only, causing identical secrets present across multiple files to be reported only in the first scanned file and silently hidden in all other files. Replaced with composite `FilePath:Line:Token` keys.
+- **Panic Safety on Invalid Custom Signatures:** Replaced `regexp.MustCompile` with safe `regexp.Compile` inside `BuildWithCustom` (`internal/trie/trie.go`), preventing unhandled runtime panics when compiling user-defined or programmatic custom signatures with malformed regex patterns.
+- **Redundant Tier 2 Entropy Alerting on Known Secrets:** Suppressed redundant `high-entropy-base64` and `high-entropy-hex` noise when a secret on the same line has already been positively identified by a Tier 1 pattern rule (`internal/scanner/scanner.go`).
+- **Pre-Commit Hook POSIX Compatibility:** Corrected non-POSIX shell syntax in the generated hook script (`cmd/crenox/commands/install.go`) ensuring smooth execution across all Unix shells (`sh`, `dash`, `bash`, `zsh`) on Linux, macOS, and Termux.
+- **Git Init Default Branch in History Tests:** Passed explicit `-b master` in `TestScanCmd_History_GitRepo` (`cmd/crenox/commands/commands_test.go`) ensuring consistent test execution on systems with different default branch settings (`init.defaultBranch`). Thanks to [@Zahed316](https://github.com/Zahed316) in [#7](https://github.com/crenoxhq/crenox/pull/7)!
+
+### Performance
+- **Eliminated Redundant Git Subprocess Execution:** Streamlined `runScan` in `cmd/crenox/commands/run.go` to use `git.RepoRoot()` for both worktree verification and root path discovery, eliminating an extra `git rev-parse --is-inside-work-tree` child process invocation on every pre-commit hook run.
+
+### Added
+- **Python Test File & Conftest Recognition:** Added prefix checking for `test_*.py`, `test-*`, and `conftest.py` in `IsTestFilePath` (`internal/context/context.go`), improving Tier 3 false-positive suppression for Python and pytest codebases.
+- **Bun Package Manager Lockfile Exclusions:** Added `bun.lock` and `bun.lockb` to default excluded paths and extensions in `internal/config/config.go` and `internal/scanner/scanner.go`, preventing false positives on Bun dependency lockfiles.
+- **Dual-DNS Fallback in OTA Updater:** Updated `cmd/crenox/commands/update.go` to query system DNS first and automatically fall back to Google DNS (`8.8.8.8`) only if system resolution fails, resolving update issues across corporate proxies and firewalled environments.
+- **Comprehensive Regression Test Suite:** Added new unit tests across `tests/scanner_test.go`, `tests/trie_test.go`, and `cmd/crenox/commands/commands_test.go` covering same-line multi-secret preservation, entropy suppression on covered lines, Python test suppression, invalid custom regex handling, and multi-file secret detection.
+
+### Changed
+- **Secured by Crenox Badge & Branding:** Added the official pill badge and SVG branding to documentation footer and mobile 3-bars drawer (`docs/index.html`, `docs/index-ar.html`, `docs/wild.html`, `docs/wild-ar.html`, `docs/style.css`).
+- **Demo Asset Refresh:** Re-recorded and generated fresh `docs/assets/demo.cast` and `docs/assets/demo.gif` for v2.1.9 with natural terminal metrics and Dracula styling.
+
 ## [2.1.8] - 2026-09-12
 
 ### Security

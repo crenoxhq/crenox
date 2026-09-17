@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -58,24 +59,29 @@ This command performs:
 			// 2. Query GitHub Releases
 			fmt.Println("Checking GitHub for the latest release...")
 
-			// Custom client to force IPv4 and bypass broken local DNS by using Google DNS
-			client := &http.Client{
-				Transport: &http.Transport{
-					DialContext: (&net.Dialer{
-						Resolver: &net.Resolver{
-							PreferGo: true,
-							Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-								d := net.Dialer{}
-								return d.DialContext(ctx, "udp", "8.8.8.8:53")
-							},
-						},
-					}).DialContext,
-				},
-			}
-
+			// Try standard HTTP client first, falling back to Google DNS resolver if system resolution fails
+			client := &http.Client{Timeout: 15 * time.Second}
 			resp, err := client.Get("https://api.github.com/repos/crenoxhq/crenox/releases")
 			if err != nil {
-				return fmt.Errorf("failed to reach github: %w", err)
+				fallbackClient := &http.Client{
+					Timeout: 15 * time.Second,
+					Transport: &http.Transport{
+						DialContext: (&net.Dialer{
+							Resolver: &net.Resolver{
+								PreferGo: true,
+								Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+									d := net.Dialer{}
+									return d.DialContext(ctx, "udp", "8.8.8.8:53")
+								},
+							},
+						}).DialContext,
+					},
+				}
+				resp, err = fallbackClient.Get("https://api.github.com/repos/crenoxhq/crenox/releases")
+				if err != nil {
+					return fmt.Errorf("failed to reach github: %w", err)
+				}
+				client = fallbackClient
 			}
 			defer resp.Body.Close()
 
