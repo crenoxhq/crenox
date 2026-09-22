@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.10] - 2026-09-22
+
+### Security & Detection Engine
+- **Age Encryption Secret Key Detection (Tier 1):** Added a dedicated zero-allocation Aho-Corasick pattern signature (`age-secret-key`) in `internal/trie/trie.go` matching the canonical Age private key prefix `AGE-SECRET-KEY-1` paired with a strict 58-character Bech32 validator. Resolves detection in plain text files (e.g. `private.txt`, `key.txt`) where Tier 2 Shannon entropy is bypassed to prevent natural language noise.
+- **Assignment Keyword Collision Guard:** Implemented an explicit guard in `isAssignmentOrKeyword` (`internal/trie/trie.go`) ensuring `AGE-SECRET-KEY-1` is recognized as a literal secret token prefix rather than an assignment variable name, preventing token truncation on extracted private keys.
+- **Generalized Mozilla SOPS Encrypted Block Filtering:** Replaced hardcoded cipher matching with a generalized forward-compatible regex (`ENC[[A-Z0-9_]+,data:[^\]]+]`) in `internal/context/context.go` (Check 20). Automatically suppresses encrypted ciphertext payloads across `AES256_GCM`, `CHACHA20_POLY1305`, and future cipher algorithms without false positives.
+- **Age Public Recipient Key & SOPS Metadata Suppression:** Added Tier 3 context classifier rules in `internal/context/context.go` suppressing Bech32 Age public recipient keys (`age1...` 62 chars), encrypted file headers (`BEGIN AGE ENCRYPTED FILE`), and SOPS configuration variables (`sops_age__`, `sops_kms__`, `sops_mac=`, `sops_version=`), eliminating false positives on `.env`, JSON, and YAML configuration files. Thanks to [@andreagrax](https://github.com/andreagrax) for reporting this and providing a clean reproduction repository!
+- **SOPS Decryption Key Leak Guard:** Added an explicit bypass guard ensuring genuine Age private keys passed via environment variables (e.g. `SOPS_AGE_KEY=AGE-SECRET-KEY-1...`) are never suppressed by SOPS metadata rules and are flagged as `CRITICAL`.
+
+### Governance & Organization Rebranding
+- **Ownership Transfer to CrenoxHQ:** Completed comprehensive repository anonymization and assignment of intellectual property, copyright notices, metadata, and binary branding to `CrenoxHQ` (`https://github.com/crenoxhq`).
+- **Attribution Updates:** Updated CLI version command output (`cmd/crenox/commands/version.go`), root Cobra help templates (`cmd/crenox/main.go`), GitHub Action metadata (`action.yml`), license headers (`LICENSE`), project documentation (`README.md`), and interactive documentation portals (`docs/index.html`, `docs/index-ar.html`, `docs/demo.cast`).
+
+### Legal Architecture
+- **Dual-Licensing Framework (CLA.md):** Overhauled the Contributor License Agreement establishing an airtight dual-licensing model (AGPLv3 Community Edition + Commercial/Enterprise Licensing), detailing how commercial licensing revenues sustain continuous open-source development, security research, and scanner maintenance.
+
+### Community & Contribution Standards
+- **Zero-Emoji GitHub Issue Forms:** Created standard issue forms in `.github/ISSUE_TEMPLATE/` (`bug_report.yml`, `feature_request.yml`, `false_positive_negative.yml`, `config.yml`) with strict schema validation and complete removal of emojis for sober technical collaboration.
+- **Sober Pull Request Infrastructure:** Created `.github/pull_request_template.md` and root `CONTRIBUTING.md` enforcing hot-path zero-allocation rules, test coverage, and CLA agreement.
+- **Dynamic PR Compliance Workflow:** Implemented a self-contained GitHub Actions workflow (`.github/workflows/pr_compliance.yml`) that dynamically enforces Conventional Commits, CLA confirmation, emoji prohibition, and runs live memory benchmarks (`0 allocs/op, 0 B/op`).
+
+### Performance & Quality Assurance
+- **Zero-Allocation Hot-Path Verification:** Verified that all critical scanning and entropy benchmarks (`BenchmarkSearch`, `BenchmarkSearchWithHit`, `BenchmarkShannonSmall`, `BenchmarkShannonLarge`) strictly maintain `0 B/op` and `0 allocs/op`.
+- **Comprehensive Integration Test Suite:** Added end-to-end tests in `tests/trie_test.go` and `tests/scanner_test.go` covering Age secret key detection, Age public key suppression, multi-cipher SOPS block suppression, and complete reproduction repository verification (`TestScanner_SOPS_Plus_Age_E2E`).
+
 ## [2.1.9] - 2026-09-17
 
 ### Fixed

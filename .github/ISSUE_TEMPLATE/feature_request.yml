@@ -1,0 +1,52 @@
+name: Feature Request or New Signature
+description: Propose a new feature, built-in credential signature, or engine enhancement
+title: "[Proposal]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to propose enhancements, CLI capabilities, or new built-in credential signatures for Crenox.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Proposal Category
+      options:
+        - "New Credential Signature (built-in pattern detection)"
+        - "CLI Option or Command"
+        - "Output Format or Reporter Integration"
+        - "Performance or Memory Optimization"
+        - "Platform or Environment Support"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Description of the Proposal
+      description: Provide a clear explanation of the requested feature and the engineering problem it solves.
+      placeholder: "e.g. Add built-in pattern detection for Age secret keys (AGE-SECRET-KEY-1...) and classify Age public keys (age1...) as safe in Tier 3."
+    validations:
+      required: true
+
+  - type: textarea
+    id: signature_details
+    attributes:
+      label: Credential Signature Specification (if applicable)
+      description: If proposing a new credential pattern, provide the known prefix, character set, length, and regular expression.
+      placeholder: |
+        - Provider: Age Encryption
+        - Format Prefix: AGE-SECRET-KEY-1
+        - Character Set: Bech32 (uppercase letters and digits 0-9)
+        - Exact Token Length: 74 characters
+        - Regular Expression: ^AGE-SECRET-KEY-1[0-9A-Z]{58}$
+        - Severity: CRITICAL
+      render: text
+
+  - type: textarea
+    id: documentation_references
+    attributes:
+      label: Documentation and Specification References
+      description: Provide links to the provider's official API reference, key generation specifications, or security standards.
+      placeholder: "e.g. https://github.com/FiloSottile/age or https://age-encryption.org"

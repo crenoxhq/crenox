@@ -10,7 +10,7 @@
 #   curl ... | bash -s -- --global          # Install binary & set global Git hook
 #   curl ... | bash -s -- --local           # Install binary & protect current repo
 #   curl ... | bash -s -- --no-hook         # Install binary only
-#   curl ... | bash -s -- --version=v2.1.9  # Pin to a specific version
+#   curl ... | bash -s -- --version=v2.1.10 # Pin to a specific version
 #   curl ... | bash -s -- --dir=/custom/bin # Custom install directory
 #   curl ... | bash -s -- --skip-verify     # Bypass SHA-256 verification
 # ─────────────────────────────────────────────────────────────────────────────

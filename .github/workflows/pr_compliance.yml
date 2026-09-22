@@ -1,0 +1,129 @@
+name: PR Compliance & Standards Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  validate-pr:
+    name: Crenox Standards Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Title, Body, CLA, and Standards
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          python3 -c '
+          import os, sys, re
+
+          title = os.environ.get("PR_TITLE", "").strip()
+          body = os.environ.get("PR_BODY", "").strip()
+
+          errors = []
+
+          # 1. Conventional Commits Title Check
+          conv_types = {"feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"}
+          title_match = re.match(r"^([a-z]+)(?:\(([a-z0-9_-]+)\))?:\s+(.{5,100})$", title)
+          if not title_match or title_match.group(1) not in conv_types:
+              errors.append((
+                  "Conventional Commits Title Format",
+                  f"Title \"{title}\" does not follow Conventional Commits.",
+                  "Format must be: <type>(<scope>): <short description>\nValid types: feat, fix, docs, refactor, test, etc."
+              ))
+
+          # 2. Strict Emoji Prohibition (Title & Body)
+          emoji_pattern = re.compile(r"[\U00010000-\U0010FFFF]|[\u2600-\u27BF]|[\uFE00-\uFE0F]")
+          if emoji_pattern.search(title) or emoji_pattern.search(body):
+              errors.append((
+                  "Emoji Prohibition",
+                  "PR title or description contains forbidden emojis.",
+                  "Crenox strictly adheres to sober technical text. Remove all emojis."
+              ))
+
+          # 3. PR Description Length & Content
+          if len(body) < 30:
+              errors.append((
+                  "PR Description Length",
+                  "PR description is too short or missing.",
+                  "Please provide a meaningful explanation of your changes."
+              ))
+
+          # 4. CLA Confirmation Check
+          cla_pattern = re.compile(r"\[[xX]\]\s*By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement", re.IGNORECASE)
+          if not cla_pattern.search(body):
+              errors.append((
+                  "Contributor License Agreement (CLA)",
+                  "The CLA agreement box was not checked.",
+                  "Check the CLA box: [x] By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement..."
+              ))
+
+          # 5. Zero-Allocation Affirmation Check
+          alloc_pattern = re.compile(r"\[[xX]\]\s*My code adheres to the zero-allocation hot-path guidelines", re.IGNORECASE)
+          if not alloc_pattern.search(body):
+              errors.append((
+                  "Zero-Allocation Affirmation",
+                  "Zero-allocation hot-path compliance box was not checked.",
+                  "Check the box: [x] My code adheres to the zero-allocation hot-path guidelines of this project."
+              ))
+
+          if errors:
+              print("=" * 68)
+              print(f"FAILURE: {len(errors)} compliance error(s) detected:")
+              print("-" * 68)
+              for i, (check, issue, fix) in enumerate(errors, 1):
+                  print(f"[{i}] Check:  {check}")
+                  print(f"    Issue:  {issue}")
+                  print(f"    Action: {fix}\n")
+              print("=" * 68)
+              sys.exit(1)
+
+          print("SUCCESS: PR title, description, CLA, and standards verified.")
+          '
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Verify Zero-Allocation Hot-Path Benchmarks
+        run: |
+          go test -bench='^(BenchmarkSearch|BenchmarkSearchWithHit|BenchmarkShannonSmall|BenchmarkShannonLarge)$' -benchmem -benchtime=500x ./tests | tee bench.txt
+          python3 -c '
+          import sys, re
+          with open("bench.txt") as f:
+              content = f.read()
+
+          benchmarks = []
+          for line in content.splitlines():
+              m = re.search(r"(Benchmark\w+).*?\s+(\d+)\s+B/op\s+(\d+)\s+allocs/op", line)
+              if m:
+                  benchmarks.append((m.group(1), int(m.group(2)), int(m.group(3))))
+
+          if not benchmarks:
+              print("ERROR: No benchmarks detected in output.")
+              sys.exit(1)
+
+          failed = []
+          for name, b_val, a_val in benchmarks:
+              if a_val > 0 or b_val > 0:
+                  failed.append(f"{name}: {a_val} allocs/op, {b_val} B/op (expected 0/0)")
+              else:
+                  print(f"  [PASS] {name}: 0 B/op, 0 allocs/op (Zero-Allocation Verified)")
+
+          if failed:
+              print("\nERROR: Hot-path zero-allocation policy violated:")
+              for f in failed:
+                  print(f"  - {f}")
+              print("The scanning hot path must remain 100% allocation-free.")
+              sys.exit(1)
+
+          print("\nSUCCESS: All hot-path benchmarks verified with 0 allocs/op and 0 B/op.")
+          '

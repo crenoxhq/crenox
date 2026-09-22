@@ -1,6 +1,6 @@
 name: 'Crenox Git Secrets Scanner'
 description: 'Lightweight Git pre-commit secret scanner, credentials detector, and Gitleaks alternative for CI/CD.'
-author: 'Khaled Hani'
+author: 'CrenoxHQ'
 branding:
   icon: 'shield'
   color: 'black'

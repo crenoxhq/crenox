@@ -1139,3 +1139,134 @@ func TestScanner_PythonTestFileSuppression(t *testing.T) {
 	}
 }
 
+func TestScanner_AgeSecretKey_Detected(t *testing.T) {
+	s := defaultScanner()
+	validKey := "AGE-SECRET-KEY-1" + strings.Repeat("E", 58)
+
+	// Case 1: In private.txt (.txt file where entropy tier is bypassed)
+	findingsTxt := scan(s, "private.txt", `# created: 2026-09-22
+# public key: age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5apqqcnq24qk
+`+validKey+`
+`)
+	if len(findingsTxt) == 0 {
+		t.Fatalf("expected Age secret key to be detected in private.txt, got 0 findings")
+	}
+	f := findingsTxt[0]
+	if f.SignatureID != "age-secret-key" {
+		t.Errorf("expected SignatureID 'age-secret-key', got %q", f.SignatureID)
+	}
+	if f.Severity != "CRITICAL" {
+		t.Errorf("expected CRITICAL severity, got %q", f.Severity)
+	}
+	if f.Token != validKey {
+		t.Errorf("expected token %q, got %q", validKey, f.Token)
+	}
+
+	// Case 2: In .env assignment
+	findingsEnv := scan(s, ".env", `AGE_SECRET_KEY="`+validKey+`"`)
+	if len(findingsEnv) == 0 {
+		t.Fatalf("expected Age secret key to be detected in .env")
+	}
+
+	// Case 3: SOPS_AGE_KEY environment variable (guard check: SOPS prefix MUST NOT suppress genuine secret key)
+	findingsSopsEnv := scan(s, "deploy.sh", `export SOPS_AGE_KEY="`+validKey+`"`)
+	if len(findingsSopsEnv) == 0 {
+		t.Fatalf("expected SOPS_AGE_KEY to be detected as critical secret")
+	}
+
+	// Case 4: Lowercase Age secret key
+	lowerKey := "age-secret-key-1" + strings.Repeat("e", 58)
+	findingsLower := scan(s, "keys.conf", `KEY=`+lowerKey)
+	if len(findingsLower) == 0 {
+		t.Fatalf("expected lowercase Age secret key to be detected")
+	}
+}
+
+func TestScanner_AgePublicKey_Suppressed(t *testing.T) {
+	s := defaultScanner()
+	// Age recipient public keys (62 chars: age1 + 58 chars Bech32)
+	pubKey := "age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5apqqcnq24qk"
+
+	findings := scan(s, ".env", `sops_age__list_0__map_recipient=`+pubKey)
+	if len(findings) != 0 {
+		t.Errorf("expected 0 findings for Age public key recipient, got %d: %+v", len(findings), findings)
+	}
+
+	findingsConfig := scan(s, "config.yaml", `recipient: "`+pubKey+`"`)
+	if len(findingsConfig) != 0 {
+		t.Errorf("expected 0 findings for Age public key in config, got %d: %+v", len(findingsConfig), findingsConfig)
+	}
+}
+
+func TestScanner_SOPS_EncryptedBlocks_Suppressed(t *testing.T) {
+	s := defaultScanner()
+
+	// 1. Standard AES256_GCM cipher
+	findingsAES := scan(s, ".env", `PASSWORD=ENC[AES256_GCM,data:UPvXnHJIHFCB1joZJF9p8N+lFtfHiJwpZjljW58SVTg=,iv:fkEYnupVJ7oSpKvWT8cLlLhLG+JznN//rGJVziJ7KJ8=,tag:s8eokfL6ML9Uj6eSbMg/6w==,type:str]`)
+	if len(findingsAES) != 0 {
+		t.Errorf("expected 0 findings for SOPS AES256_GCM block, got %d: %+v", len(findingsAES), findingsAES)
+	}
+
+	// 2. CHACHA20_POLY1305 cipher
+	findingsChaCha := scan(s, ".env", `DB_SECRET=ENC[CHACHA20_POLY1305,data:ZWRmMmYzYTRiNWM2ZDdlOGY5YTBiMWMyZDNlNGY1YTY=,iv:YWJjZGVmZ2hpamts,tag:bW5vcHFyc3R1dnd4eXoxMg==,type:str]`)
+	if len(findingsChaCha) != 0 {
+		t.Errorf("expected 0 findings for SOPS CHACHA20_POLY1305 block, got %d: %+v", len(findingsChaCha), findingsChaCha)
+	}
+
+	// 3. Generalized future cipher
+	findingsFuture := scan(s, "settings.json", `{"apiKey": "ENC[FUTURE_ALGO_2026,data:aW52ZW50ZWQtZGF0YS1zdHJpbmctaGVyZQ==,type:str]"}`)
+	if len(findingsFuture) != 0 {
+		t.Errorf("expected 0 findings for generalized SOPS block, got %d: %+v", len(findingsFuture), findingsFuture)
+	}
+
+	// 4. SOPS metadata and Age ciphertext headers
+	sopsMeta := `
+sops_age__list_0__map_enc=-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPcTlBTE5KQTVJUk5NeHBw\n-----END AGE ENCRYPTED FILE-----\n
+sops_lastmodified=2026-09-22T10:00:00Z
+sops_mac=ENC[AES256_GCM,data:1234567890abcdef1234567890abcdef,iv:1234,tag:5678,type:str]
+sops_version=3.9.4
+`
+	findingsMeta := scan(s, ".env", sopsMeta)
+	if len(findingsMeta) != 0 {
+		t.Errorf("expected 0 findings for SOPS metadata, got %d: %+v", len(findingsMeta), findingsMeta)
+	}
+}
+
+func TestScanner_SOPS_Plus_Age_E2E(t *testing.T) {
+	s := defaultScanner()
+
+	// External user's exact reproduction repo scenario:
+	// File 1: .env containing SOPS + Age encrypted secrets and public key
+	envContent := `PASSWORD=ENC[AES256_GCM,data:UPvXnHJIHFCB1joZJF9p8N+lFtfHiJwpZjljW58SVTg=,iv:fkEYnupVJ7oSpKvWT8cLlLhLG+JznN//rGJVziJ7KJ8=,tag:s8eokfL6ML9Uj6eSbMg/6w==,type:str]
+sops_age__list_0__map_enc=-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPcTlBTE5KQTVJUk5NeHBw\nMjNTTE9Kd0M5blF5T2I2R2V3ejRmSm9iL2d3CjhoTWMzTllNeWtFTWZlWFl1SSs4\nNUk4M211bnllcWdma2tYZjZFVjRHZDAKLS0tIGVMR0dqOXpTNHBjNzdvbFBDRzZx\nUkcyS3lYQzU2UXNuckVKeFNrQllQQzgK4TksAEdQSNT2E9VsnUKTyqZu859IbuSf\nf1VKjY6q5R7NW0nbptLBfE2WF+B/hYy/hPv2urtqpPaWsypvhif6Ow==\n-----END AGE ENCRYPTED FILE-----\n
+sops_age__list_0__map_recipient=age1vvdrj2w7kyk5x84m62e8l7e289cws9a74y2w84m62e8l7e289cws9a74y2
+sops_lastmodified=2026-09-22T08:14:00Z
+sops_mac=ENC[AES256_GCM,data:Z2NtX21hY19zdHJpbmdfZGF0YQ==,iv:YWJj,tag:ZGVm,type:str]
+sops_version=3.9.4
+`
+	findingsEnv := scan(s, ".env", envContent)
+	if len(findingsEnv) != 0 {
+		t.Fatalf("expected ZERO false positives on SOPS .env file, got %d: %+v", len(findingsEnv), findingsEnv)
+	}
+
+	// File 2: private.txt containing the unencrypted private key
+	privateKey := "AGE-SECRET-KEY-1" + strings.Repeat("Q", 58)
+	privateTxtContent := `# created: 2026-09-22T08:00:00Z
+# public key: age1vvdrj2w7kyk5x84m62e8l7e289cws9a74y2w84m62e8l7e289cws9a74y2
+` + privateKey + `
+`
+	findingsPrivate := scan(s, "private.txt", privateTxtContent)
+	if len(findingsPrivate) != 1 {
+		t.Fatalf("expected EXACTLY 1 CRITICAL finding for Age secret key in private.txt, got %d", len(findingsPrivate))
+	}
+	if findingsPrivate[0].SignatureID != "age-secret-key" {
+		t.Errorf("expected SignatureID 'age-secret-key', got %s", findingsPrivate[0].SignatureID)
+	}
+	if findingsPrivate[0].Token != privateKey {
+		t.Errorf("expected token %s, got %s", privateKey, findingsPrivate[0].Token)
+	}
+	if findingsPrivate[0].Severity != "CRITICAL" {
+		t.Errorf("expected CRITICAL severity, got %s", findingsPrivate[0].Severity)
+	}
+}
+

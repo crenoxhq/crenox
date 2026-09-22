@@ -178,6 +178,18 @@ func TestTrie_DeepSeekAPIKey(t *testing.T) {
 	assertAtLeastOneMatch(t, matches, "deepseek-api-key")
 }
 
+func TestTrie_AgeSecretKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	mockKey := "AGE-SECRET-KEY-1" + strings.Repeat("Q", 58)
+	matches := search(a, "identity = \""+mockKey+"\"")
+	assertAtLeastOneMatch(t, matches, "age-secret-key")
+
+	// Also case-insensitive prefix match
+	lowerKey := "age-secret-key-1" + strings.Repeat("q", 58)
+	lowerMatches := search(a, "identity = \""+lowerKey+"\"")
+	assertAtLeastOneMatch(t, lowerMatches, "age-secret-key")
+}
+
 func TestTrie_BuildWithCustom(t *testing.T) {
 	customSigs := []config.CustomSignature{
 		{

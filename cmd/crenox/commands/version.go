@@ -16,7 +16,7 @@ func NewVersionCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Printf("Crenox version\n")
 			fmt.Printf("crenox %s (commit: %s, built: %s)\n", version.Version, version.Commit, version.Date)
-			fmt.Printf("Developed by: Khaled Hani | Contact: https://t.me/A245F\n")
+			fmt.Printf("Maintained by: CrenoxHQ | https://github.com/crenoxhq/crenox\n")
 		},
 	}
 }

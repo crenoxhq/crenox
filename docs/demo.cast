@@ -81,7 +81,7 @@
 [5.85, "o", "o"]
 [5.872, "o", "n"]
 [5.992, "o", "\r\n"]
-[6.072, "o", "Crenox version\r\ncrenox v2.1.8 (commit: d38d57e, built: 2026-09-12T10:56:15Z)\r\nDeveloped by: Khaled Hani | Contact: https://t.me/A245F\r\n"]
+[6.072, "o", "Crenox version\r\ncrenox v2.1.8 (commit: d38d57e, built: 2026-09-12T10:56:15Z)\r\nMaintained by: crenoxhq | https://github.com/crenoxhq/crenox\r\n"]
 [7.572, "o", "\u001b[1;36mcrenox-demo\u001b[0m \u001b[1;32m$\u001b[0m "]
 [7.892, "o", "g"]
 [7.912, "o", "i"]

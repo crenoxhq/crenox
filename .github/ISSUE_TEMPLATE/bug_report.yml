@@ -1,0 +1,80 @@
+name: Bug Report
+description: Report unexpected program behavior, runtime errors, installation issues, or panics
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please complete this form to report a bug. For false positive or false negative detection issues, please use the Detection Report template instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: Crenox Version
+      description: Provide the complete output of `crenox version`.
+      placeholder: "crenox v2.1.10 (commit: ...)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System and Architecture
+      description: Select your target environment.
+      options:
+        - "Linux (x86_64 / amd64)"
+        - "Linux (aarch64 / arm64)"
+        - "macOS (Apple Silicon - arm64)"
+        - "macOS (Intel - amd64)"
+        - "Windows (Git Bash / PowerShell)"
+        - "Android / Termux"
+        - "Container (Docker / Podman)"
+        - "Other (specify below)"
+    validations:
+      required: true
+
+  - type: input
+    id: installation_method
+    attributes:
+      label: Installation Method
+      description: How did you install Crenox? (e.g., install script curl|bash, go install, pre-compiled release binary, source build).
+      placeholder: "e.g. curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide the exact series of commands required to reproduce the behavior.
+      placeholder: |
+        1. Run `crenox install`
+        2. Stage files with `git add .`
+        3. Execute `git commit -m "commit message"`
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed_behavior
+    attributes:
+      label: Observed Behavior and Error Trace
+      description: Paste the terminal output, error message, or stack trace.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: A concise description of the expected behavior under standard conditions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration File (.crenox.yaml)
+      description: Paste the contents of your configuration file if one is present.
+      render: yaml

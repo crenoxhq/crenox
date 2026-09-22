@@ -94,7 +94,7 @@ That is all. No configuration file required. No runtime dependencies. Works on L
 asciinema play https://crenoxhq.github.io/crenox/demo.cast
 ```
 
-![Crenox Demo](docs/demo.gif?v=2.1.9)
+![Crenox Demo](docs/demo.gif?v=2.1.10)
 
 ---
 
@@ -297,7 +297,7 @@ Pre-filters applied before entropy computation: Java-style identifiers (all lett
 | `SafeComment` | Line begins with `//` `#` `*` `/*` `<!--` `--` `;` `%` `!` |
 | `SafeTestFile` | Path ends with `_test.go` `_spec.rb` `.test.js` `.spec.ts` `.md` `.rst` `_test.py` `conftest.py`, starts with `test_` (`.py`), begins with `test-`, or contains directory: `test` `tests` `testdata` `fixtures` `__tests__` `__mocks__` `mock` `mocks` `sample` `samples` `docs` `doc` |
 | `SafeVariableName` | Variable name (left of `=` / `:=`) contains: `dummy` `fake` `mock` `placeholder` `sample` `fixture` `stub` `lorem` `foobar` `your_` `your-` `insert_` `replace_` `changeme` `redacted` `sanitized` `censored` |
-| `SafePlaceholder` | Token matches `$VAR`, `${VAR}`, `<...>`, `[[...]]`, `{{...}}`, `${{...}}` |
+| `SafePlaceholder` | Token matches `$VAR`, `${VAR}`, `<...>`, `[[...]]`, `{{...}}`, `${{...}}`, or Mozilla SOPS encrypted blocks (`ENC[<ALGO>,data:...]`) and Age recipient public keys (`age1...`) |
 | `SafeUUID` | Token matches UUID v4 pattern `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `SafeVersionString` | Token begins with `digit.digit.digit` |
 | `SafeSourceRHS` | Token on RHS of assignment in programming source files is bare/unquoted (e.g. Go struct types, function calls) |
@@ -351,7 +351,7 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 | **Twilio & SendGrid** | Account SID (`AC`), Auth Token (`SK`), SendGrid (`SG.`), Mailgun (`key-`) |
 | **npm & PyPI** | npm Automation token (`npm_`), Auth Token (`_authToken=`, `_auth=`), PyPI Upload Token (`pypi-`) |
 | **JWT** | JSON Web Token (`eyJ`, strict 3-part dot-separated regex) |
-| **Private Keys & Certs** | RSA, EC, OpenSSH, PKCS#8, PGP, DSA — all `-----BEGIN ... PRIVATE KEY-----` variants, PuTTY Private Keys (`PuTTY-User-Key-File-`) |
+| **Private Keys & Certs** | Age Secret Keys (`AGE-SECRET-KEY-1`), RSA, EC, OpenSSH, PKCS#8, PGP, DSA — all `-----BEGIN ... PRIVATE KEY-----` variants, PuTTY Private Keys (`PuTTY-User-Key-File-`) |
 | **Databases & DSNs** | PostgreSQL (`postgresql://`, `postgres://`), MySQL (`mysql://`), MongoDB SRV (`mongodb+srv://`), MongoDB (`mongodb://`), Redis (`redis://`), RabbitMQ (`amqp://`, `amqps://`) |
 | **Basic Auth** | HTTPS (`https://user:pass@`), HTTP (`http://user:pass@`) |
 | **Vault & DigitalOcean** | HashiCorp Vault Service (`hvs.`), Batch (`hvb.`), DigitalOcean (`dop_v1_`), Vercel (`vercel_`), Cloudflare (`cloudflare-api-token`), HuggingFace (`hf_`), Shopify (`shpat_`, `shpca_`, `shppa_`) |
@@ -423,7 +423,7 @@ curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --global
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
 
 # Pin to a specific version or custom directory:
-curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.9 --dir=/usr/local/bin
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.10 --dir=/usr/local/bin
 ```
 
 ### Pre-compiled Binary (Manual Download)
@@ -501,7 +501,7 @@ crenox uninstall
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.9 # Replace with the latest release version
+    rev: v2.1.10 # Replace with the latest release version
     hooks:
       - id: crenox
 ```
@@ -924,13 +924,13 @@ BenchmarkFullPipeline-8              697     2,039,775 ns/op     67,483 B/op    
 
 ## Contributing
 
-Contributions are welcome. All contributors must agree to the **[Contributor License Agreement](CLA.md)**. By submitting a pull request you confirm that you transfer copyright of the contribution to Khaled Hani. This protects the project's dual-licensing model.
+Contributions are welcome. All contributors must agree to the **[Contributor License Agreement](CLA.md)**. By submitting a pull request you agree that your contribution is licensed to **CrenoxHQ** under the terms of the CLA. This protects the project's open-source continuity and dual-licensing sustainability model. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 
-## Author
+## Maintainer
 
-Developed by **Khaled Hani** — [https://t.me/A245F](https://t.me/A245F)
+Maintained by **CrenoxHQ** — [https://github.com/crenoxhq](https://github.com/crenoxhq)
 
 ---
 

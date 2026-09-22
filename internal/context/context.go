@@ -145,6 +145,13 @@ var (
 	// codeVarConcatRE detects code variable concatenation expressions like
 	// identifier+identifier inside a token, indicating it is code not a secret.
 	codeVarConcatRE = regexp.MustCompile(`[a-zA-Z0-9_]\+[a-zA-Z0-9_]`)
+
+	// sopsEncryptedBlockRE matches general Mozilla SOPS encrypted value blocks
+	// across all supported ciphers (AES256_GCM, CHACHA20_POLY1305, etc.).
+	sopsEncryptedBlockRE = regexp.MustCompile(`(?i)ENC\[[A-Z0-9_]+,data:[^\]]+\]`)
+
+	// agePublicKeyRE matches Age recipient public keys (Bech32 62 chars: age1 + 58 chars).
+	agePublicKeyRE = regexp.MustCompile(`(?i)^age1[0-9a-z]{58}$`)
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -642,10 +649,34 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 		}
 	}
 
-	// ── Check 20: Mozilla SOPS Encrypted Values ──────────────────────────────
-	// Ignore values encrypted by Mozilla SOPS (wrapped in ENC[AES256_GCM,...])
-	if strings.Contains(lineContent, "ENC[") {
-		return SafePlaceholder
+	// ── Check 20: Mozilla SOPS & Age Encryption Artifacts ─────────────────────
+	// Guard: Never suppress genuine Age Secret Keys (e.g. SOPS_AGE_KEY=AGE-SECRET-KEY-1...).
+	if sigID != "age-secret-key" {
+		// 1. Generalized Mozilla SOPS encrypted value blocks across all ciphers
+		//    (AES256_GCM, CHACHA20_POLY1305, or future cipher algorithms).
+		if strings.Contains(lineContent, "ENC[") || strings.Contains(token, "ENC[") ||
+			sopsEncryptedBlockRE.MatchString(token) || sopsEncryptedBlockRE.MatchString(lineContent) {
+			return SafePlaceholder
+		}
+
+		// 2. Age Public Recipient Keys:
+		//    age1... is a public recipient key (62 characters Bech32), NOT a secret.
+		if (strings.HasPrefix(lowerToken, "age1") && len(token) == 62) || agePublicKeyRE.MatchString(token) {
+			return SafePlaceholder
+		}
+
+		// 3. SOPS Metadata and Age Ciphertext Blocks:
+		//    Ciphertext blocks (-----BEGIN AGE ENCRYPTED FILE-----) and SOPS metadata
+		//    keys (sops_age__list_..., sops_mac=, sops_version=, sops_lastmodified=).
+		if strings.Contains(lowerLine, "begin age encrypted file") || strings.Contains(lowerLine, "end age encrypted file") {
+			return SafePlaceholder
+		}
+		if strings.Contains(lowerLine, "sops_age__") || strings.Contains(lowerLine, "sops_kms__") ||
+			strings.Contains(lowerLine, "sops_gcp__") || strings.Contains(lowerLine, "sops_azure__") ||
+			strings.Contains(lowerLine, "sops_pgp__") || strings.Contains(lowerLine, "sops_mac=") ||
+			strings.Contains(lowerLine, "sops_version=") || strings.Contains(lowerLine, "sops_lastmodified=") {
+			return SafePlaceholder
+		}
 	}
 
 	// ── Check 21: Apple Entitlements / Plist Keys ────────────────────────────

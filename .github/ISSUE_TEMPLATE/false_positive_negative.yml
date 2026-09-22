@@ -1,0 +1,85 @@
+name: False Positive or False Negative Report
+description: Report a safe token incorrectly flagged as a secret, or a leaked credential missed by Crenox
+title: "[Detection]: "
+labels: ["detection", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security Notice: Do not post active production credentials, private keys, or sensitive internal data.
+        Replace sensitive portions of the token with placeholder characters while preserving the prefix, character set, and total length.
+
+  - type: dropdown
+    id: detection_type
+    attributes:
+      label: Detection Classification
+      description: Indicate whether this is an erroneous detection or an undetected credential.
+      options:
+        - "False Positive: Safe code or public key incorrectly flagged as a secret"
+        - "False Negative: Real credential or secret missed by the scanner"
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: Credential Type or Provider
+      description: Specify the key format or provider (for example: Age Secret Key, Age Public Recipient, Mozilla SOPS, AWS, GitHub PAT).
+      placeholder: "e.g. Age Secret Key / Mozilla SOPS"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: execution_mode
+    attributes:
+      label: Execution Mode
+      description: Specify how Crenox was invoked.
+      options:
+        - "Pre-commit hook (crenox run / git commit)"
+        - "Filesystem scan (crenox scan [directory])"
+        - "Git history scan (crenox scan --history .)"
+        - "CI/CD pipeline (GitHub Actions / GitLab SAST)"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Crenox Version
+      description: Run `crenox version` and paste the output here.
+      placeholder: "crenox v2.1.10 (commit: ...)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_snippet
+    attributes:
+      label: Minimal Reproducible Example
+      description: Provide the minimal snippet showing the filename, line, and token structure.
+      placeholder: |
+        Filename: .env
+        sops_age__list_0__map_recipient=age1vvdrjrnguxy9aft4nnd9tghn2m9vrghv2z0ggsxqws43hyhq99aq79md5f
+
+        Filename: private.txt
+        AGE-SECRET-KEY-1QE3LU4XCHJ8L0649ZZJLHJ90AS3ZAWZ3A30PYPGWZUCW7UT8EGQS52HYC4
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_output
+    attributes:
+      label: Observed Output
+      description: Paste the terminal output or scan log produced by Crenox.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: Expected Result and Technical Justification
+      description: Explain why this token should or should not be detected, including links to official specifications or RFCs if available.
+      placeholder: "e.g. The age1 token is a public recipient key, equivalent to an SSH public key, and should be ignored. The AGE-SECRET-KEY- token is a private key and must be reported with CRITICAL severity."
+    validations:
+      required: true

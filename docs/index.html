@@ -8,7 +8,7 @@
     <!-- Meta Descriptions for SEO -->
     <meta name="description" content="Crenox is a zero-dependency, ultra-fast Git secret scanner and pre-commit hook written in Go. Detect leaked API keys, tokens, and credentials in under 20ms with 130+ signatures and GitLab SAST / GitHub SARIF reporting.">
     <meta name="keywords" content="secret scanner, git secret scanner, secret detection tool, gitleaks alternative, git-secrets alternative, detect api keys, detect leaked passwords, pre-commit secret scanner, gitlab secret detection sast, sarif secret scanner, go secret scanner, devsecops secret scanner, فاحص أسرار, فحص الأسرار البرمجية">
-    <meta name="author" content="Khaled Hani">
+    <meta name="author" content="CrenoxHQ">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="google-site-verification" content="googledc7329401f946fab">
     
@@ -47,7 +47,7 @@
       "description": "A high-performance zero-dependency Git pre-commit secret scanner and credentials detector written in Go.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.9",
+      "softwareVersion": "2.1.10",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -56,8 +56,9 @@
         "priceCurrency": "USD"
       },
       "author": {
-        "@type": "Person",
-        "name": "Khaled Hani"
+        "@type": "Organization",
+        "name": "CrenoxHQ",
+        "url": "https://github.com/crenoxhq/crenox"
       },
       "featureList": [
         "Sub-20ms local Git pre-commit secret scanning",
@@ -109,7 +110,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.1.8">
+    <link rel="stylesheet" href="style.css?v=2.1.10">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
@@ -167,7 +168,7 @@
             <h1 class="hero-title">Git Secret Scanner: Preventing credential leaks locally.</h1>
             <p class="text-lead">Statically compiled in Go with zero external runtime dependencies, Crenox evaluates staged files locally to prevent credential leakage before they leave the developer workstation.</p>
             
-            <p class="text-muted" style="font-size: 0.85rem; margin-top: -1rem;">Published by <strong>Khaled Hani</strong> on July 3, 2026</p>
+            <p class="text-muted" style="font-size: 0.85rem; margin-top: -1rem;">Published by <strong>CrenoxHQ</strong> on July 3, 2026</p>
 
             <div class="hero-actions">
                 <a href="#installation" class="btn btn-primary">Deploy Crenox</a>
@@ -233,7 +234,7 @@
                     <thead>
                         <tr>
                             <th>Audited Metric</th>
-                            <th>Crenox (<span class="latest-version">v2.1.9</span>)</th>
+                            <th>Crenox (<span class="latest-version">v2.1.10</span>)</th>
                             <th>Gitleaks (v8.18.2)</th>
                             <th>Betterleaks (v1.6.1)</th>
                         </tr>
@@ -400,6 +401,12 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 22, 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.10: Age Encryption Detection, SOPS Cipher Generalization, Dual-Licensing & Contributor Governance</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.10 introduces dedicated Tier 1 Aho-Corasick detection for Age encryption secret keys with variable collision guards, generalized forward-compatible Mozilla SOPS encrypted block suppression across all ciphers, Tier 3 context suppression for Age recipient public keys and SOPS metadata, complete repository ownership assignment to CrenoxHQ, an industry-standard dual-licensing legal framework (CLA.md), zero-emoji GitHub issue forms, and a dynamic PR compliance workflow with live zero-allocation benchmark enforcement.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">September 17, 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-en); font-size: 1.5rem; font-weight: 400;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">v2.1.9: Line Deduplication Fix, Multi-File Reporting, Subprocess Overhead Reduction & Dual DNS</a></h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">Version 2.1.9 addresses core engine edge cases and optimizes execution latency: fixes a deduplication bug where multiple distinct secrets on the same line overwrote each other, ensures ad-hoc scans report repeated secrets across different files instead of suppressing them globally, eliminates redundant Git subprocess invocations in pre-commit hook runs, prevents unhandled panics on malformed custom regex rules, adds resilient DNS fallback for offline or firewalled environments, suppresses duplicate Shannon entropy hits on lines already matched by specific pattern rules, and extends test-path classification to pytest and Bun ecosystems.</p>
@@ -478,14 +485,14 @@ allowlist_patterns:
             <div class="eyebrow">
                 08 / Community & Feedback
             </div>
-            <h2>Get in touch & discuss security</h2>
-            <p>Crenox is an open-source security tool developed as an individual effort. We value feedback, rule suggestions, and reports from all users.</p>
+            <h2>Community, Support & Feedback</h2>
+            <p>Crenox is an open-source security project maintained by <strong>CrenoxHQ</strong>. We welcome feedback, signature proposals, and community contributions.</p>
             
-            <p>If you would like to report a security issue, propose a new credential signature, or ask questions about workstation deployments, please use our community channels:</p>
+            <p>If you would like to report an issue, propose a new credential signature, or discuss enterprise integrations, please use our community channels:</p>
 
             <ul style="padding-left: 1.25rem; margin-top: 1rem; margin-bottom: 2rem;">
-                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>GitHub Discussions & Issues:</strong> Share feature requests, rule contributions, and report issues on our <a href="https://github.com/crenoxhq/crenox/issues" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">GitHub Repository</a>.</li>
-                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>Direct Developer Channel:</strong> You can contact Khaled Hani directly on Telegram at <a href="https://t.me/A245F" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">https://t.me/A245F</a> for support, direct feedback, or custom integrations.</li>
+                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>GitHub Issues & Discussions:</strong> Share feature requests, signature proposals, or report false positives on our <a href="https://github.com/crenoxhq/crenox/issues" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">GitHub Repository</a>.</li>
+                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>Community & Enterprise Support:</strong> Visit the <a href="https://github.com/crenoxhq/crenox/discussions" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">Crenox Community Forum</a> or reach out via official organization channels for enterprise inquiries.</li>
             </ul>
         </section>
 
@@ -512,7 +519,7 @@ allowlist_patterns:
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
-        AsciinemaPlayer.create("demo.cast?v=2.1.8", document.getElementById("terminal-demo"), {
+        AsciinemaPlayer.create("demo.cast?v=2.1.10", document.getElementById("terminal-demo"), {
             cols: 105,
             rows: 24,
             autoPlay: true,

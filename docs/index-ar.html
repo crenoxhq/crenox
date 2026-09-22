@@ -8,7 +8,7 @@
     <!-- Meta Descriptions for SEO -->
     <meta name="description" content="كرينوكس هو فاحص أسرار سريع ومجاني ومفتوح المصدر بلغة Go. يكشف تسريب مفاتيح API وكلمات المرور والرموز السرية في مستودعات Git وخطافات Pre-commit في أقل من 20 مللي ثانية بدون استهلاك موارد. بديل Gitleaks فائق السرعة.">
     <meta name="keywords" content="فاحص أسرار, فحص الأسرار البرمجية, كشف تسريب المفاتيح, فاحص مفاتيح API, بديل gitleaks, فحص git secrets, كشف كلمات المرور, فحص الثغرات, حماية الشيفرة البرمجية, secret scanner, git secret scanner, credentials scanner, pre-commit hook, gitleaks alternative, git-secrets alternative, SAST secret detection">
-    <meta name="author" content="Khaled Hani">
+    <meta name="author" content="crenoxhq">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="google-site-verification" content="googledc7329401f946fab">
     
@@ -23,31 +23,29 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://crenoxhq.github.io/crenox/index-ar.html">
-    <meta property="og:title" content="كرينوكس (Crenox) — أفضل فاحص أسرار وكشف تسريب المفاتيح في Git">
-    <meta property="og:description" content="فاحص أسرار مستقل بلغة Go لكشف ومنع تسريب مفاتيح API والرموز السرية في Git خلال أقل من 20 مللي ثانية. بديل أسرع وأخف لـ Gitleaks.">
-    <meta property="og:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
-    <meta property="og:site_name" content="Crenox Secret Scanner">
+    <meta property="og:title" content="كرينوكس (Crenox) — فاحص أسرار Git وكشف تسريب المفاتيح في Pre-Commit">
+    <meta property="og:description" content="فاحص أسرار ومفاتيح برمجية فائق السرعة بلغة Go. يفحص مستودعات Git ويكشف أسرار ومفاتيح API في أقل من 20 مللي ثانية مع دعم كامل لتقارير GitLab SAST و SARIF.">
+    <meta property="og:image" content="https://crenoxhq.github.io/crenox/social-card.png">
     <meta property="og:locale" content="ar_AR">
-    <meta property="og:locale:alternate" content="en_US">
 
-    <!-- Twitter -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://crenoxhq.github.io/crenox/index-ar.html">
-    <meta name="twitter:title" content="كرينوكس (Crenox) — فاحص أسرار Git وكشف تسريب المفاتيح">
-    <meta name="twitter:description" content="فاحص أسرار مستقل بلغة Go لكشف ومنع تسريب مفاتيح API والرموز السرية في Git خلال أقل من 20 مللي ثانية.">
-    <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
+    <meta name="twitter:title" content="كرينوكس (Crenox) — فاحص أسرار Git فائق السرعة">
+    <meta name="twitter:description" content="أداة فحص أسرار خفيفة بلغة Go وبدون أي متطلبات تشغيل. تحمي مستودعات Git من تسريب المفاتيح محلياً.">
+    <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-card.png">
 
-    <!-- Structured Data (JSON-LD Schema) for Google Search Rich Snippets -->
+    <!-- JSON-LD Structured Data for Google / Schema.org -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Crenox",
-      "alternateName": ["كرينوكس", "Crenox Secret Scanner", "فاحص أسرار كرينوكس"],
+      "alternateName": ["Crenox Secret Scanner", "كرينوكس", "فاحص أسرار كرينوكس"],
       "description": "فاحص أسرار وخطاف pre-commit أمني فائق السرعة بلغة Go لكشف تسريب المفاتيح وكلمات المرور والرموز السرية في Git محلياً.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.9",
+      "softwareVersion": "2.1.10",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -56,8 +54,9 @@
         "priceCurrency": "USD"
       },
       "author": {
-        "@type": "Person",
-        "name": "Khaled Hani"
+        "@type": "Organization",
+        "name": "crenoxhq",
+        "url": "https://github.com/crenoxhq/crenox"
       },
       "featureList": [
         "فاحص أسرار محلي فائق السرعة في أقل من 20 مللي ثانية",
@@ -109,7 +108,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.1.8">
+    <link rel="stylesheet" href="style.css?v=2.1.10">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
 </head>
@@ -167,7 +166,7 @@
             <h1 class="hero-title">كرينوكس: أفضل فاحص أسرار وكشف تسريب المفاتيح وكلمات المرور في Git</h1>
             <p class="text-lead">كرينوكس (Crenox) هو أقوى وأسرع <strong>فاحص أسرار (Secret Scanner)</strong> مكتوب بلغة Go وبدون أي اعتماديات خارجية. يفحص التعديلات المرحلية ويكتشف مفاتيح API المسربة وكلمات المرور والأسرار البرمجية في أقل من 20 مللي ثانية قبل رفعها إلى GitHub أو GitLab.</p>
             
-            <p class="text-muted" style="font-size: 0.85rem; margin-top: -1rem;">نُشر بواسطة <strong>خالد هاني</strong> في 3 يوليو 2026</p>
+            <p class="text-muted" style="font-size: 0.85rem; margin-top: -1rem;">نُشر بواسطة <strong>crenoxhq</strong> في 3 يوليو 2026</p>
 
             <div class="hero-actions">
                 <a href="#installation" class="btn btn-primary">تثبيت الأداة</a>
@@ -233,7 +232,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.9</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.10</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -400,6 +399,12 @@ allowlist_patterns:
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">22 سبتمبر 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.10: كشف تشفير Age، تعميم فلاتر SOPS، الترخيص المزدوج، وحوكمة المساهمات</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يقدم الإصدار 2.1.10 كشفاً مخصصاً في Tier 1 لمفاتيح تشفير Age الخاصة بدون حجز ذاكرة مع حارس برمجي لمنع تصادم المتغيرات، وتعميماً شاملاً لفلاتر كتل تشفير Mozilla SOPS لكافة الخوارزميات، واستبعاد مفاتيح Age العامة للمستلمين وبيانات SOPS الوصفية لمنع الإنذارات الكاذبة، ونقل الملكية الفكرية بالكامل لمنظمة CrenoxHQ، وصياغة اتفاقية الترخيص المزدوج (CLA.md)، وإطلاق نماذج قضايا GitHub القياسية وسير عمل التحقق الآلي من معايير الأداء والـ Zero-Allocation.</p>
+                </div>
+
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">17 سبتمبر 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.9: معالجة تكرار السطر الواحد، تقارير الملفات المتعددة، تسريع فحص خطافات Git، ومحلل DNS مرن</a></h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يعالج الإصدار 2.1.9 حالات حافة دقيقة في نواة المحرك ويحسن زمن الاستجابة: يصحح مشكلة استبدال النتائج عند تواجد أكثر من سر مختلف في نفس السطر، ويضمن إبلاغ الفحص عن الأسرار المكررة عبر الملفات المنفصلة بدلاً من إخفائها كلياً، ويختزل عمليات استدعاء subprocess لـ Git عند تشغيل pre-commit hook، ويمنع الانهيار (Panic) عند إدخال قواعد Regex مخصصة غير صالحة، ويضيف آلية DNS مزدوجة احتياطية للبيئات المقيدة شبكياً، مع كتم تنبيهات الإنتروبيا المكررة عند تطابق قواعد الأنماط الصريحة، وتوسيع تصنيف مسارات الاختبارات لتشمل بيئات Pytest وBun.</p>
@@ -478,14 +483,14 @@ allowlist_patterns:
             <div class="eyebrow">
                 08 / مجتمع المطورين والدعم
             </div>
-            <h2>تواصل معنا وناقش تفاصيل الحماية البرمجية</h2>
-            <p>كرينوكس هو مشروع مفتوح المصدر تم تطويره بالكامل بمجهود فردي. نهتم جداً بمراجعاتكم واقتراحاتكم لتحديث القواعد وزيادة فاعلية الكشف.</p>
+            <h2>مجتمع الأداة والدعم الفني</h2>
+            <p>كرينوكس هو مشروع أمني مفتوح المصدر يُدار ويُطور بواسطة <strong>CrenoxHQ</strong>. نرحب باقتراحات القواعد والمساهمات البرمجية من مجتمع المطورين.</p>
             
-            <p>إذا كنت ترغب في الإبلاغ عن مشكلة أمنية، أو اقتراح قاعدة مطابقة جديدة، أو الاستفسار عن التثبيت في بيئات عمل مختلفة، يرجى استخدام قنوات التواصل التالية:</p>
+            <p>إذا كنت ترغب في الإبلاغ عن مشكلة أمنية، أو اقتراح قاعدة كشف جديدة، أو الاستفسار عن خطط الشركات والتثبيت المؤسسي، يرجى استخدام قنوات التواصل التالية:</p>
 
             <ul style="padding-right: 1.25rem; margin-top: 1rem; margin-bottom: 2rem;">
                 <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>نقاشات وقضايا GitHub:</strong> لمناقشة الميزات المطلوبة واقتراح قواعد الفحص في صفحة المشروع على <a href="https://github.com/crenoxhq/crenox/issues" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">مستودع GitHub</a>.</li>
-                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>تواصل مباشر مع المطور:</strong> يمكنك التواصل مباشرة مع خالد هاني على تيليجرام عبر الرابط <a href="https://t.me/A245F" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">https://t.me/A245F</a> للأسئلة والدعم الفني المباشر.</li>
+                <li style="margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--color-text-secondary);"><strong>مجتمع ودعم Crenox:</strong> يمكنك الانضمام إلى <a href="https://github.com/crenoxhq/crenox/discussions" target="_blank" style="color: var(--color-text-primary); text-decoration: underline;">منتدى نقاشات Crenox</a> أو التواصل عبر قنوات المنظمة الرسمية للاستفسارات المؤسسية والدعم الفني.</li>
             </ul>
         </section>
 
@@ -512,7 +517,7 @@ allowlist_patterns:
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
-        AsciinemaPlayer.create("demo.cast?v=2.1.8", document.getElementById("terminal-demo"), {
+        AsciinemaPlayer.create("demo.cast?v=2.1.10", document.getElementById("terminal-demo"), {
             cols: 105,
             rows: 24,
             autoPlay: true,

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community Discussions
+    url: https://github.com/crenoxhq/crenox/discussions
+    about: Ask questions, discuss deployment configurations, and collaborate with maintainers.
+  - name: Official Documentation
+    url: https://crenoxhq.github.io/crenox/
+    about: Read the official Crenox architecture guide, benchmarks, and installation manuals.
+  - name: Security Vulnerability Reporting
+    url: https://github.com/crenoxhq/crenox/security/advisories/new
+    about: Privately disclose a security vulnerability in Crenox to the maintainers.

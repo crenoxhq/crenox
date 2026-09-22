@@ -59,7 +59,7 @@ Flags:
   -v, --verbose               Enable verbose diagnostic output.
   -h, --help                  Help for crenox.
 
-Developed by: Khaled Hani | Contact: https://t.me/A245F`,
+Maintained by: CrenoxHQ | https://github.com/crenoxhq/crenox`,
 		Version:       version.Version,
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -67,7 +67,7 @@ Developed by: Khaled Hani | Contact: https://t.me/A245F`,
 
 	root.SetVersionTemplate(`Crenox version
 {{printf "crenox %s" .Version}} (commit: ` + version.Commit + `, built: ` + version.Date + `)
-Developed by: Khaled Hani | Contact: https://t.me/A245F
+Maintained by: CrenoxHQ | https://github.com/crenoxhq/crenox
 `)
 
 	cmds := []*cobra.Command{

@@ -110,6 +110,7 @@ var BuiltinSignatures = []Signature{
 	{ID: "pkcs8-private-key", Description: "PKCS#8 Private Key (PEM)", Prefix: "-----BEGIN PRIVATE KEY-----", Severity: "CRITICAL"},
 	{ID: "pgp-private-key", Description: "PGP Private Key Block", Prefix: "-----BEGIN PGP PRIVATE KEY BLOCK-----", Severity: "CRITICAL"},
 	{ID: "dsa-private-key", Description: "DSA Private Key (PEM)", Prefix: "-----BEGIN DSA PRIVATE KEY-----", Severity: "CRITICAL"},
+	{ID: "age-secret-key", Description: "Age Secret Key (age-encryption.org)", Prefix: "AGE-SECRET-KEY-1", Severity: "CRITICAL", Validator: regexp.MustCompile(`(?i)^AGE-SECRET-KEY-1[0-9A-Z]{58}$`)},
 
 	// ── Database Credentials ─────────────────────────────────────────────────
 	{ID: "mongodb-dsn", Description: "MongoDB connection string", Prefix: "mongodb+srv://", Severity: "HIGH", Validator: regexp.MustCompile(`(?i)^mongodb\+srv://[^:\s/?#]+:[^@\s/?#]+@`)},
@@ -450,6 +451,10 @@ func toLower(b byte) byte {
 // or matches common credential variable keywords or WordPress salt configurations.
 func isAssignmentOrKeyword(s string) bool {
 	upper := strings.ToUpper(s)
+	// Guard: Age secret keys literally contain "SECRET", but are token prefixes, not variable names.
+	if strings.HasPrefix(upper, "AGE-SECRET-KEY-1") {
+		return false
+	}
 	if strings.Contains(upper, "PASSWORD") || strings.Contains(upper, "SECRET") ||
 		strings.Contains(upper, "TOKEN") || strings.Contains(upper, "AUTH") ||
 		strings.Contains(upper, "HEROKU") || strings.Contains(upper, "GITHUB") ||
