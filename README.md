@@ -338,7 +338,7 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 
 | Category | Signatures |
 |----------|-----------|
-| **AI & ML Platforms** | OpenAI (`sk-`, `sk-proj-`), DeepSeek (`sk-`), Anthropic (`sk-ant-`), Cohere (`co_`), Together AI (`tog_`), Mistral AI (`mis_`), Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), HuggingFace (`hf_`) |
+| **AI & ML Platforms** | OpenAI (`sk-`, `sk-proj-`), DeepSeek (`sk-`), Anthropic (`sk-ant-`), OpenRouter (`sk-or-v1-`), Cohere (`co_`), Together AI (`tog_`), Mistral AI (`mis_`), Groq (`gsk_`), Replicate (`r8_`), Resend (`re_`), Perplexity (`pplx-`), Fireworks AI (`fw_`), LangSmith (`lsv2_`), HuggingFace (`hf_`) |
 | **Cloud Databases & Services** | Alibaba Cloud AccessKey ID (`LTAI`), Azure Storage Account Key, Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`), Terraform Cloud (`atlasv1`) |
 | **DevSecOps & Analytics** | Grafana Cloud Token (`glc_`), Infracost API Key (`ico-`), Datadog (`ddp_`), PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
 | **Social & Messaging** | Telegram Bot API Token (`bot<id>:<hash>`), Discord Webhook (`https://discord.com/api/webhooks/`), Slack Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Webhook (`https://hooks.slack.com/services/`) |
