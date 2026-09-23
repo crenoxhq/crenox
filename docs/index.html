@@ -342,7 +342,7 @@ crenox install --global</pre>
             <p>Crenox supports several CLI run modes to fit different developer workflows, ranging from automated Git pre-commit hooks to manual, ad-hoc filesystem scans.</p>
 
             <h3>1. The Commit-Time Validator</h3>
-            <p>Executed automatically by the Git pre-commit hook during the staging process. It reads the index, extracts staged diff blobs, and scans them in-memory. If findings are found, the commit is aborted.</p>
+            <p>Executed automatically by the Git pre-commit hook during the staging process. It reads staged diffs and scans them in-memory under a strict zero-tolerance and fail-closed policy: any finding of any severity or any unreadable file aborts the commit (exit code 1).</p>
             <pre class="font-mono">crenox run</pre>
 
             <h3>2. Local Directory Scan</h3>
