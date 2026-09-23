@@ -387,10 +387,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		close(jobs)
 		wg.Wait()
 		if err := cmd.Wait(); err != nil {
-			if file != nil {
-				file.Close()
-			}
-			return fmt.Errorf("git history scan failed or was interrupted: %w", err)
+			failedMu.Lock()
+			failedFiles = append(failedFiles, reporter.FailedFile{Path: "git log --history", Err: err})
+			failedMu.Unlock()
 		}
 	} else {
 		type scanJob struct {
@@ -556,17 +555,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 	// Fail-Closed: If any file failed to be read or processed, the scan is incomplete.
 	// We strictly prohibit emitting a clean status.
 	if len(failedFiles) > 0 {
-		if len(allFindings) > 0 {
-			rep.PrintFindings(allFindings)
-			rep.PrintSummary(allFindings, elapsed, scannedCount)
-			if fileReporter != nil {
-				fileReporter.PrintFindings(allFindings)
-				fileReporter.PrintSummary(allFindings, elapsed, scannedCount)
-			}
-		}
-		rep.PrintIncomplete(failedFiles, elapsed, scannedCount)
+		rep.PrintIncomplete(failedFiles, allFindings, elapsed, scannedCount)
 		if fileReporter != nil {
-			fileReporter.PrintIncomplete(failedFiles, elapsed, scannedCount)
+			fileReporter.PrintIncomplete(failedFiles, allFindings, elapsed, scannedCount)
 			if file != nil {
 				file.Close()
 			}

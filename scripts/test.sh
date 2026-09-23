@@ -23,7 +23,7 @@ case "${1:-test}" in
     echo "Running all unit and integration tests..."
     go test ./... -v -count=1 -timeout 60s -race
     echo
-    echo "✔ All tests passed."
+    echo "All tests passed."
     ;;
 
   bench)
@@ -35,7 +35,7 @@ case "${1:-test}" in
     echo "Generating coverage report..."
     go test ./... -coverprofile="${COVER_OUT}" -covermode=atomic -count=1 -timeout 60s
     go tool cover -html="${COVER_OUT}" -o "${COVER_HTML}"
-    echo "✔ Coverage report: ${COVER_HTML}"
+    echo "Coverage report: ${COVER_HTML}"
     go tool cover -func="${COVER_OUT}" | tail -1
     ;;
 

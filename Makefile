@@ -25,14 +25,14 @@ build:
 	@echo "Building $(BINARY) $(VERSION)..."
 	@mkdir -p $(DIST_DIR)
 	@CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY) $(CMD_PATH)
-	@echo "✔ $(DIST_DIR)/$(BINARY)"
+	@echo "Built: $(DIST_DIR)/$(BINARY)"
 
 ## build-full: Build crenox with the private web dashboard enabled
 build-full:
 	@echo "Building $(BINARY) $(VERSION) [+dashboard]..."
 	@mkdir -p $(DIST_DIR)
 	@CGO_ENABLED=0 go build -trimpath -tags dashboard -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-full $(CMD_PATH)
-	@echo "✔ $(DIST_DIR)/$(BINARY)-full"
+	@echo "Built: $(DIST_DIR)/$(BINARY)-full"
 
 ## cross: Cross-compile for all release targets
 cross:
@@ -62,7 +62,7 @@ lint:
 ## install: Install crenox binary to GOPATH/bin
 install:
 	@CGO_ENABLED=0 go install -trimpath -ldflags "$(LDFLAGS)" $(CMD_PATH)
-	@echo "✔ crenox installed to $$(go env GOPATH)/bin/crenox"
+	@echo "Installed: crenox to $$(go env GOPATH)/bin/crenox"
 
 ## hook: Install the pre-commit hook into the current repository
 hook: build
@@ -75,7 +75,7 @@ hook-global: build
 ## clean: Remove build artifacts
 clean:
 	@rm -rf $(DIST_DIR) coverage.out coverage.html
-	@echo "✔ Cleaned"
+	@echo "Cleaned"
 
 ## help: Show this help message
 help:

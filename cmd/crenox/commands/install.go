@@ -108,7 +108,7 @@ func installGlobal(force bool) error {
 		return fmt.Errorf("could not set git core.hooksPath: %w", err)
 	}
 
-	fmt.Printf("✔ Crenox installed globally.\n")
+	fmt.Printf("Crenox installed globally.\n")
 	fmt.Printf("  Global hooks directory: %s\n", globalHooksDir)
 	fmt.Printf("  All git repositories on this machine are now protected.\n")
 	return nil
@@ -143,7 +143,7 @@ func writeHookScript(hookPath string, force bool) error {
 		return fmt.Errorf("cannot render hook script: %w", err)
 	}
 
-	fmt.Printf("✔ Crenox hook installed at: %s\n", hookPath)
+	fmt.Printf("Crenox hook installed at: %s\n", hookPath)
 	return nil
 }
 

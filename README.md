@@ -900,7 +900,8 @@ When an unreadable file or pipeline failure triggers fail-closed protection, `-f
       "path": "secret.key",
       "error": "open secret.key: permission denied"
     }
-  ]
+  ],
+  "findings": []
 }
 ```
 

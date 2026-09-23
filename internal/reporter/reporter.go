@@ -164,7 +164,7 @@ func (r *Reporter) PrintClean(elapsed time.Duration, scannedFiles int) {
 			scannedFiles, elapsed.Round(time.Millisecond))
 	default:
 		fmt.Fprintln(r.w)
-		successColor.Fprintf(r.w, "  ✔ CRENOX CLEAN")
+		successColor.Fprintf(r.w, "  CRENOX CLEAN")
 		dimColor.Fprintf(r.w, "  —  %d file(s) scanned in %s\n",
 			scannedFiles, elapsed.Round(time.Microsecond))
 		fmt.Fprintln(r.w)
@@ -174,7 +174,7 @@ func (r *Reporter) PrintClean(elapsed time.Duration, scannedFiles int) {
 // PrintSkipped logs a file that was skipped with a reason.
 func (r *Reporter) PrintSkipped(filePath, reason string) {
 	if r.format == FormatPretty {
-		dimColor.Fprintf(r.w, "  ⊘  skipping %s (%s)\n", filePath, reason)
+		dimColor.Fprintf(r.w, "  skipping %s (%s)\n", filePath, reason)
 	}
 }
 
@@ -184,8 +184,9 @@ type FailedFile struct {
 	Err  error
 }
 
-// PrintIncomplete renders an error summary when a scan could not complete due to file read or environment errors.
-func (r *Reporter) PrintIncomplete(failedFiles []FailedFile, elapsed time.Duration, scannedFiles int) {
+// PrintIncomplete renders a unified error summary when a scan could not complete due to file read or environment errors.
+// It includes any findings discovered before the error, ensuring a single cohesive report is emitted across all formats.
+func (r *Reporter) PrintIncomplete(failedFiles []FailedFile, findings []scanner.Finding, elapsed time.Duration, scannedFiles int) {
 	switch r.format {
 	case FormatJSON:
 		ff := make([]jsonFailedFile, 0, len(failedFiles))
@@ -196,18 +197,39 @@ func (r *Reporter) PrintIncomplete(failedFiles []FailedFile, elapsed time.Durati
 			}
 			ff = append(ff, jsonFailedFile{Path: f.Path, Error: errMsg})
 		}
+		jf := make([]jsonFinding, 0, len(findings))
+		for _, f := range findings {
+			jf = append(jf, jsonFinding{
+				FilePath:    f.FilePath,
+				Line:        f.Line,
+				Severity:    f.Severity,
+				Tier:        f.DetectionTier.String(),
+				SignatureID: f.SignatureID,
+				Description: f.Description,
+				Token:       maskToken(f.Token),
+				Entropy:     f.Entropy,
+				LineSnippet: truncateForDisplay(RedactLineContent(f.LineContent, f.Token), 200),
+			})
+		}
 		report := jsonReport{
 			Version:      version.Version,
 			Status:       "scan_error",
 			ScannedFiles: scannedFiles,
 			ElapsedMs:    elapsed.Milliseconds(),
 			FailedFiles:  ff,
-			Findings:     []jsonFinding{},
+			Findings:     jf,
 		}
 		enc := json.NewEncoder(r.w)
 		enc.SetIndent("", "  ")
 		_ = enc.Encode(report)
+	case FormatSARIF:
+		r.sarifIncomplete(failedFiles, findings)
+	case FormatGitLabSAST:
+		r.gitlabIncomplete(failedFiles, findings)
 	case FormatPlain:
+		if len(findings) > 0 {
+			r.plainSummary(findings, elapsed, scannedFiles)
+		}
 		fmt.Fprintf(r.w, "crenox: scan incomplete — %d file(s) failed, %d file(s) scanned in %s\n",
 			len(failedFiles), scannedFiles, elapsed.Round(time.Millisecond))
 		for _, f := range failedFiles {
@@ -215,8 +237,14 @@ func (r *Reporter) PrintIncomplete(failedFiles []FailedFile, elapsed time.Durati
 		}
 		fmt.Fprintln(r.w, "commit blocked because the scan was incomplete")
 	default:
+		if len(findings) > 0 {
+			for _, f := range findings {
+				r.printOneFinding(f)
+			}
+			r.prettySummary(findings, elapsed, scannedFiles)
+		}
 		fmt.Fprintln(r.w)
-		errorColor.Fprintf(r.w, "  ✘ SCAN INCOMPLETE — %d file(s) failed to be read or processed:\n", len(failedFiles))
+		errorColor.Fprintf(r.w, "  SCAN INCOMPLETE — %d file(s) failed to be read or processed:\n", len(failedFiles))
 		for _, f := range failedFiles {
 			fmt.Fprintf(r.w, "      • %s: ", f.Path)
 			dimColor.Fprintf(r.w, "%v\n", f.Err)
@@ -294,7 +322,7 @@ func (r *Reporter) prettySummary(findings []scanner.Finding, elapsed time.Durati
 	fmt.Fprintln(r.w, strings.Repeat("─", 68))
 	fmt.Fprintln(r.w)
 
-	errorColor.Fprintf(r.w, "  ✘ COMMIT BLOCKED — remove the secrets above and try again.\n")
+	errorColor.Fprintf(r.w, "  COMMIT BLOCKED — remove the secrets above and try again.\n")
 	dimColor.Fprintf(r.w, "    Hint: If this is a false positive, append '// crenox:ignore' to the preceding line or at the end of the line.\n\n")
 }
 
@@ -507,9 +535,20 @@ type sarifResult struct {
 	Locations []sarifLocation `json:"locations"`
 }
 
+type sarifNotification struct {
+	Level   string       `json:"level"`
+	Message sarifMessage `json:"message"`
+}
+
+type sarifInvocation struct {
+	ExecutionSuccessful        bool                `json:"executionSuccessful"`
+	ToolExecutionNotifications []sarifNotification `json:"toolExecutionNotifications,omitempty"`
+}
+
 type sarifRun struct {
-	Tool    sarifTool     `json:"tool"`
-	Results []sarifResult `json:"results"`
+	Tool        sarifTool         `json:"tool"`
+	Invocations []sarifInvocation `json:"invocations,omitempty"`
+	Results     []sarifResult     `json:"results"`
 }
 
 type sarifReport struct {
@@ -576,6 +615,101 @@ func (r *Reporter) sarifSummary(findings []scanner.Finding) {
 						Version:        version.Version,
 						InformationURI: "https://github.com/crenoxhq/crenox",
 						Rules:          rules,
+					},
+				},
+				Invocations: []sarifInvocation{
+					{
+						ExecutionSuccessful: true,
+					},
+				},
+				Results: results,
+			},
+		},
+	}
+
+	enc := json.NewEncoder(r.w)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(report)
+}
+
+func (r *Reporter) sarifIncomplete(failedFiles []FailedFile, findings []scanner.Finding) {
+	seenRules := make(map[string]string)
+	for _, f := range findings {
+		ruleID := f.SignatureID
+		if ruleID == "" {
+			ruleID = "generic-secret"
+		}
+		seenRules[ruleID] = f.Description
+	}
+
+	rules := make([]sarifRule, 0, len(seenRules))
+	for rID, rDesc := range seenRules {
+		rules = append(rules, sarifRule{
+			ID: rID,
+			ShortDescription: sarifRuleDescription{
+				Text: rDesc,
+			},
+		})
+	}
+
+	results := make([]sarifResult, 0, len(findings))
+	for _, f := range findings {
+		ruleID := f.SignatureID
+		if ruleID == "" {
+			ruleID = "generic-secret"
+		}
+		results = append(results, sarifResult{
+			RuleID: ruleID,
+			Message: sarifMessage{
+				Text: fmt.Sprintf("Secret detected: %s (Severity: %s)", f.Description, f.Severity),
+			},
+			Locations: []sarifLocation{
+				{
+					PhysicalLocation: sarifPhysicalLocation{
+						ArtifactLocation: sarifArtifactLocation{
+							URI: f.FilePath,
+						},
+						Region: sarifRegion{
+							StartLine:   f.Line,
+							StartColumn: 1,
+						},
+					},
+				},
+			},
+		})
+	}
+
+	notifications := make([]sarifNotification, 0, len(failedFiles))
+	for _, f := range failedFiles {
+		errMsg := "unknown error"
+		if f.Err != nil {
+			errMsg = f.Err.Error()
+		}
+		notifications = append(notifications, sarifNotification{
+			Level: "error",
+			Message: sarifMessage{
+				Text: fmt.Sprintf("Failed to read or process %s: %s", f.Path, errMsg),
+			},
+		})
+	}
+
+	report := sarifReport{
+		Schema:  "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+		Version: "2.1.0",
+		Runs: []sarifRun{
+			{
+				Tool: sarifTool{
+					Driver: sarifDriver{
+						Name:           "Crenox",
+						Version:        version.Version,
+						InformationURI: "https://github.com/crenoxhq/crenox",
+						Rules:          rules,
+					},
+				},
+				Invocations: []sarifInvocation{
+					{
+						ExecutionSuccessful:        false,
+						ToolExecutionNotifications: notifications,
 					},
 				},
 				Results: results,
@@ -694,6 +828,71 @@ func (r *Reporter) gitlabSummary(findings []scanner.Finding) {
 	scanMeta.Scanner.Vendor.Name = "Crenox Security"
 	scanMeta.Type = "secret_detection"
 	scanMeta.Status = "success"
+	scanMeta.StartTime = nowStr
+	scanMeta.EndTime = nowStr
+
+	rep := gitlabReport{
+		Schema:          "https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/raw/v15.0.0/dist/secret-detection-report-format.json",
+		Version:         "15.0.0",
+		Vulnerabilities: vulns,
+		Scan:            scanMeta,
+	}
+
+	enc := json.NewEncoder(r.w)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(rep)
+}
+
+func (r *Reporter) gitlabIncomplete(failedFiles []FailedFile, findings []scanner.Finding) {
+	vulns := make([]gitlabVulnerability, 0, len(findings))
+	for idx, f := range findings {
+		sev := "Info"
+		switch strings.ToUpper(f.Severity) {
+		case "CRITICAL":
+			sev = "Critical"
+		case "HIGH":
+			sev = "High"
+		case "MEDIUM":
+			sev = "Medium"
+		case "LOW":
+			sev = "Low"
+		}
+
+		vulns = append(vulns, gitlabVulnerability{
+			ID:          fmt.Sprintf("crenox-%s-%d", f.SignatureID, idx+1),
+			Category:    "secret_detection",
+			Name:        f.Description,
+			Message:     fmt.Sprintf("Secret detected: %s", f.Description),
+			Description: fmt.Sprintf("Found exposed secret [%s] with %s severity at %s:%d", f.SignatureID, f.Severity, f.FilePath, f.Line),
+			Severity:    sev,
+			Confidence:  "Confirmed",
+			Scanner: gitlabScannerInfo{
+				ID:   "crenox",
+				Name: "Crenox",
+			},
+			Location: gitlabLocation{
+				File:      f.FilePath,
+				StartLine: f.Line,
+				EndLine:   f.Line,
+			},
+			Identifiers: []gitlabIdentifier{
+				{
+					Type:  "crenox_rule_id",
+					Name:  fmt.Sprintf("Crenox Rule %s", f.SignatureID),
+					Value: f.SignatureID,
+				},
+			},
+		})
+	}
+
+	nowStr := time.Now().UTC().Format(time.RFC3339)
+	var scanMeta gitlabScanMeta
+	scanMeta.Scanner.ID = "crenox"
+	scanMeta.Scanner.Name = "Crenox"
+	scanMeta.Scanner.Version = version.Version
+	scanMeta.Scanner.Vendor.Name = "Crenox Security"
+	scanMeta.Type = "secret_detection"
+	scanMeta.Status = "failed"
 	scanMeta.StartTime = nowStr
 	scanMeta.EndTime = nowStr
 

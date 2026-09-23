@@ -45,14 +45,14 @@ build_for() {
   echo "  → Building ${out}..."
   GOOS="${GOOS}" GOARCH="${GOARCH}" CGO_ENABLED=0 \
     go build -trimpath -ldflags "${LDFLAGS_STR}" -o "${out}" "${CMD_PATH}"
-  echo "    ✔ done ($(du -sh "${out}" | cut -f1))"
+  echo "    Done ($(du -sh "${out}" | cut -f1))"
 }
 
 case "${1:-local}" in
   local)
     mkdir -p "${DIST_DIR}"
     CGO_ENABLED=0 go build -trimpath -ldflags "${LDFLAGS_STR}" -o "${DIST_DIR}/${BINARY}" "${CMD_PATH}"
-    echo "✔ Built: ${DIST_DIR}/${BINARY}"
+    echo "Built: ${DIST_DIR}/${BINARY}"
     ;;
 
   cross)
@@ -66,13 +66,13 @@ case "${1:-local}" in
     build_for windows amd64  ".exe"
     build_for windows arm64  ".exe"
     echo
-    echo "✔ All targets built in ${DIST_DIR}/"
+    echo "All targets built in ${DIST_DIR}/"
     ls -lh "${DIST_DIR}/"
     ;;
 
   clean)
     rm -rf "${DIST_DIR}"
-    echo "✔ Cleaned ${DIST_DIR}/"
+    echo "Cleaned ${DIST_DIR}/"
     ;;
 
   *)

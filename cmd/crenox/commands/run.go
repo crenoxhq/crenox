@@ -175,11 +175,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	// Fail-Closed: If any file failed to be read or processed, the scan is incomplete.
 	// We strictly prohibit emitting a clean status.
 	if len(failedFiles) > 0 {
-		if len(allFindings) > 0 {
-			rep.PrintFindings(allFindings)
-			rep.PrintSummary(allFindings, elapsed, scannedCount)
-		}
-		rep.PrintIncomplete(failedFiles, elapsed, scannedCount)
+		rep.PrintIncomplete(failedFiles, allFindings, elapsed, scannedCount)
 
 		select {
 		case msg := <-updateChan:

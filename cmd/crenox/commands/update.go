@@ -159,115 +159,126 @@ This command performs:
 				if err := c.Run(); err != nil {
 					return fmt.Errorf("update failed: %w", err)
 				}
-				fmt.Println("✔ Crenox successfully updated to the latest version!")
+				fmt.Println("Crenox successfully updated to the latest version!")
 				return nil
 			}
 
 			fmt.Printf("Found binary for %s/%s. Downloading %s...\n", goos, goarch, release.TagName)
 
-			// 3. Safe Binary Replacement
-			tmpPath := exePath + ".tmp"
-
-			// Download to temporary file
-			out, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-			if err != nil {
-				return fmt.Errorf("failed to create temporary file: %w", err)
+			if err := verifyAndInstallBinary(client, exePath, downloadURL, sha256URL, skipVerify); err != nil {
+				return err
 			}
 
-			dlResp, err := client.Get(downloadURL)
-			if err != nil {
-				out.Close()
-				os.Remove(tmpPath)
-				return fmt.Errorf("failed to download binary: %w", err)
-			}
-			defer dlResp.Body.Close()
-
-			if dlResp.StatusCode != http.StatusOK {
-				out.Close()
-				os.Remove(tmpPath)
-				return fmt.Errorf("download failed with status: %d", dlResp.StatusCode)
-			}
-
-			if _, err := io.Copy(out, dlResp.Body); err != nil {
-				out.Close()
-				os.Remove(tmpPath)
-				return fmt.Errorf("failed to write binary to disk: %w", err)
-			}
-			out.Close()
-
-			if skipVerify {
-				fmt.Println("WARNING: Bypassing SHA-256 cryptographic verification via --skip-verify.")
-			} else {
-				if sha256URL == "" {
-					os.Remove(tmpPath)
-					return fmt.Errorf("SHA-256 checksum asset not found for release %s (use --skip-verify to override)", release.TagName)
-				}
-
-				fmt.Println("Verifying SHA-256 checksum...")
-				shaResp, err := client.Get(sha256URL)
-				if err != nil || shaResp.StatusCode != http.StatusOK {
-					os.Remove(tmpPath)
-					errMsg := "could not fetch SHA-256 checksum file"
-					if err != nil {
-						errMsg = fmt.Sprintf("failed to fetch SHA-256 checksum file: %v", err)
-					} else {
-						errMsg = fmt.Sprintf("checksum download failed with HTTP status: %d", shaResp.StatusCode)
-						shaResp.Body.Close()
-					}
-					return fmt.Errorf("%s (use --skip-verify to override)", errMsg)
-				}
-				defer shaResp.Body.Close()
-
-				shaBytes, err := io.ReadAll(shaResp.Body)
-				if err != nil {
-					os.Remove(tmpPath)
-					return fmt.Errorf("failed to read SHA-256 checksum file: %w", err)
-				}
-
-				fields := strings.Fields(string(shaBytes))
-				if len(fields) == 0 {
-					os.Remove(tmpPath)
-					return fmt.Errorf("SHA-256 checksum file format is empty or invalid (use --skip-verify to override)")
-				}
-
-				expectedHash := strings.ToLower(fields[0])
-				if !hex64Regex.MatchString(expectedHash) {
-					os.Remove(tmpPath)
-					return fmt.Errorf("invalid SHA-256 checksum format: expected 64 hex characters, got %q (use --skip-verify to override)", expectedHash)
-				}
-
-				f, err := os.Open(tmpPath)
-				if err != nil {
-					os.Remove(tmpPath)
-					return fmt.Errorf("failed to open downloaded binary for checksum verification: %w", err)
-				}
-				h := sha256.New()
-				if _, err := io.Copy(h, f); err != nil {
-					f.Close()
-					os.Remove(tmpPath)
-					return fmt.Errorf("failed to compute checksum: %w", err)
-				}
-				f.Close()
-
-				actualHash := strings.ToLower(hex.EncodeToString(h.Sum(nil)))
-				if actualHash != expectedHash {
-					os.Remove(tmpPath)
-					return fmt.Errorf("cryptographic checksum mismatch: expected %s, got %s", expectedHash, actualHash)
-				}
-				fmt.Println("✔ Cryptographic SHA-256 integrity verified")
-			}
-
-			// Overwrite running executable atomically
-			if err := os.Rename(tmpPath, exePath); err != nil {
-				os.Remove(tmpPath)
-				return fmt.Errorf("failed to safely replace binary (text file busy?): %w", err)
-			}
-
-			fmt.Printf("✔ Crenox successfully updated to %s!\n", release.TagName)
+			fmt.Printf("Crenox successfully updated to %s!\n", release.TagName)
 			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&allowBeta, "beta", false, "Allow updating to pre-release (beta) versions")
 	cmd.Flags().BoolVar(&skipVerify, "skip-verify", false, "Bypass SHA-256 cryptographic checksum verification")
 	return cmd
+}
+
+// verifyAndInstallBinary downloads a binary, performs strict cryptographic verification, and atomically replaces targetPath.
+func verifyAndInstallBinary(client *http.Client, targetPath, downloadURL, sha256URL string, skipVerify bool) error {
+	tmpPath := targetPath + ".tmp"
+
+	cleanup := func() {
+		_ = os.Remove(tmpPath)
+	}
+
+	out, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err != nil {
+		return fmt.Errorf("failed to create temporary file: %w", err)
+	}
+
+	dlResp, err := client.Get(downloadURL)
+	if err != nil {
+		out.Close()
+		cleanup()
+		return fmt.Errorf("failed to download binary: %w", err)
+	}
+	defer dlResp.Body.Close()
+
+	if dlResp.StatusCode != http.StatusOK {
+		out.Close()
+		cleanup()
+		return fmt.Errorf("download failed with status: %d", dlResp.StatusCode)
+	}
+
+	if _, err := io.Copy(out, dlResp.Body); err != nil {
+		out.Close()
+		cleanup()
+		return fmt.Errorf("failed to write binary to disk: %w", err)
+	}
+	out.Close()
+
+	if skipVerify {
+		fmt.Println("WARNING: Bypassing SHA-256 cryptographic verification via --skip-verify.")
+	} else {
+		if sha256URL == "" {
+			cleanup()
+			return fmt.Errorf("SHA-256 checksum asset not found (use --skip-verify to override)")
+		}
+
+		fmt.Println("Verifying SHA-256 checksum...")
+		shaResp, err := client.Get(sha256URL)
+		if err != nil || shaResp.StatusCode != http.StatusOK {
+			cleanup()
+			errMsg := "could not fetch SHA-256 checksum file"
+			if err != nil {
+				errMsg = fmt.Sprintf("failed to fetch SHA-256 checksum file: %v", err)
+			} else {
+				errMsg = fmt.Sprintf("checksum download failed with HTTP status: %d", shaResp.StatusCode)
+				shaResp.Body.Close()
+			}
+			return fmt.Errorf("%s (use --skip-verify to override)", errMsg)
+		}
+		defer shaResp.Body.Close()
+
+		shaBytes, err := io.ReadAll(shaResp.Body)
+		if err != nil {
+			cleanup()
+			return fmt.Errorf("failed to read SHA-256 checksum file: %w", err)
+		}
+
+		fields := strings.Fields(string(shaBytes))
+		if len(fields) == 0 {
+			cleanup()
+			return fmt.Errorf("SHA-256 checksum file format is empty or invalid (use --skip-verify to override)")
+		}
+
+		expectedHash := strings.ToLower(fields[0])
+		if !hex64Regex.MatchString(expectedHash) {
+			cleanup()
+			return fmt.Errorf("invalid SHA-256 checksum format: expected 64 hex characters, got %q (use --skip-verify to override)", expectedHash)
+		}
+
+		f, err := os.Open(tmpPath)
+		if err != nil {
+			cleanup()
+			return fmt.Errorf("failed to open downloaded binary for checksum verification: %w", err)
+		}
+		h := sha256.New()
+		if _, err := io.Copy(h, f); err != nil {
+			f.Close()
+			cleanup()
+			return fmt.Errorf("failed to compute checksum: %w", err)
+		}
+		f.Close()
+
+		actualHash := strings.ToLower(hex.EncodeToString(h.Sum(nil)))
+		if actualHash != expectedHash {
+			cleanup()
+			return fmt.Errorf("cryptographic checksum mismatch: expected %s, got %s", expectedHash, actualHash)
+		}
+		fmt.Println("Cryptographic SHA-256 integrity verified.")
+	}
+
+	// Overwrite running executable atomically
+	if err := os.Rename(tmpPath, targetPath); err != nil {
+		cleanup()
+		return fmt.Errorf("failed to safely replace binary (text file busy?): %w", err)
+	}
+
+	return nil
 }

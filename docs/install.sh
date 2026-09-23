@@ -57,19 +57,11 @@ setup_colors() {
         COLOR_GRAY=""
     fi
 
-    if [[ "${LANG:-}" =~ [Uu][Tt][Ff]-?8 ]] || [[ "${LC_ALL:-}" =~ [Uu][Tt][Ff]-?8 ]] || [[ "${LC_CTYPE:-}" =~ [Uu][Tt][Ff]-?8 ]]; then
-        ICON_CHECK="✔"
-        ICON_INFO="ℹ"
-        ICON_WARN="⚠"
-        ICON_ERROR="✖"
-        ICON_ARROW="➜"
-    else
-        ICON_CHECK="[OK]"
-        ICON_INFO="[i]"
-        ICON_WARN="[!]"
-        ICON_ERROR="[X]"
-        ICON_ARROW=">"
-    fi
+    ICON_CHECK="[OK]"
+    ICON_INFO="[i]"
+    ICON_WARN="[!]"
+    ICON_ERROR="[X]"
+    ICON_ARROW=">"
 }
 
 info() {

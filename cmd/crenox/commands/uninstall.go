@@ -40,7 +40,7 @@ This command performs:
 			// b) Remove the binary itself
 			removedBin := false
 			if pmName != "" {
-				fmt.Printf("⚠️  Crenox is managed by the %s package manager.\n", pmName)
+				fmt.Printf("[WARNING] Crenox is managed by the %s package manager.\n", pmName)
 				fmt.Printf("   To uninstall the binary cleanly, please run:\n")
 				fmt.Printf("       \033[1;36m%s\033[0m\n\n", pmCmd)
 				removedBin = true // skipped because managed
@@ -64,7 +64,7 @@ This command performs:
 			// d) Remove local pre-commit hook
 			os.Remove(".git/hooks/pre-commit")
 
-			fmt.Println("✔ Crenox hooks and configurations have been successfully removed.")
+			fmt.Println("Crenox hooks and configurations have been successfully removed.")
 			return nil
 		},
 	}
