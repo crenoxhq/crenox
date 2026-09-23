@@ -178,6 +178,13 @@ func TestTrie_DeepSeekAPIKey(t *testing.T) {
 	assertAtLeastOneMatch(t, matches, "deepseek-api-key")
 }
 
+func TestTrie_OpenRouterAPIKey(t *testing.T) {
+	a := buildDefaultAutomaton()
+	mockKey := "sk-or-v1-" + strings.Repeat("a1", 32)
+	matches := search(a, `OPENROUTER_API_KEY="`+mockKey+`"`)
+	assertAtLeastOneMatch(t, matches, "openrouter-api-key")
+}
+
 func TestTrie_AgeSecretKey(t *testing.T) {
 	a := buildDefaultAutomaton()
 	mockKey := "AGE-SECRET-KEY-1" + strings.Repeat("Q", 58)
