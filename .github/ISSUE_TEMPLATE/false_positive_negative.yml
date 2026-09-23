@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Security Notice: Do not post active production credentials, private keys, or sensitive internal data.
-        Replace sensitive portions of the token with placeholder characters while preserving the prefix, character set, and total length.
+        Security Notice: STRICTLY DO NOT POST REAL, ACTIVE, OR EXPIRED PRODUCTION SECRETS.
+        Always mask all sensitive token bodies using synthetic dummy characters (e.g. repeated dummy characters or <REDACTED>) while preserving the prefix format, character casing, and overall string length.
 
   - type: dropdown
     id: detection_type
@@ -55,13 +55,13 @@ body:
     id: reproduction_snippet
     attributes:
       label: Minimal Reproducible Example
-      description: Provide the minimal snippet showing the filename, line, and token structure.
+      description: Provide the minimal snippet showing the filename, line, and token structure with dummy data.
       placeholder: |
         Filename: .env
-        sops_age__list_0__map_recipient=age1vvdrjrnguxy9aft4nnd9tghn2m9vrghv2z0ggsxqws43hyhq99aq79md5f
+        sops_age__list_0__map_recipient=age10000000000000000000000000000000000000000000000000000000000
 
         Filename: private.txt
-        AGE-SECRET-KEY-1QE3LU4XCHJ8L0649ZZJLHJ90AS3ZAWZ3A30PYPGWZUCW7UT8EGQS52HYC4
+        AGE-SECRET-KEY-1000000000000000000000000000000000000000000000000000000000
       render: text
     validations:
       required: true

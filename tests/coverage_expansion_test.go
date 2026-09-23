@@ -1,5 +1,3 @@
-//go:build dashboard
-
 package tests
 
 import (
@@ -17,7 +15,6 @@ import (
 	"github.com/crenoxhq/crenox/v2/internal/scanner"
 	"github.com/crenoxhq/crenox/v2/internal/trie"
 	"github.com/crenoxhq/crenox/v2/internal/updater"
-	"github.com/crenoxhq/crenox/v2/internal/web"
 	"github.com/crenoxhq/crenox/v2/pkg/version"
 )
 
@@ -314,19 +311,4 @@ func TestUpdaterAndVersion_PackageSuite(t *testing.T) {
 	case <-ch:
 	case <-time.After(1 * time.Second):
 	}
-}
-
-// 8. Web & Server tests
-func TestWeb_PackageSuite(t *testing.T) {
-	db, err := web.NewDB()
-	if err != nil || db == nil {
-		t.Fatalf("web.NewDB failed: %v", err)
-	}
-
-	srv, _ := web.NewServer(db)
-	if srv == nil {
-		t.Fatalf("web.NewServer returned nil")
-	}
-
-	web.AddSystemLog("Test system log %s", "info")
 }

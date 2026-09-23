@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -19,8 +20,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var hex64Regex = regexp.MustCompile(`^[a-fA-F0-9]{64}$`)
+
 func NewUpdateCmd() *cobra.Command {
-	var allowBeta bool
+	var (
+		allowBeta  bool
+		skipVerify bool
+	)
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Update Crenox to the latest stable version over-the-air",
@@ -30,6 +36,7 @@ This command performs:
   2. Querying the GitHub Releases API for the latest release tag.
   3. Downloading the binary and verifying its cryptographic SHA-256 checksum.
   4. Atomically replacing the active 'crenox' executable without service disruption.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("Updating Crenox to the latest version...")
 
@@ -188,32 +195,66 @@ This command performs:
 			}
 			out.Close()
 
-			if sha256URL != "" {
+			if skipVerify {
+				fmt.Println("WARNING: Bypassing SHA-256 cryptographic verification via --skip-verify.")
+			} else {
+				if sha256URL == "" {
+					os.Remove(tmpPath)
+					return fmt.Errorf("SHA-256 checksum asset not found for release %s (use --skip-verify to override)", release.TagName)
+				}
+
 				fmt.Println("Verifying SHA-256 checksum...")
 				shaResp, err := client.Get(sha256URL)
-				if err == nil && shaResp.StatusCode == http.StatusOK {
-					defer shaResp.Body.Close()
-					shaBytes, _ := io.ReadAll(shaResp.Body)
-					fields := strings.Fields(string(shaBytes))
-					if len(fields) > 0 {
-						expectedHash := fields[0]
-						f, err := os.Open(tmpPath)
-						if err == nil {
-							h := sha256.New()
-							io.Copy(h, f)
-							f.Close()
-							actualHash := hex.EncodeToString(h.Sum(nil))
-							if actualHash != expectedHash {
-								os.Remove(tmpPath)
-								return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedHash, actualHash)
-							}
-						}
+				if err != nil || shaResp.StatusCode != http.StatusOK {
+					os.Remove(tmpPath)
+					errMsg := "could not fetch SHA-256 checksum file"
+					if err != nil {
+						errMsg = fmt.Sprintf("failed to fetch SHA-256 checksum file: %v", err)
 					} else {
-						fmt.Println("Warning: SHA-256 checksum file format is invalid or empty.")
+						errMsg = fmt.Sprintf("checksum download failed with HTTP status: %d", shaResp.StatusCode)
+						shaResp.Body.Close()
 					}
-				} else {
-					fmt.Println("Warning: Could not fetch SHA-256 checksum file.")
+					return fmt.Errorf("%s (use --skip-verify to override)", errMsg)
 				}
+				defer shaResp.Body.Close()
+
+				shaBytes, err := io.ReadAll(shaResp.Body)
+				if err != nil {
+					os.Remove(tmpPath)
+					return fmt.Errorf("failed to read SHA-256 checksum file: %w", err)
+				}
+
+				fields := strings.Fields(string(shaBytes))
+				if len(fields) == 0 {
+					os.Remove(tmpPath)
+					return fmt.Errorf("SHA-256 checksum file format is empty or invalid (use --skip-verify to override)")
+				}
+
+				expectedHash := strings.ToLower(fields[0])
+				if !hex64Regex.MatchString(expectedHash) {
+					os.Remove(tmpPath)
+					return fmt.Errorf("invalid SHA-256 checksum format: expected 64 hex characters, got %q (use --skip-verify to override)", expectedHash)
+				}
+
+				f, err := os.Open(tmpPath)
+				if err != nil {
+					os.Remove(tmpPath)
+					return fmt.Errorf("failed to open downloaded binary for checksum verification: %w", err)
+				}
+				h := sha256.New()
+				if _, err := io.Copy(h, f); err != nil {
+					f.Close()
+					os.Remove(tmpPath)
+					return fmt.Errorf("failed to compute checksum: %w", err)
+				}
+				f.Close()
+
+				actualHash := strings.ToLower(hex.EncodeToString(h.Sum(nil)))
+				if actualHash != expectedHash {
+					os.Remove(tmpPath)
+					return fmt.Errorf("cryptographic checksum mismatch: expected %s, got %s", expectedHash, actualHash)
+				}
+				fmt.Println("✔ Cryptographic SHA-256 integrity verified")
 			}
 
 			// Overwrite running executable atomically
@@ -227,5 +268,6 @@ This command performs:
 		},
 	}
 	cmd.Flags().BoolVar(&allowBeta, "beta", false, "Allow updating to pre-release (beta) versions")
+	cmd.Flags().BoolVar(&skipVerify, "skip-verify", false, "Bypass SHA-256 cryptographic checksum verification")
 	return cmd
 }

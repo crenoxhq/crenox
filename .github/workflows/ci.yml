@@ -2,13 +2,13 @@ name: Crenox CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "dev" ]
     tags:     [ "v*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 env:
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23"
 
 jobs:
   # ── Test & Lint ─────────────────────────────────────────────────────────────

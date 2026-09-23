@@ -32,15 +32,16 @@ func NewRunCmd() *cobra.Command {
 		Short: "Run the pre-commit security scan on staged files (called by Git hook)",
 		Long: `Execute the core Crenox scanning pipeline against all staged Git changes.
 This command is executed automatically by Git during pre-commit (or via the Python 'pre-commit' framework).
-It extracts staged file modifications, runs the Aho-Corasick automaton (125+ signatures), Shannon entropy analysis, and context filtering.
+It extracts staged file modifications, runs the Aho-Corasick automaton (130+ signatures), Shannon entropy analysis, and context filtering.
 
-Commit Blocking Behavior:
-  • CRITICAL / HIGH severity findings will block the commit (exit code 1).
-  • MEDIUM / LOW severity findings are reported as warnings without blocking.
-  • Clean scans or suppressed findings allow the commit to proceed normally (exit code 0).
+Zero-Tolerance Security Policy:
+  • All findings (CRITICAL, HIGH, MEDIUM, LOW) block the commit (exit code 1).
+  • Any unreadable file, failed Git operation, or incomplete scan blocks the commit (fail-closed policy).
+  • A clean result (exit code 0) is valid only when every eligible file has been scanned successfully with zero findings.
 
 Inline Suppression:
   Append '// crenox:ignore' or '# crenox:ignore' on or above any line to suppress false positives.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runScan(configPath, format, failFast, verbose)
 		},
@@ -112,6 +113,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 
 	// ── Scan each staged file ─────────────────────────────────────────────────
 	var allFindings []scanner.Finding
+	var failedFiles []reporter.FailedFile
 	scannedCount := 0
 
 	for _, sf := range stagedFiles {
@@ -137,9 +139,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 			content, err = git.GetStagedDiff(sf.Path)
 		}
 		if err != nil {
-			if cfg.Verbose {
-				fmt.Fprintf(os.Stderr, "  [verbose] skipping %s: %v\n", sf.Path, err)
-			}
+			failedFiles = append(failedFiles, reporter.FailedFile{Path: sf.Path, Err: err})
 			continue
 		}
 
@@ -172,6 +172,27 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	elapsed := time.Since(startTime)
 
 	// ── Report results ────────────────────────────────────────────────────────
+	// Fail-Closed: If any file failed to be read or processed, the scan is incomplete.
+	// We strictly prohibit emitting a clean status.
+	if len(failedFiles) > 0 {
+		if len(allFindings) > 0 {
+			rep.PrintFindings(allFindings)
+			rep.PrintSummary(allFindings, elapsed, scannedCount)
+		}
+		rep.PrintIncomplete(failedFiles, elapsed, scannedCount)
+
+		select {
+		case msg := <-updateChan:
+			if msg != "" {
+				fmt.Fprintln(os.Stderr, msg)
+			}
+		default:
+		}
+
+		exitFunc(1)
+		return nil
+	}
+
 	if len(allFindings) == 0 {
 		rep.PrintClean(elapsed, scannedCount)
 		select {
@@ -195,7 +216,7 @@ func runScan(configPath, format string, failFast, verbose bool) error {
 	default:
 	}
 
-	// Exit 1 to block the commit.
+	// Exit 1 to block the commit (zero-tolerance policy on all severities).
 	exitFunc(1)
 	return nil
 }

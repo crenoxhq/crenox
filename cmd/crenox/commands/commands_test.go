@@ -286,3 +286,102 @@ func TestScanCmd_MultipleFilesWithSameSecret_AllReported(t *testing.T) {
 		t.Errorf("expected report to contain file2.txt, got: %s", reportStr)
 	}
 }
+
+func TestCommands_RejectUnexpectedArguments(t *testing.T) {
+	// 1. Run command rejects unexpected arguments
+	runCmd := NewRunCmd()
+	runCmd.SetArgs([]string{"extra-arg"})
+	if err := runCmd.Execute(); err == nil {
+		t.Errorf("expected NewRunCmd to reject unexpected arguments, got nil")
+	}
+
+	// 2. Install command rejects unexpected arguments
+	installCmd := NewInstallCmd()
+	installCmd.SetArgs([]string{"unexpected-arg"})
+	if err := installCmd.Execute(); err == nil {
+		t.Errorf("expected NewInstallCmd to reject unexpected arguments, got nil")
+	}
+
+	// 3. Update command rejects unexpected arguments
+	updateCmd := NewUpdateCmd()
+	updateCmd.SetArgs([]string{"unexpected-arg"})
+	if err := updateCmd.Execute(); err == nil {
+		t.Errorf("expected NewUpdateCmd to reject unexpected arguments, got nil")
+	}
+}
+
+func TestUpdateCmd_Hex64Regex(t *testing.T) {
+	validHashes := []string{
+		"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+		"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+	}
+	for _, h := range validHashes {
+		if !hex64Regex.MatchString(h) {
+			t.Errorf("expected valid hash %q to match hex64Regex", h)
+		}
+	}
+
+	invalidHashes := []string{
+		"",                                                                    // empty
+		"e3b0c442",                                                            // too short
+		"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855aa", // too long (66 chars)
+		"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85g", // non-hex char 'g'
+		"not-a-hash",
+	}
+	for _, h := range invalidHashes {
+		if hex64Regex.MatchString(h) {
+			t.Errorf("expected invalid hash %q to be rejected by hex64Regex", h)
+		}
+	}
+}
+
+func TestScanCmd_FailClosedOnUnreadableFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	cleanFile := filepath.Join(tmpDir, "clean.txt")
+	if err := os.WriteFile(cleanFile, []byte("clean regular text\n"), 0644); err != nil {
+		t.Fatalf("write clean.txt: %v", err)
+	}
+
+	unreadableFile := filepath.Join(tmpDir, "locked.txt")
+	if err := os.WriteFile(unreadableFile, []byte("secret text\n"), 0644); err != nil {
+		t.Fatalf("write locked.txt: %v", err)
+	}
+	if err := os.Chmod(unreadableFile, 0000); err != nil {
+		t.Skip("skipping test: chmod 0000 not supported in this filesystem")
+	}
+	defer os.Chmod(unreadableFile, 0644)
+
+	oldExit := exitFunc
+	exitCode := 0
+	exitFunc = func(code int) {
+		exitCode = code
+	}
+	defer func() { exitFunc = oldExit }()
+
+	outFile := filepath.Join(tmpDir, "report.json")
+	err := runAdHocScan([]string{tmpDir}, "", "json", true, false, false, outFile, false)
+	if err != nil {
+		t.Fatalf("runAdHocScan returned unexpected Go error: %v", err)
+	}
+
+	// Must fail-closed with exitCode 1
+	if exitCode != 1 {
+		t.Errorf("expected exit code 1 on unreadable file, got %d", exitCode)
+	}
+
+	reportBytes, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("failed to read report file: %v", err)
+	}
+	reportStr := string(reportBytes)
+
+	// Must report status "scan_error" and record the failed file
+	if !strings.Contains(reportStr, `"scan_error"`) {
+		t.Errorf("expected report status 'scan_error', got: %s", reportStr)
+	}
+	if !strings.Contains(reportStr, "locked.txt") {
+		t.Errorf("expected report to contain unreadable file locked.txt, got: %s", reportStr)
+	}
+}
+

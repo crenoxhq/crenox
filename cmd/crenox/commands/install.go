@@ -54,6 +54,7 @@ Installation Modes:
   
   2. Global Installation (--global):
      Creates a global Git hooks directory at '~/.config/crenox/hooks' and configures Git (core.hooksPath). Every repository on your machine will automatically run Crenox during commits.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if global {
 				return installGlobal(force)

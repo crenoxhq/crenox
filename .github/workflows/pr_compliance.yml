@@ -3,7 +3,7 @@ name: PR Compliance & Standards Check
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   validate-pr:
@@ -56,12 +56,12 @@ jobs:
               ))
 
           # 4. CLA Confirmation Check
-          cla_pattern = re.compile(r"\[[xX]\]\s*By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement", re.IGNORECASE)
+          cla_pattern = re.compile(r"\[[xX]\]\s*(?:By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement|I have read and agree to the terms of the \[?Crenox Contributor License Agreement)", re.IGNORECASE)
           if not cla_pattern.search(body):
               errors.append((
                   "Contributor License Agreement (CLA)",
                   "The CLA agreement box was not checked.",
-                  "Check the CLA box: [x] By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement..."
+                  "Check the CLA box in the PR checklist."
               ))
 
           # 5. Zero-Allocation Affirmation Check

@@ -8,8 +8,8 @@
 
 ## Related Issues
 
-<!-- Link the relevant issue(s) addressed by this PR. For example: Closes #14 -->
-Closes #
+<!-- Link the relevant issue(s) addressed by this PR. For example: Closes #123 -->
+Closes # (or N/A — standalone change, with explanation)
 
 ## Category of Change
 
@@ -41,6 +41,7 @@ go test -v ./...
 ## Contributor Checklist
 
 - [ ] My code adheres to the project's Go style conventions (`gofmt`, `go vet`).
+- [ ] My code adheres to the zero-allocation hot-path guidelines of this project.
 - [ ] Documentation (`README.md`, `CHANGELOG.md`) has been updated where applicable.
 - [ ] No active production credentials or sensitive test fixtures are committed in plain text.
-- [ ] I have read and agree to the terms of the [Crenox Contributor License Agreement (CLA)](CLA.md).
+- [ ] By submitting this pull request, I confirm that I agree to the Crenox Contributor License Agreement ([CLA.md](CLA.md)) and acknowledge that CrenoxHQ maintains dual-licensing rights for community and enterprise distributions.

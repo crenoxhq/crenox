@@ -45,6 +45,24 @@ body:
       render: text
 
   - type: textarea
+    id: performance_impact
+    attributes:
+      label: Performance and Memory Invariants
+      description: Crenox requires sub-20ms execution and zero allocations (0 B/op, 0 allocs/op) on hot paths. Explain how this proposal respects these constraints.
+      placeholder: "e.g. Utilizes Aho-Corasick prefix trie with O(N) evaluation, zero heap allocations during scanning, and stack buffers for token evaluation."
+    validations:
+      required: false
+
+  - type: textarea
+    id: false_positive_mitigation
+    attributes:
+      label: False Positive Risk Assessment (for Signatures)
+      description: How might this pattern collide with non-secret data (e.g., UUIDs, hash digests, variable names), and what Tier 3 heuristics will prevent false alarms?
+      placeholder: "e.g. Pattern requires exact prefix, fixed character set, and suppression of common public identifiers."
+    validations:
+      required: false
+
+  - type: textarea
     id: documentation_references
     attributes:
       label: Documentation and Specification References

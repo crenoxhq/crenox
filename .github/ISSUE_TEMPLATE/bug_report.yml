@@ -6,7 +6,44 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please complete this form to report a bug. For false positive or false negative detection issues, please use the Detection Report template instead.
+        Security Notice: Never post active production secrets, sensitive tokens, private keys, or internal credentials in bug reports or log snippets. Always sanitize output before submission.
+        
+        For detection discrepancies (false positives or false negatives), please use the Detection Report template instead.
+
+  - type: dropdown
+    id: severity_impact
+    attributes:
+      label: Severity and Operational Impact
+      description: Assess the operational severity of this issue.
+      options:
+        - "Critical: Blocks CI/CD pipeline, crashes CLI/panic, or corrupts data"
+        - "High: Core scan command fails or behaves incorrectly with no workaround"
+        - "Medium: Non-critical feature defect with an available workaround"
+        - "Low: Minor cosmetic, log formatting, or documentation discrepancy"
+    validations:
+      required: true
+
+  - type: input
+    id: exit_code
+    attributes:
+      label: Exit Code Observed
+      description: What exit code was returned by the command? (e.g., 0, 1, 2, 137, SIGSEGV)
+      placeholder: "e.g. 1"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: filesystem_integrity
+    attributes:
+      label: Unreadable Files or Pipeline Errors
+      description: Did this issue involve unreadable files, permission errors, or broken Git pipes?
+      options:
+        - "No: All files were readable and Git repository was intact"
+        - "Yes: Unreadable file, permission denied, or inaccessible path encountered"
+        - "Yes: Git operation failed or commit history was corrupted"
+        - "Uncertain / Not Applicable"
+    validations:
+      required: true
 
   - type: input
     id: version

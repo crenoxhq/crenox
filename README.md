@@ -750,7 +750,11 @@ crenox-secret-detection:
 <details>
 <summary>crenox run — pre-commit hook entry point</summary>
 
-Scans staged changes only. Invoked automatically by the Git hook.
+Scans staged changes only. Invoked automatically by the Git hook. Enforces strict positional argument validation (`cobra.NoArgs`).
+
+**Zero-Tolerance Blocking Policy:** Any detected finding, regardless of severity (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), blocks the commit with exit code `1`.
+
+**Fail-Closed Scan Integrity:** Any unreadable file, inaccessible path, permission denial, or broken Git pipe halts execution and blocks the commit with exit code `1` (`scan_error`). A clean status (`exit 0`) is emitted only when 100% of eligible files have been scanned with zero findings.
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -763,6 +767,8 @@ Scans staged changes only. Invoked automatically by the Git hook.
 
 <details>
 <summary>crenox scan [path...] — ad-hoc scanner</summary>
+
+Scans targeted files, directories, or historical Git commit logs. Enforces fail-closed scan integrity: if any file is unreadable or a history process fails, scanning halts with an incomplete scan report and exit code `1`.
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -779,6 +785,8 @@ Scans staged changes only. Invoked automatically by the Git hook.
 <details>
 <summary>crenox install — hook installer</summary>
 
+Installs the Crenox pre-commit hook into `.git/hooks/pre-commit` or globally. Enforces strict positional argument validation (`cobra.NoArgs`).
+
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--global` | false | Install globally via `core.hooksPath` |
@@ -790,11 +798,14 @@ Scans staged changes only. Invoked automatically by the Git hook.
 <details>
 <summary>crenox update — OTA self-updater</summary>
 
-Downloads the latest stable release for the current OS/arch from the GitHub Releases API, verifies the binary, and atomically replaces the running executable. Features a dual-resolver network stack (standard system DNS with fallback to Google DNS `8.8.8.8`) for reliable updates in restricted, mobile, or Termux environments. Falls back to `go install` if no pre-compiled binary matches the platform.
+Downloads the latest stable release for the current OS/arch from GitHub Releases, performs strict SHA-256 checksum verification, and atomically replaces the running executable. Enforces strict positional argument validation (`cobra.NoArgs`).
+
+**Integrity Verification:** Checksums must be valid 64-character hexadecimal SHA-256 hashes (`^[a-fA-F0-9]{64}$`). If a checksum is missing, invalid, or does not match the binary, the update immediately aborts and cleans up temporary files.
 
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--beta` | false | Allow updating to pre-release (beta) versions |
+| `--skip-verify` | false | Skip SHA-256 checksum verification (not recommended) |
 
 A background check runs on each invocation, querying the API at most once per 24 hours. The result is cached at `~/.config/crenox/last_check.json`. A notice is printed to stderr if a newer version is available.
 
@@ -802,7 +813,18 @@ A background check runs on each invocation, querying the API at most once per 24
 
 ---
 
-## Output Reference
+## Output Reference & Exit Codes
+
+### Exit Codes
+
+| Exit Code | Classification | Condition |
+|:---:|:---|:---|
+| `0` | **Clean** | All eligible files scanned successfully with zero findings. |
+| `1` | **Blocked** (`blocked`) | One or more findings (`CRITICAL`, `HIGH`, `MEDIUM`, or `LOW`) detected. |
+| `1` | **Scan Error** (`scan_error`) | Unreadable file, permission denial, or broken Git command pipe. |
+| `2` | **Invocation Error** | Invalid flags, unexpected positional arguments, or malformed config. |
+
+### Output Examples
 
 **Clean (exit 0):**
 
@@ -810,7 +832,7 @@ A background check runs on each invocation, querying the API at most once per 24
   CRENOX CLEAN  --  4 file(s) scanned in 3.2ms
 ```
 
-**Blocked (exit 1):**
+**Blocked by Finding (exit 1):**
 
 ```
    CRITICAL   cmd/main.go:12
@@ -830,7 +852,18 @@ A background check runs on each invocation, querying the API at most once per 24
   COMMIT BLOCKED -- remove the secrets above and try again.
 ```
 
-**JSON schema (`-f json` — written to stdout):**
+**Incomplete Scan / Fail-Closed (exit 1):**
+
+```
+  CRENOX SCAN INCOMPLETE  --  1 unreadable file(s) encountered
+
+  Unreadable files:
+    - secret.key (open secret.key: permission denied)
+
+  COMMIT BLOCKED -- resolve filesystem/Git errors and try again.
+```
+
+**JSON Schema (`-f json` — written to stdout):**
 
 ```json
 {
@@ -849,6 +882,23 @@ A background check runs on each invocation, querying the API at most once per 24
       "token": "ghp_AB****************************cdef",
       "entropy": 5.23,
       "line_snippet": "token := \"ghp_AB...cdef\""
+    }
+  ]
+}
+```
+
+When an unreadable file or pipeline failure triggers fail-closed protection, `-f json` emits:
+
+```json
+{
+  "crenox_version": "v2.x.x",
+  "status": "scan_error",
+  "scanned_files": 3,
+  "elapsed_ms": 2,
+  "failed_files": [
+    {
+      "path": "secret.key",
+      "error": "open secret.key: permission denied"
     }
   ]
 }

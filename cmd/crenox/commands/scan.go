@@ -168,6 +168,8 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 	sec := scanner.New(automaton, scanOpts)
 
 	var allFindings []scanner.Finding
+	var failedFiles []reporter.FailedFile
+	var failedMu sync.Mutex
 	scannedCount := 0
 	seenTokens := make(map[string]struct{})
 
@@ -384,7 +386,12 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		processCommitMsg()
 		close(jobs)
 		wg.Wait()
-		cmd.Wait()
+		if err := cmd.Wait(); err != nil {
+			if file != nil {
+				file.Close()
+			}
+			return fmt.Errorf("git history scan failed or was interrupted: %w", err)
+		}
 	} else {
 		type scanJob struct {
 			filePath string
@@ -429,6 +436,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 
 					info, err := os.Stat(filePath)
 					if err != nil {
+						failedMu.Lock()
+						failedFiles = append(failedFiles, reporter.FailedFile{Path: displayPath, Err: err})
+						failedMu.Unlock()
 						continue
 					}
 					if !info.Mode().IsRegular() {
@@ -440,6 +450,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 
 					file, err := os.Open(filePath)
 					if err != nil {
+						failedMu.Lock()
+						failedFiles = append(failedFiles, reporter.FailedFile{Path: displayPath, Err: err})
+						failedMu.Unlock()
 						if cfg.Verbose {
 							mu.Lock()
 							fmt.Fprintf(os.Stderr, "  [verbose] cannot open %s: %v\n", filePath, err)
@@ -495,6 +508,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 					if recursive {
 						_ = filepath.WalkDir(absP, func(path string, d fs.DirEntry, err error) error {
 							if err != nil {
+								failedMu.Lock()
+								failedFiles = append(failedFiles, reporter.FailedFile{Path: path, Err: err})
+								failedMu.Unlock()
 								return nil
 							}
 							if d.IsDir() {
@@ -514,7 +530,12 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 							return nil
 						})
 					} else {
-						entries, _ := os.ReadDir(absP)
+						entries, err := os.ReadDir(absP)
+						if err != nil {
+							failedMu.Lock()
+							failedFiles = append(failedFiles, reporter.FailedFile{Path: absP, Err: err})
+							failedMu.Unlock()
+						}
 						for _, e := range entries {
 							if !e.IsDir() {
 								jobs <- scanJob{filePath: filepath.Join(absP, e.Name()), scanRoot: absP}
@@ -532,10 +553,42 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 
 	elapsed := time.Since(startTime)
 
+	// Fail-Closed: If any file failed to be read or processed, the scan is incomplete.
+	// We strictly prohibit emitting a clean status.
+	if len(failedFiles) > 0 {
+		if len(allFindings) > 0 {
+			rep.PrintFindings(allFindings)
+			rep.PrintSummary(allFindings, elapsed, scannedCount)
+			if fileReporter != nil {
+				fileReporter.PrintFindings(allFindings)
+				fileReporter.PrintSummary(allFindings, elapsed, scannedCount)
+			}
+		}
+		rep.PrintIncomplete(failedFiles, elapsed, scannedCount)
+		if fileReporter != nil {
+			fileReporter.PrintIncomplete(failedFiles, elapsed, scannedCount)
+			if file != nil {
+				file.Close()
+			}
+		}
+		select {
+		case msg := <-updateChan:
+			if msg != "" {
+				fmt.Fprintln(os.Stderr, msg)
+			}
+		default:
+		}
+		exitFunc(1)
+		return nil
+	}
+
 	if len(allFindings) == 0 {
 		rep.PrintClean(elapsed, scannedCount)
 		if fileReporter != nil {
 			fileReporter.PrintClean(elapsed, scannedCount)
+			if file != nil {
+				file.Close()
+			}
 		}
 		select {
 		case msg := <-updateChan:

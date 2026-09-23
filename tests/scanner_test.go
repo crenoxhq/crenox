@@ -1270,3 +1270,44 @@ sops_version=3.9.4
 	}
 }
 
+// TestScanner_ZeroTolerance_LowAndMediumFindings verifies that LOW and MEDIUM severity
+// findings are detected with their explicit severity designations so the pre-commit engine
+// can enforce the zero-tolerance blocking policy.
+func TestScanner_ZeroTolerance_LowAndMediumFindings(t *testing.T) {
+	s := defaultScanner()
+
+	// 1. Test stripe test key (LOW severity)
+	lowContent := `payment_gateway_key = "sk_test_51MzZ1234567890abcdefghijklmnopqrstuvwxyz"`
+	lowFindings := s.ScanContent("config.py", []byte(lowContent))
+	if len(lowFindings) == 0 {
+		t.Fatal("expected at least 1 finding for Stripe test key")
+	}
+	hasLow := false
+	for _, f := range lowFindings {
+		if f.Severity == "LOW" {
+			hasLow = true
+			break
+		}
+	}
+	if !hasLow {
+		t.Errorf("expected finding with LOW severity, got %+v", lowFindings)
+	}
+
+	// 2. Test Supabase publishable key (MEDIUM severity)
+	medContent := `supabase_anon = "sb_publishable_abcdefghijklmnopqrstuvwxyz0123456789"`
+	medFindings := s.ScanContent("supabase.py", []byte(medContent))
+	if len(medFindings) == 0 {
+		t.Fatal("expected at least 1 finding for password assignment")
+	}
+	hasMed := false
+	for _, f := range medFindings {
+		if f.Severity == "MEDIUM" {
+			hasMed = true
+			break
+		}
+	}
+	if !hasMed {
+		t.Errorf("expected finding with MEDIUM severity, got %+v", medFindings)
+	}
+}
+

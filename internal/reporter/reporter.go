@@ -178,6 +178,54 @@ func (r *Reporter) PrintSkipped(filePath, reason string) {
 	}
 }
 
+// FailedFile records a file that could not be read or processed during scanning.
+type FailedFile struct {
+	Path string
+	Err  error
+}
+
+// PrintIncomplete renders an error summary when a scan could not complete due to file read or environment errors.
+func (r *Reporter) PrintIncomplete(failedFiles []FailedFile, elapsed time.Duration, scannedFiles int) {
+	switch r.format {
+	case FormatJSON:
+		ff := make([]jsonFailedFile, 0, len(failedFiles))
+		for _, f := range failedFiles {
+			errMsg := "unknown error"
+			if f.Err != nil {
+				errMsg = f.Err.Error()
+			}
+			ff = append(ff, jsonFailedFile{Path: f.Path, Error: errMsg})
+		}
+		report := jsonReport{
+			Version:      version.Version,
+			Status:       "scan_error",
+			ScannedFiles: scannedFiles,
+			ElapsedMs:    elapsed.Milliseconds(),
+			FailedFiles:  ff,
+			Findings:     []jsonFinding{},
+		}
+		enc := json.NewEncoder(r.w)
+		enc.SetIndent("", "  ")
+		_ = enc.Encode(report)
+	case FormatPlain:
+		fmt.Fprintf(r.w, "crenox: scan incomplete — %d file(s) failed, %d file(s) scanned in %s\n",
+			len(failedFiles), scannedFiles, elapsed.Round(time.Millisecond))
+		for _, f := range failedFiles {
+			fmt.Fprintf(r.w, "  failed: %s: %v\n", f.Path, f.Err)
+		}
+		fmt.Fprintln(r.w, "commit blocked because the scan was incomplete")
+	default:
+		fmt.Fprintln(r.w)
+		errorColor.Fprintf(r.w, "  ✘ SCAN INCOMPLETE — %d file(s) failed to be read or processed:\n", len(failedFiles))
+		for _, f := range failedFiles {
+			fmt.Fprintf(r.w, "      • %s: ", f.Path)
+			dimColor.Fprintf(r.w, "%v\n", f.Err)
+		}
+		fmt.Fprintln(r.w)
+		errorColor.Fprintf(r.w, "  Commit blocked because the scan was incomplete (fail-closed security policy).\n\n")
+	}
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Pretty-format internals
 // ──────────────────────────────────────────────────────────────────────────────
@@ -273,12 +321,18 @@ type jsonFinding struct {
 	LineSnippet string  `json:"line_snippet"`
 }
 
+type jsonFailedFile struct {
+	Path  string `json:"path"`
+	Error string `json:"error"`
+}
+
 type jsonReport struct {
-	Version      string        `json:"crenox_version"`
-	Status       string        `json:"status"`
-	ScannedFiles int           `json:"scanned_files"`
-	ElapsedMs    int64         `json:"elapsed_ms"`
-	Findings     []jsonFinding `json:"findings"`
+	Version      string           `json:"crenox_version"`
+	Status       string           `json:"status"`
+	ScannedFiles int              `json:"scanned_files"`
+	ElapsedMs    int64            `json:"elapsed_ms"`
+	FailedFiles  []jsonFailedFile `json:"failed_files,omitempty"`
+	Findings     []jsonFinding    `json:"findings"`
 }
 
 func (r *Reporter) jsonFindings(findings []scanner.Finding) bool {
