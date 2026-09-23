@@ -183,6 +183,13 @@ func TestTrie_OpenRouterAPIKey(t *testing.T) {
 	mockKey := "sk-or-v1-" + strings.Repeat("a", 64)
 	matches := search(a, `OPENROUTER_API_KEY="`+mockKey+`"`)
 	assertAtLeastOneMatch(t, matches, "openrouter-api-key")
+
+}
+func TestTrie_PostmanAPIKey(t *testing.T) {
+	tr := buildDefaultAutomaton()
+	content := []byte("POSTMAN_API_KEY=PMAK-64b5f8c8d8b94876b6d51084-3c81e8b74c0b48a0a8e10b17b6200259")
+	matches := search(tr, string(content))
+	assertAtLeastOneMatch(t, matches, "postman-api-key")
 }
 
 func TestTrie_AgeSecretKey(t *testing.T) {
