@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **OpenRouter API Key Detection (Tier 1):** Added a dedicated zero-allocation Aho-Corasick pattern signature (`openrouter-api-key`) in `internal/trie/trie.go` matching the documented OpenRouter key prefix `sk-or-v1-` paired with a strict 64-character alphanumeric validator. Classified as `CRITICAL` since keys grant access to 300+ LLM APIs with billing attached. Covered by `TestTrie_OpenRouterAPIKey` in `tests/trie_test.go`.
+
 ## [2.1.10] - 2026-09-22
 
 ### Security & Detection Engine

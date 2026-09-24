@@ -273,6 +273,13 @@ var BuiltinSignatures = []Signature{
 	{ID: "terraform-cloud-token", Description: "Terraform Cloud User Token", Prefix: "atlasv1.", Severity: "CRITICAL", Validator: regexp.MustCompile(`^atlasv1\.[A-Za-z0-9_-]{50,90}$`)},
 	{ID: "infracost-api-key", Description: "Infracost API Key", Prefix: "ico_", Severity: "HIGH", Validator: regexp.MustCompile(`^ico_[a-zA-Z0-9]{30,50}$`)},
 	{ID: "deepseek-api-key", Description: "DeepSeek API Key", Prefix: "sk-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sk-[a-fA-F0-9]{32}$`)},
+
+	// ── OpenRouter ──────────────────────────────────────────────────────────
+	// OpenRouter API keys (openrouter.ai) grant access to 300+ LLM APIs with
+	// billing attached. Documented format: sk-or-v1- + 64 alphanumeric chars.
+	// Distinct from the generic "sk-" rules (openai-key, deepseek-api-key):
+	// the longer prefix gives a precise CRITICAL match instead of a generic one.
+	{ID: "openrouter-api-key", Description: "OpenRouter API Key", Prefix: "sk-or-v1-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sk-or-v1-[a-zA-Z0-9]{64}$`)},
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
