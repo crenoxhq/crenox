@@ -51,6 +51,27 @@ func TestScanner_AWSKey_Detected(t *testing.T) {
 	}
 }
 
+func TestScanner_PostmanAPIKey_Detected(t *testing.T) {
+	s := defaultScanner()
+
+	findings := scan(s, "config.go", `POSTMAN_API_KEY = "PMAK-64b5f8c8d8b94876b6d51084-3c81e8b74c0b48a0a8e10b17b6200259"`)
+
+	if len(findings) == 0 {
+		t.Error("expected finding for postman api key")
+	}
+
+	for _, finding := range findings {
+		if finding.SignatureID == "postman-api-key" {
+			if finding.Severity != "CRITICAL" {
+				t.Errorf("expected severity CRITICAL, got %q", finding.Severity)
+			}
+			return
+		}
+	}
+
+	t.Error("expected postman-api-key signature")
+}
+
 func TestScanner_HighEntropyOnlySecret_Detected(t *testing.T) {
 	// This token has no known prefix — detected by entropy only.
 	s := defaultScanner()
@@ -86,6 +107,17 @@ func TestScanner_Finding_FieldsPopulated(t *testing.T) {
 // ──────────────────────────────────────────────────────────────────────────────
 // End-to-end true negatives (false positive suppression)
 // ──────────────────────────────────────────────────────────────────────────────
+func TestScanner_PostmanAPIKey_Invalid(t *testing.T) {
+	s := defaultScanner()
+
+	findings := scan(s, "config.go", `POSTMAN_API_KEY = "PMAK-64b5f8c8d8b94876b6d51084-3c81e8b74c0b48a0a8e10b17b62002"`)
+
+	for _, finding := range findings {
+		if finding.SignatureID == "postman-api-key" {
+			t.Fatal("did not expect invalid Postman API key to be detected")
+		}
+	}
+}
 
 func TestScanner_CommentedSecret_Suppressed(t *testing.T) {
 	s := defaultScanner()

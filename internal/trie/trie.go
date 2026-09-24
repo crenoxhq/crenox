@@ -281,7 +281,7 @@ var BuiltinSignatures = []Signature{
 	// the longer prefix gives a precise CRITICAL match instead of a generic one.
 	{ID: "openrouter-api-key", Description: "OpenRouter API Key", Prefix: "sk-or-v1-", Severity: "CRITICAL", Validator: regexp.MustCompile(`^sk-or-v1-[a-zA-Z0-9]{64}$`)},
 	// ── Postman ───────────────────────────────────────────────
-	{ID: "postman-api-key", Description: "Postman API Key", Prefix: "PMAK-", Severity: "CRITICAL", Validator: regexp.MustCompile(`(?i)^PMAK-[a-f0-9]{24}-[a-f0-9]{34,36}$`)},
+	{ID: "postman-api-key", Description: "Postman API Key", Prefix: "PMAK-", Severity: "CRITICAL", Validator: regexp.MustCompile(`(?i)^PMAK-[a-f0-9]{24}-[a-f0-9]{32,36}$`)},
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
