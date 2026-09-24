@@ -1076,7 +1076,7 @@ func TestScanner_NewModernSignatures_Detected(t *testing.T) {
 		{"Terraform Cloud Token", `token := "atlasv1.abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz12"`, "terraform-cloud-token"},
 		{"Infracost API Key", `key := "ico_abcdefghijklmnopqrstuvwxyz1234"`, "infracost-api-key"},
 		{"DeepSeek API Key", `key := "` + strings.Join([]string{"sk", "0123456789abcdef0123456789abcdef"}, "-") + `"`, "deepseek-api-key"},
-		{"OpenRouter API Key", `key := "sk-or-v1-` + strings.Repeat("a1", 32) + `"`, "openrouter-api-key"},
+		{"OpenRouter API Key", `key := "sk-or-v1-` + strings.Repeat("a", 64) + `"`, "openrouter-api-key"},
 	}
 
 	for _, tc := range tests {
