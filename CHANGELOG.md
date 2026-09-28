@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **OpenRouter API Key Detection (Tier 1):** Added a dedicated zero-allocation Aho-Corasick pattern signature (`openrouter-api-key`) in `internal/trie/trie.go` matching the documented OpenRouter key prefix `sk-or-v1-` paired with a strict 64-character alphanumeric validator. Classified as `CRITICAL` since keys grant access to 300+ LLM APIs with billing attached. Covered by `TestTrie_OpenRouterAPIKey` in `tests/trie_test.go`.
 
+- **Postman API Key Signature:** Added Tier 1 detection for Postman API keys with the `PMAK-` prefix.
+
 ## [2.1.10] - 2026-09-22
 
 ### Security & Detection Engine
