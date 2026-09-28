@@ -345,6 +345,7 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 | **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`), Suffix environment tokens (`_GITHUB_TOKEN`) |
 | **Heroku** | API Key (`HEROKU_API_KEY`), OAuth Token (`heroku_oauth_token`) |
 | **GitLab** | Personal Access Token (`glpat-`), Pipeline Trigger (`glptt-`), Runner Registration (`GR1348941`), Runner Token (`glrt-`) |
+| **Postman** | API Key (`PMAK-`) |
 | **AWS** | Access Key ID (`AKIA`), MFA Device (`ABIA`), STS Temporary Key (`ASIA`), AppSync (`da2-`), Secret Access Key variable assignments (`aws_secret`, `aws_key`) |
 | **Google Cloud** | Service Account JSON (`"type": "service_account"`), API Key (`AIzaSy`), OAuth Client ID (`.apps.googleusercontent.com`), OAuth Client Secret (`GOCSPX-`) |
 | **Stripe** | Live Secret (`sk_live_`), Live Restricted (`rk_live_`), Test Secret (`sk_test_`) |
