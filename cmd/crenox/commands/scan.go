@@ -197,6 +197,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		type historyJob struct {
 			displayPath string
 			content     []byte
+			// lineNums maps each line of content to its absolute line number
+			// in the new file; it stays nil for commit-message chunks.
+			lineNums []int
 		}
 
 		var wg sync.WaitGroup
@@ -225,6 +228,13 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 					}
 
 					findings := sec.ScanContent(job.displayPath, job.content)
+					if len(job.lineNums) > 0 {
+						for i, f := range findings {
+							if f.Line >= 1 && f.Line-1 < len(job.lineNums) {
+								findings[i].Line = job.lineNums[f.Line-1]
+							}
+						}
+					}
 					if len(findings) > 0 {
 						mu.Lock()
 						for _, f := range findings {
@@ -248,8 +258,17 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 		var currentCommit string
 		var commitMsgChunk []byte
 		var chunkTooLarge bool
+		// Track the new-file line number so findings from `git log -p` hunks
+		// report absolute file lines instead of hunk-relative ones.
+		var inHunk bool
+		var hunkNewLine int
+		var chunkLineNums []int
 
 		processFileChunk := func() {
+			defer func() {
+				currentChunk = currentChunk[:0]
+				chunkLineNums = chunkLineNums[:0]
+			}()
 			if chunkTooLarge {
 				currentChunk = currentChunk[:0]
 				chunkTooLarge = false
@@ -288,7 +307,9 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 
 			contentCopy := make([]byte, len(currentChunk))
 			copy(contentCopy, currentChunk)
-			jobs <- historyJob{displayPath: displayPath, content: contentCopy}
+			numsCopy := make([]int, len(chunkLineNums))
+			copy(numsCopy, chunkLineNums)
+			jobs <- historyJob{displayPath: displayPath, content: contentCopy, lineNums: numsCopy}
 			currentChunk = currentChunk[:0]
 		}
 
@@ -324,6 +345,7 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 				processFileChunk()
 				processCommitMsg()
 				currentFile = ""
+				inHunk = false
 				rawCommit := string(line[7:])
 				if idx := strings.IndexByte(rawCommit, ' '); idx != -1 {
 					rawCommit = rawCommit[:idx]
@@ -339,6 +361,7 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 				processFileChunk()
 				processCommitMsg()
 				currentFile = ""
+				inHunk = false
 				continue
 			}
 
@@ -368,16 +391,38 @@ func runAdHocScan(paths []string, configPath, format string, recursive, verbose,
 				continue
 			}
 
-			if len(line) > 0 && line[0] == '+' && !bytes.HasPrefix(line, []byte("+++")) {
+			if bytes.HasPrefix(line, []byte("@@ ")) {
+				inHunk = true
+				hunkNewLine = 0
+				if start, ok := hunkNewStart(line); ok {
+					hunkNewLine = start
+				} else {
+					inHunk = false
+				}
+				continue
+			}
+
+			// Context lines occupy a line in the new file; count them so the
+			// next added line is padded to its real position.
+			if inHunk && len(line) > 0 && line[0] == ' ' {
+				hunkNewLine++
+				continue
+			}
+
+			if inHunk && len(line) > 0 && line[0] == '+' && !bytes.HasPrefix(line, []byte("+++")) {
 				if !chunkTooLarge {
 					if int64(len(currentChunk)+len(line)-1) > cfg.MaxFileSizeBytes {
 						chunkTooLarge = true
 						currentChunk = nil
+						chunkLineNums = chunkLineNums[:0]
 					} else {
 						currentChunk = append(currentChunk, line[1:]...)
 						currentChunk = append(currentChunk, '\n')
+						chunkLineNums = append(chunkLineNums, hunkNewLine)
 					}
 				}
+				hunkNewLine++
+				continue
 			}
 		}
 
@@ -637,4 +682,23 @@ func stripANSI(b []byte) []byte {
 		out = append(out, b[i])
 	}
 	return out
+}
+
+// hunkNewStart parses the new-file start line from a unified diff hunk header
+// such as `@@ -47,6 +47,7 @@`.
+func hunkNewStart(line []byte) (int, bool) {
+	plus := bytes.IndexByte(line, '+')
+	if plus < 0 {
+		return 0, false
+	}
+	rest := line[plus+1:]
+	end := bytes.IndexAny(rest, ", ")
+	if end < 0 {
+		return 0, false
+	}
+	start, err := strconv.Atoi(string(rest[:end]))
+	if err != nil {
+		return 0, false
+	}
+	return start, true
 }

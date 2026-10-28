@@ -1883,19 +1883,19 @@
                             <!-- Master Node Fingerprint (Full Width) -->
                             <div class="form-group full-width">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.35rem;">
-                                    <label for="node-id" style="margin-bottom: 0;">Master Node Host Fingerprint (Air-Gapped Binding)</label>
-                                    <span class="field-hint-code">Command: <code style="font-family: var(--font-mono); font-size: 0.78rem;">./crenox-master fingerprint</code></span>
+                                    <label for="node-id" style="margin-bottom: 0;">Master Node Host Fingerprint (Optional for Advance Pre-Orders)</label>
+                                    <span class="field-hint-code">Hardware binding command: <code style="font-family: var(--font-mono); font-size: 0.78rem;">./crenox-master fingerprint</code></span>
                                 </div>
-                                <input type="text" id="node-id" name="node_fingerprint" placeholder="CNX-XXXX-XXXX-XXXX-XXXX (leave blank if server provisioning is pending)" class="form-input" style="font-family: var(--font-mono); font-size: 0.86rem;">
+                                <input type="text" id="node-id" name="node_fingerprint" placeholder="Leave blank for pre-order reservation (provisioned during server setup)" class="form-input" style="font-family: var(--font-mono); font-size: 0.86rem;">
                                 <div class="field-hint">
-                                    Your verified offline license file will be cryptographically locked to this hardware fingerprint. You can also provide this to our engineering desk post-order.
+                                    Offline licenses are cryptographically locked to host hardware. Leave blank if your server is not yet deployed; fingerprint binding is finalized during onboarding.
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top: 1.5rem; text-align: center;">
                             <button type="submit" id="procurement-btn" class="btn btn-black" style="width: 100%; max-width: 440px; padding: 0.85rem 1.5rem; font-size: 0.92rem; cursor: pointer;">
-                                Submit Commercial Pre-Order via Email &rarr;
+                                Generate Commercial Pre-Order Allocation &rarr;
                             </button>
                         </div>
                         <div id="procurement-feedback" class="form-status" style="display: none;"></div>
@@ -1906,15 +1906,15 @@
                                 <div>
                                     <h4 id="spec-panel-title">Pre-Order Draft Ready</h4>
                                 </div>
-                                <span class="badge badge-black">Direct Email Dispatch</span>
+                                <span class="badge badge-black">Direct Dispatch &amp; Copy</span>
                             </div>
                             <p id="spec-panel-desc">
-                                An advance pre-order email draft to <strong>crenoxhq@proton.me</strong> has been compiled. If your client did not launch automatically, copy the details below and send them directly:
+                                Advance pre-order allocation compiled for <strong>crenoxhq@proton.me</strong>. The specification has been copied to your clipboard. You can launch your email client or paste directly:
                             </p>
                             <pre id="spec-pre" class="spec-output-pre"></pre>
                             <div class="spec-actions">
-                                <a id="spec-mail-link" href="#" class="btn btn-black" style="padding: 0.65rem 1.25rem; font-size: 0.84rem;">Open in Email Client &rarr;</a>
-                                <button type="button" class="btn btn-outline" onclick="copySpecToClipboard()" style="padding: 0.65rem 1.25rem; font-size: 0.84rem; cursor: pointer;">Copy to Clipboard</button>
+                                <button type="button" class="btn btn-black" onclick="copySpecToClipboard()" style="padding: 0.65rem 1.25rem; font-size: 0.84rem; cursor: pointer;">Copy Specification to Clipboard</button>
+                                <a id="spec-mail-link" href="#" class="btn btn-outline" style="padding: 0.65rem 1.25rem; font-size: 0.84rem;">Open in Email Client &rarr;</a>
                                 <span id="copy-status" class="btn-copy-status">Copied to clipboard.</span>
                             </div>
                         </div>
@@ -2129,12 +2129,13 @@
             ? 'Bespoke Volume Agreement (>200 Seats)' 
             : '$' + (requestedSeats * conf.annual).toLocaleString('en-US', {minimumFractionDigits: 2}) + ' USD / year';
 
+        var nodeDisplay = nodeId.trim() ? nodeId.trim() : 'Provisioned during deployment onboarding';
         var spec = 'Organization: ' + compName + '\n' +
                    'Email: ' + corpEmail + '\n' +
                    'Intent: ' + (isCommercial ? 'Advance Pre-Order Allocation (Net 30 PO)' : '30-Day Technical Evaluation Pilot') + '\n' +
                    'Plan: ' + planText + '\n' +
                    (isCommercial ? ('Authorized Seats: ' + requestedSeats + ' Workstations\nEstimated Annual Commitment: ' + calcText + '\n') : '') +
-                   'Master Node Fingerprint: ' + nodeId;
+                   'Master Node Fingerprint: ' + nodeDisplay;
 
         currentSpecText = spec;
         document.getElementById('spec-pre').innerText = spec;
@@ -2145,7 +2146,11 @@
         outputPanel.style.display = 'block';
         outputPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        window.location.href = mailtoUrl;
+        copySpecToClipboard();
+
+        try {
+            window.location.href = mailtoUrl;
+        } catch (e) {}
     }
 
     function copySpecToClipboard() {
