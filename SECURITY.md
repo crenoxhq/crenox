@@ -19,8 +19,7 @@ Submit vulnerability reports privately through GitHub Security Advisories:
 
 https://github.com/crenoxhq/crenox/security/advisories/new
 
-Alternatively, you may contact the maintainers directly at:
-crenoxhq@proton.me
+All security reports are reviewed confidentially by the core maintainers.
 
 ### Information to Include
 
