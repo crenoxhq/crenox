@@ -338,3 +338,204 @@ func TestClassify_SafeVariableName_TempPrefix(t *testing.T) {
 		}
 	}
 }
+
+func TestClassify_SelfAssignment_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		filePath string
+		line     string
+		token    string
+		suppress bool
+	}{
+		{
+			name:     "identical assignment",
+			filePath: "auth/service.go",
+			line:     `auth_token: "auth_token"`,
+			token:    "auth_token",
+			suppress: true,
+		},
+		{
+			name:     "casing difference",
+			filePath: "pkg/client.go",
+			line:     `API_KEY = "api_key"`,
+			token:    "api_key",
+			suppress: true,
+		},
+		{
+			name:     "suffix key match",
+			filePath: "config/defaults.go",
+			line:     `client_key = "client"`,
+			token:    "client",
+			suppress: true,
+		},
+		{
+			name:     "suffix password match",
+			filePath: "handlers/user.go",
+			line:     `user_password = "user"`,
+			token:    "user",
+			suppress: true,
+		},
+		{
+			name:     "genuine production token is Real",
+			filePath: "auth/service.go",
+			line:     `api_key := "ghp_1234567890abcdef1234567890abcdef"`,
+			token:    "ghp_1234567890abcdef1234567890abcdef",
+			suppress: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			d := crenoxcontext.Classify(tc.filePath, tc.line, tc.token, "generic-key")
+			isSupp := crenoxcontext.IsSuppressed(d)
+			if isSupp != tc.suppress {
+				t.Errorf("[%s] expected suppressed=%v, got decision %s (suppressed=%v)", tc.name, tc.suppress, d, isSupp)
+			}
+		})
+	}
+}
+
+func TestClassify_SchemaTypeAndValidation_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		token    string
+		suppress bool
+	}{
+		{
+			name:     "Laravel string cast",
+			line:     `'private_key' => 'string'`,
+			token:    "string",
+			suppress: true,
+		},
+		{
+			name:     "Laravel encrypted cast",
+			line:     `'resend_api_key' => 'encrypted'`,
+			token:    "encrypted",
+			suppress: true,
+		},
+		{
+			name:     "validation rule nullable string",
+			line:     `'client_secret' => 'nullable|string'`,
+			token:    "nullable|string",
+			suppress: true,
+		},
+		{
+			name:     "validation rule required string",
+			line:     `'secret_token' => 'required|string'`,
+			token:    "required|string",
+			suppress: true,
+		},
+		{
+			name:     "type boolean",
+			line:     `'has_api_key' => 'boolean'`,
+			token:    "boolean",
+			suppress: true,
+		},
+		{
+			name:     "genuine secret in cast array is Real",
+			line:     `'api_key' => '` + "sk_live_" + `1234567890abcdef1234567890'`,
+			token:    "sk_live_" + "1234567890abcdef1234567890",
+			suppress: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			d := crenoxcontext.Classify("models/user.php", tc.line, tc.token, "generic-key")
+			isSupp := crenoxcontext.IsSuppressed(d)
+			if isSupp != tc.suppress {
+				t.Errorf("[%s] expected suppressed=%v, got decision %s", tc.name, tc.suppress, d)
+			}
+		})
+	}
+}
+
+func TestClassify_BearerPlaceholder_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		token    string
+		suppress bool
+	}{
+		{
+			name:     "explicit redacted tag",
+			line:     `headers = {"Authorization": "Bearer <redacted>"}`,
+			token:    "<redacted>",
+			suppress: true,
+		},
+		{
+			name:     "redacted word",
+			line:     `'Authorization' => 'Bearer redacted'`,
+			token:    "redacted",
+			suppress: true,
+		},
+		{
+			name:     "template variable self.token",
+			line:     `req.headers["Authorization"] = f"Bearer {self.api_key}"`,
+			token:    "{self.api_key}",
+			suppress: true,
+		},
+		{
+			name:     "shell template variable",
+			line:     `curl -H "Authorization: Bearer ${API_TOKEN}" https://api.com`,
+			token:    "${API_TOKEN}",
+			suppress: true,
+		},
+		{
+			name:     "real bearer token is Real",
+			line:     `curl -H "Authorization: Bearer ghp_1234567890abcdef1234567890abcdef" https://api.com`,
+			token:    "ghp_1234567890abcdef1234567890abcdef",
+			suppress: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			d := crenoxcontext.Classify("client/api.py", tc.line, tc.token, "bearer-token")
+			isSupp := crenoxcontext.IsSuppressed(d)
+			if isSupp != tc.suppress {
+				t.Errorf("[%s] expected suppressed=%v, got decision %s", tc.name, tc.suppress, d)
+			}
+		})
+	}
+}
+
+func TestClassify_AllDigits_EntropySuppression(t *testing.T) {
+	tests := []struct {
+		name     string
+		token    string
+		sigID    string
+		suppress bool
+	}{
+		{
+			name:     "16-digit non-sequential integer string",
+			token:    "7381928472918274",
+			sigID:    "high-entropy-base64",
+			suppress: true,
+		},
+		{
+			name:     "24-digit timestamp or account ID",
+			token:    "948271849201948273819283",
+			sigID:    "high-entropy-hex",
+			suppress: true,
+		},
+		{
+			name:     "random hex secret containing letters and digits is Real",
+			token:    "4f8a9b2c3d1e70a5",
+			sigID:    "high-entropy-hex",
+			suppress: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			line := `val := "` + tc.token + `"`
+			d := crenoxcontext.Classify("service.go", line, tc.token, tc.sigID)
+			isSupp := crenoxcontext.IsSuppressed(d)
+			if isSupp != tc.suppress {
+				t.Errorf("[%s] expected suppressed=%v, got decision %s", tc.name, tc.suppress, d)
+			}
+		})
+	}
+}

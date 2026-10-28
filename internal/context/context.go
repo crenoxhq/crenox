@@ -9,6 +9,7 @@
 package context
 
 import (
+	"bytes"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -450,17 +451,21 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 	// ── Check 9: Self-assignment or identical LHS/RHS value ─────────────────
 	// If the cleaned variable name is identical to the cleaned token value,
 	// then it is a self-assignment/default mapping (e.g. `auth_token: "auth_token"` or `password = "password"`),
-	// not a real secret. Also support common token variable suffix patterns like const foo_token = "foo".
-	cleanLHS := cleanIdentifier(varName)
-	cleanToken := cleanIdentifier(token)
-	if cleanLHS != "" {
-		if cleanLHS == cleanToken ||
-			cleanLHS == cleanToken+"token" ||
-			cleanLHS == cleanToken+"key" ||
-			cleanLHS == cleanToken+"secret" ||
-			cleanLHS == cleanToken+"password" {
-			return SafeVariableName
-		}
+	// not a real secret in source code. Also support common token variable suffix patterns like const foo_token = "foo".
+	if !isConfigOrEnv && isSelfAssignment(varName, token) {
+		return SafeVariableName
+	}
+
+	// ── Check 9A: Schema types and validation rules ──────────────────────────
+	// Suppress framework casts and validation rules where the assigned value is a type/rule name
+	// rather than a genuine secret (e.g. 'private_key' => 'string', 'client_secret' => 'nullable|string').
+	lowerTokTrim := strings.ToLower(strings.TrimSpace(token))
+	if lowerTokTrim == "string" || lowerTokTrim == "encrypted" || lowerTokTrim == "integer" ||
+		lowerTokTrim == "boolean" || lowerTokTrim == "array" || lowerTokTrim == "numeric" ||
+		lowerTokTrim == "text" || lowerTokTrim == "timestamp" ||
+		strings.HasPrefix(lowerTokTrim, "nullable|") || strings.HasPrefix(lowerTokTrim, "required|") ||
+		strings.HasSuffix(lowerTokTrim, "|string") || strings.HasSuffix(lowerTokTrim, "|nullable") {
+		return SafePlaceholder
 	}
 
 	// ── Check 9B: Variable Reference ─────────────────────────────────────────
@@ -468,6 +473,16 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 	// suppress it as a variable reference rather than a hardcoded secret.
 	if isVariableReference(token) {
 		return SafeVariableName
+	}
+
+	// ── Check 9C: Bearer placeholder and template suppression ────────────────
+	// Suppress generic authorization headers where the token is explicitly redacted or templated.
+	if strings.Contains(lowerLine, "bearer") {
+		if strings.Contains(lowerLine, "bearer <redacted>") || strings.Contains(lowerLine, "bearer redacted") ||
+			strings.Contains(lowerLine, "bearer <token>") || strings.Contains(lowerLine, "bearer {") ||
+			strings.Contains(lowerLine, "bearer ${") {
+			return SafePlaceholder
+		}
 	}
 
 	// ── Check 10: Control flow / Conditional expressions ──────────────────────
@@ -501,6 +516,11 @@ func Classify(filePath, lineContent, token, sigID string) Decision {
 
 	// ── Check 12 & 13: High-Entropy false positive checks ────────────────────
 	if sigID == "hex" || sigID == "base64" || strings.Contains(sigID, "high-entropy") {
+		// Pure-digits strings are timestamps, integer identifiers, or card numbers, not high-entropy secrets
+		if isAllDigits(token) {
+			return SafeVersionString
+		}
+
 		// ── Check 12: Scientific float / Hex constants without letters a-d/f ────
 		if strings.Contains(sigID, "hex") {
 			hasOtherHexLetter := false
@@ -1121,4 +1141,95 @@ func isNonSecretVariableName(lowerVarName string) bool {
 	}
 
 	return false
+}
+
+// isSelfAssignment returns true if the cleaned variable name is identical to the cleaned token value
+// or has standard credential suffixes (e.g. `auth_token: "auth_token"` or `foo_token = "foo"`).
+// Uses stack-allocated buffers to prevent heap allocations.
+func isSelfAssignment(varName, token string) bool {
+	if varName == "" || token == "" {
+		return false
+	}
+	var lhsBuf [64]byte
+	var tokBuf [64]byte
+	nL := 0
+	totalL := 0
+	for i := 0; i < len(varName); i++ {
+		c := varName[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 32
+		}
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+			if nL < len(lhsBuf) {
+				lhsBuf[nL] = c
+				nL++
+			}
+			totalL++
+		}
+	}
+	if nL == 0 {
+		return false
+	}
+	nT := 0
+	totalT := 0
+	for i := 0; i < len(token); i++ {
+		c := token[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 32
+		}
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+			if nT < len(tokBuf) {
+				tokBuf[nT] = c
+				nT++
+			}
+			totalT++
+		}
+	}
+	if nT == 0 {
+		return false
+	}
+
+	if totalL > len(lhsBuf) || totalT > len(tokBuf) {
+		cleanL := cleanIdentifier(varName)
+		cleanT := cleanIdentifier(token)
+		if cleanL == cleanT {
+			return true
+		}
+		if strings.HasPrefix(cleanL, cleanT) {
+			rem := cleanL[len(cleanT):]
+			if rem == "token" || rem == "key" || rem == "secret" || rem == "password" {
+				return true
+			}
+		}
+		return false
+	}
+
+	lhs := lhsBuf[:nL]
+	tok := tokBuf[:nT]
+	if bytes.Equal(lhs, tok) {
+		return true
+	}
+	if bytes.HasPrefix(lhs, tok) {
+		rem := lhs[len(tok):]
+		if bytes.Equal(rem, []byte("token")) ||
+			bytes.Equal(rem, []byte("key")) ||
+			bytes.Equal(rem, []byte("secret")) ||
+			bytes.Equal(rem, []byte("password")) {
+			return true
+		}
+	}
+	return false
+}
+
+// isAllDigits returns true when s contains only ASCII digits.
+func isAllDigits(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
 }

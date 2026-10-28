@@ -45,9 +45,10 @@ var BuiltinSignatures = []Signature{
 	// ── GitHub ────────────────────────────────────────────────────────────────
 	{ID: "github-pat-classic", Description: "GitHub Personal Access Token (classic)", Prefix: "ghp_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ghp_[a-zA-Z0-9]{20,40}$`)},
 	{ID: "github-oauth", Description: "GitHub OAuth Token", Prefix: "gho_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^gho_[a-zA-Z0-9]{20,40}$`)},
-	{ID: "github-app-install", Description: "GitHub App Installation Token", Prefix: "ghs_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ghs_[a-zA-Z0-9]{20,40}$`)},
+	{ID: "github-user-to-server", Description: "GitHub User-to-Server Token", Prefix: "ghu_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ghu_[a-zA-Z0-9]{20,40}$`)},
+	{ID: "github-app-install", Description: "GitHub App Installation Token", Prefix: "ghs_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ghs_[a-zA-Z0-9_]{20,600}$`)},
 	{ID: "github-refresh", Description: "GitHub Refresh Token", Prefix: "ghr_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^ghr_[a-zA-Z0-9]{20,40}$`)},
-	{ID: "github-pat-fine", Description: "GitHub Fine-grained PAT", Prefix: "github_pat_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^github_pat_[a-zA-Z0-9]{20,100}$`)},
+	{ID: "github-pat-fine", Description: "GitHub Fine-grained PAT", Prefix: "github_pat_", Severity: "CRITICAL", Validator: regexp.MustCompile(`^github_pat_[a-zA-Z0-9_]{20,120}$`)},
 
 	// ── GitLab ────────────────────────────────────────────────────────────────
 	{ID: "gitlab-pat", Description: "GitLab Personal Access Token", Prefix: "glpat-", Severity: "CRITICAL"},
@@ -177,9 +178,9 @@ var BuiltinSignatures = []Signature{
 	// GITHUB_TOKEN matches standalone: export GITHUB_TOKEN="..."
 	// _GITHUB_TOKEN matches as a suffix: JEKYLL_GITHUB_TOKEN, CI_GITHUB_TOKEN, etc.
 	{ID: "github-env-token", Description: "GitHub Token (via environment variable)", Prefix: "GITHUB_TOKEN", Severity: "CRITICAL",
-		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghs_|ghr_|github_pat_)[a-zA-Z0-9]{20,}|[a-f0-9]{40}`)},
+		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghu_|ghs_|ghr_|github_pat_)[a-zA-Z0-9_]{20,}|[a-f0-9]{40}`)},
 	{ID: "github-env-token-suffix", Description: "GitHub Token (env var suffix, e.g. JEKYLL_GITHUB_TOKEN)", Prefix: "_GITHUB_TOKEN", Severity: "HIGH",
-		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghs_|ghr_|github_pat_)[a-zA-Z0-9]{20,}|[a-f0-9]{40}`)},
+		Validator: regexp.MustCompile(`(?i)(ghp_|gho_|ghu_|ghs_|ghr_|github_pat_)[a-zA-Z0-9_]{20,}|[a-f0-9]{40}`)},
 
 	// ── Framework / Ruby / Rails secret keys ─────────────────────────────────
 	{ID: "rails-secret-key-base", Description: "Rails secret_key_base", Prefix: "secret_key_base", Severity: "HIGH",
@@ -335,7 +336,7 @@ func Build(sigs []Signature) *Automaton {
 	// Phase 1: insert all prefixes into the trie.
 	for i := range sigs {
 		sig := &sigs[i]
-		sig.IsAssignmentOrKeyword = isAssignmentOrKeyword(sig.Prefix)
+		sig.IsAssignmentOrKeyword = isAssignmentOrKeyword(sig)
 		cur := uint16(0)
 		for _, b := range []byte(strings.ToLower(sig.Prefix)) {
 			if b >= alphabetSize {
@@ -458,7 +459,16 @@ func toLower(b byte) byte {
 
 // isAssignmentOrKeyword checks case-insensitively if prefix contains '=' or ':',
 // or matches common credential variable keywords or WordPress salt configurations.
-func isAssignmentOrKeyword(s string) bool {
+func isAssignmentOrKeyword(sig *Signature) bool {
+	// Guard: Tokens with validators that start matching at the prefix are token prefix rules, NOT variable assignments.
+	if sig.Validator != nil {
+		vStr := sig.Validator.String()
+		cleanV := strings.ReplaceAll(strings.TrimPrefix(strings.TrimPrefix(vStr, "(?i)"), "^"), "\\", "")
+		if strings.HasPrefix(strings.ToLower(cleanV), strings.ToLower(sig.Prefix)) {
+			return false
+		}
+	}
+	s := sig.Prefix
 	upper := strings.ToUpper(s)
 	// Guard: Age secret keys literally contain "SECRET", but are token prefixes, not variable names.
 	if strings.HasPrefix(upper, "AGE-SECRET-KEY-1") {

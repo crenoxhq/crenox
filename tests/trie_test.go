@@ -394,3 +394,108 @@ func TestTrie_BuildOverflowPanic(t *testing.T) {
 	}
 	trie.Build(sigs)
 }
+
+func TestTrie_GitHubUserToServerToken(t *testing.T) {
+	a := buildDefaultAutomaton()
+
+	// Valid ghu_ tokens match trie
+	validCases := []string{
+		`token := "ghu_1234567890abcdef1234567890abcdef"`,
+		`export GH_USER_TOKEN=ghu_ABCDEFGHIJKLMNOPQRST`, // exactly 20 chars
+		`ghu_ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`,       // exactly 40 chars
+	}
+	for _, tc := range validCases {
+		matches := search(a, tc)
+		assertAtLeastOneMatch(t, matches, "github-user-to-server")
+	}
+
+	// Validator regex edge cases
+	var ghuSig *trie.Signature
+	for i := range trie.BuiltinSignatures {
+		if trie.BuiltinSignatures[i].ID == "github-user-to-server" {
+			ghuSig = &trie.BuiltinSignatures[i]
+			break
+		}
+	}
+	if ghuSig == nil || ghuSig.Validator == nil {
+		t.Fatalf("github-user-to-server signature or validator not found")
+	}
+
+	// Valid token passes validator
+	if !ghuSig.Validator.MatchString("ghu_1234567890abcdef1234567890abcdef") {
+		t.Errorf("expected valid ghu_ token to match validator")
+	}
+	if !ghuSig.Validator.MatchString("ghu_ABCDEFGHIJKLMNOPQRST") { // 20 chars
+		t.Errorf("expected 20-char ghu_ token to match validator")
+	}
+	if !ghuSig.Validator.MatchString("ghu_ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") { // 40 chars
+		t.Errorf("expected 40-char ghu_ token to match validator")
+	}
+
+	// Invalid tokens fail validator
+	invalidTokens := []string{
+		"ghu_short",                                        // < 20 chars
+		"ghu_ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890EXTRA123", // > 40 chars
+		"ghu_with_special!chars123",                        // invalid char '!'
+		"ghu_with_spaces in_token",                         // invalid spaces
+	}
+	for _, inv := range invalidTokens {
+		if ghuSig.Validator.MatchString(inv) {
+			t.Errorf("expected invalid token %q to fail validator, but matched", inv)
+		}
+	}
+}
+
+func TestTrie_GitHubAppInstallationToken_JWT(t *testing.T) {
+	a := buildDefaultAutomaton()
+
+	// Classic length (36-40 chars)
+	matchesClassic := search(a, `app_token = "ghs_1234567890abcdef1234567890abcdef"`)
+	assertAtLeastOneMatch(t, matchesClassic, "github-app-install")
+
+	// Modern long JWT format token with underscores (250+ chars)
+	jwtToken := "ghs_" + strings.Repeat("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_", 5) + "abcdef123456"
+	matchesJWT := search(a, `GITHUB_APP_TOKEN="`+jwtToken+`"`)
+	assertAtLeastOneMatch(t, matchesJWT, "github-app-install")
+}
+
+func TestTrie_GitHubFineGrainedPAT_Underscores(t *testing.T) {
+	a := buildDefaultAutomaton()
+
+	// Modern fine-grained PAT with internal underscores and 90+ characters
+	finePAT := "github_pat_11ABCDE1234567890_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_BBBBBBBBBB"
+	matches := search(a, `pat := "`+finePAT+`"`)
+	assertAtLeastOneMatch(t, matches, "github-pat-fine")
+}
+
+func TestTrie_GitHubEnvToken_Variants(t *testing.T) {
+	a := buildDefaultAutomaton()
+
+	cases := []struct {
+		input string
+		sigID string
+	}{
+		{`export GITHUB_TOKEN="ghu_1234567890abcdef1234567890abcdef"`, "github-env-token"},
+		{`export GITHUB_TOKEN="ghp_1234567890abcdef1234567890abcdef"`, "github-env-token"},
+		{`CI_GITHUB_TOKEN="ghu_1234567890abcdef1234567890abcdef"`, "github-env-token-suffix"},
+		{`JEKYLL_GITHUB_TOKEN=0123456789abcdef0123456789abcdef01234567`, "github-env-token-suffix"}, // 40 hex
+	}
+
+	for _, tc := range cases {
+		matches := search(a, tc.input)
+		assertAtLeastOneMatch(t, matches, tc.sigID)
+	}
+}
+
+func TestTrie_IsAssignmentOrKeyword_PrefixRuleGuards(t *testing.T) {
+	sigs := trie.BuiltinSignatures
+	for _, sig := range sigs {
+		// Token prefix rules that have regex validators starting with their prefix
+		// must NOT be treated as variable assignments or keywords
+		if sig.ID == "github-user-to-server" || sig.ID == "github-pat-classic" || sig.ID == "age-secret-key" {
+			if sig.IsAssignmentOrKeyword {
+				t.Errorf("signature %q should have IsAssignmentOrKeyword=false, but was true", sig.ID)
+			}
+		}
+	}
+}

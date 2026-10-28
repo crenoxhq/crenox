@@ -4,7 +4,7 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://crenoxhq.github.io/crenox/</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-28</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/"/>
     <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/"/>
@@ -17,7 +17,7 @@
   </url>
   <url>
     <loc>https://crenoxhq.github.io/crenox/pro.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-28</lastmod>
     <video:video>
       <video:thumbnail_loc>https://crenoxhq.github.io/crenox/img/hero-poster.webp</video:thumbnail_loc>
       <video:title>Crenox Pro — Enterprise On-Premises Git Secret Detection &amp; Fleet Governance</video:title>
@@ -28,21 +28,21 @@
   </url>
   <url>
     <loc>https://crenoxhq.github.io/crenox/index-ar.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-28</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/"/>
     <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/"/>
   </url>
   <url>
     <loc>https://crenoxhq.github.io/crenox/wild.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-28</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/wild.html"/>
     <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/wild-ar.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/wild.html"/>
   </url>
   <url>
     <loc>https://crenoxhq.github.io/crenox/wild-ar.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-28</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/wild.html"/>
     <xhtml:link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/wild-ar.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/wild.html"/>

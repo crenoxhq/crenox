@@ -55,7 +55,7 @@ Crenox uses a **three-tier detection pipeline** designed for speed and false pos
 
 | Tier | Engine | Purpose |
 |------|--------|---------|
-| 1 — PATTERN | Aho-Corasick automaton | Matches 130+ known secret signatures in O(n) time, zero allocations |
+| 1 — PATTERN | Aho-Corasick automaton | Matches 135+ known secret signatures in O(n) time, zero allocations |
 | 2 — ENTROPY | Shannon entropy analysis | Catches unknown secrets by measuring information density (with Log2 LUT acceleration) |
 | 3 — CONTEXT | Context classifier | Suppresses false positives from comments, test files, container digests, and placeholders |
 
@@ -107,7 +107,7 @@ https://crenoxhq.github.io/crenox/crenox-demo.mp4
 asciinema play https://crenoxhq.github.io/crenox/demo.cast
 ```
 
-![Crenox Demo](docs/demo.gif?v=2.1.10)
+![Crenox Demo](docs/demo.gif?v=2.1.11)
 
 ---
 
@@ -230,7 +230,7 @@ Measured on real-world repositories with Crenox against the most popular alterna
    - File size cap: files > 10 MB skipped
          |
   [Tier 1 — Aho-Corasick Trie  —  internal/trie/trie.go]
-   Built once at startup via trie.Build() — allocation-free DFA matching of 130+ signatures
+   Built once at startup via trie.Build() — allocation-free DFA matching of 135+ signatures
    Case-insensitive O(n) scan using a branchless 256-byte toLower lookup table
    and sync.Pool-recycled 64 KB streaming buffers to cap heap memory to ~3 MB
    BIP-39 mnemonic detection: 12/15/18/21/24 words validated against 2048-word dictionary
@@ -310,10 +310,10 @@ Pre-filters applied before entropy computation: Java-style identifiers (all lett
 | `Real` | None of the suppression checks matched |
 | `SafeComment` | Line begins with `//` `#` `*` `/*` `<!--` `--` `;` `%` `!` |
 | `SafeTestFile` | Path ends with `_test.go` `_spec.rb` `.test.js` `.spec.ts` `.md` `.rst` `_test.py` `conftest.py`, starts with `test_` (`.py`), begins with `test-`, or contains directory: `test` `tests` `testdata` `fixtures` `__tests__` `__mocks__` `mock` `mocks` `sample` `samples` `docs` `doc` |
-| `SafeVariableName` | Variable name (left of `=` / `:=`) contains: `dummy` `fake` `mock` `placeholder` `sample` `fixture` `stub` `lorem` `foobar` `your_` `your-` `insert_` `replace_` `changeme` `redacted` `sanitized` `censored` |
-| `SafePlaceholder` | Token matches `$VAR`, `${VAR}`, `<...>`, `[[...]]`, `{{...}}`, `${{...}}`, or Mozilla SOPS encrypted blocks (`ENC[<ALGO>,data:...]`) and Age recipient public keys (`age1...`) |
+| `SafeVariableName` | Variable name (left of `=` / `:=`) contains: `dummy` `fake` `mock` `placeholder` `sample` `fixture` `stub` `lorem` `foobar` `your_` `your-` `insert_` `replace_` `changeme` `redacted` `sanitized` `censored`, or variable name matches assigned value (self-assignment) |
+| `SafePlaceholder` | Token matches `$VAR`, `${VAR}`, `<...>`, `[[...]]`, `{{...}}`, `${{...}}`, redacted Bearer values (`Bearer <redacted>`), framework schema casts (`nullable|string`, `encrypted`), or Mozilla SOPS encrypted blocks (`ENC[<ALGO>,data:...]`) and Age recipient public keys (`age1...`) |
 | `SafeUUID` | Token matches UUID v4 pattern `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `SafeVersionString` | Token begins with `digit.digit.digit` |
+| `SafeVersionString` | Token begins with `digit.digit.digit` or consists of pure numeric sequences |
 | `SafeSourceRHS` | Token on RHS of assignment in programming source files is bare/unquoted (e.g. Go struct types, function calls) |
 
 The scanner also rejects tokens that match a `printf`-style format verb, are identical to their signature prefix, contain regex metacharacters, or (for short prefixes ≤ 3 bytes) are pure PascalCase/CamelCase with no special characters.
@@ -356,7 +356,7 @@ A same-line annotation suppresses only that line. A comment-line annotation supp
 | **Cloud Databases & Services** | Alibaba Cloud AccessKey ID (`LTAI`), Azure Storage Account Key, Doppler (`dp.st.`, `dp.pt.`, `dp.sa.`), Supabase (`sb_publishable_`, `sb_secret_`), Turso (`fn_`), Tailscale (`tskey-auth-`, `tskey-api-`), Clerk (`clerk_`), Neon (`npg_`), PlanetScale (`pscale_pw_`, `pscale_tkn_`), Terraform Cloud (`atlasv1`) |
 | **DevSecOps & Analytics** | Grafana Cloud Token (`glc_`), Infracost API Key (`ico-`), Datadog (`ddp_`), PostHog (`phx_`, `phs_`, `pha_`), Linear (`lin_api_`), Sentry (`sntry_`), SonarQube (`squ_`), Snyk (`snyk_`), Pulumi (`pul-`), Databricks (`dapi`), Svix Webhook (`whsec_`) |
 | **Social & Messaging** | Telegram Bot API Token (`bot<id>:<hash>`), Discord Webhook (`https://discord.com/api/webhooks/`), Slack Bot (`xoxb-`), User (`xoxp-`), Workspace (`xoxa-`), Webhook (`https://hooks.slack.com/services/`) |
-| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), App Installation (`ghs_`), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Client ID (`Iv1.`), Suffix environment tokens (`_GITHUB_TOKEN`) |
+| **GitHub** | Classic PAT (`ghp_`), OAuth (`gho_`), User-to-Server (`ghu_`), App Installation (`ghs_` - classic & JWT), Refresh (`ghr_`), Fine-grained PAT (`github_pat_`), Environment tokens (`GITHUB_TOKEN`, `_GITHUB_TOKEN`) |
 | **Heroku** | API Key (`HEROKU_API_KEY`), OAuth Token (`heroku_oauth_token`) |
 | **GitLab** | Personal Access Token (`glpat-`), Pipeline Trigger (`glptt-`), Runner Registration (`GR1348941`), Runner Token (`glrt-`) |
 | **Postman** | API Key (`PMAK-`) |
@@ -463,7 +463,7 @@ curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --global
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
 
 # Pin to a specific version or custom directory:
-curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.10 --dir=/usr/local/bin
+curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.11 --dir=/usr/local/bin
 ```
 
 ### Go Toolchain
@@ -496,7 +496,7 @@ crenox version
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.10 # Replace with the latest release version
+    rev: v2.1.11 # Replace with the latest release version
     hooks:
       - id: crenox
 ```

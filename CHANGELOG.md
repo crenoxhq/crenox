@@ -5,12 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.1.11] - 2026-10-28
 
-### Added
-- **OpenRouter API Key Detection (Tier 1):** Added a dedicated zero-allocation Aho-Corasick pattern signature (`openrouter-api-key`) in `internal/trie/trie.go` matching the documented OpenRouter key prefix `sk-or-v1-` paired with a strict 64-character alphanumeric validator. Classified as `CRITICAL` since keys grant access to 300+ LLM APIs with billing attached. Covered by `TestTrie_OpenRouterAPIKey` in `tests/trie_test.go`.
+### Security & Detection Engine
+- **GitHub Token Suite Modernization:** Added dedicated Tier 1 Aho-Corasick pattern detection for GitHub App User-to-Server tokens (`github-user-to-server`) matching prefix `ghu_` with a strict 20-40 char alphanumeric validator. Upgraded `github-app-install` (`ghs_`) validator to support modern long/JWT token structures (up to 600 chars). Upgraded `github-pat-fine` (`github_pat_`) validator to support internal underscores across multi-segment fine-grained personal access tokens (up to 120 chars). Updated `github-env-token` and `github-env-token-suffix` rules to detect all GitHub token formats in environment variable assignments.
+- **Token Rule Assignment Guard:** Enhanced `isAssignmentOrKeyword` in `internal/trie/trie.go` ensuring tokens with prefix-rooted regex validators are classified strictly as token prefixes rather than variable assignments, preserving full token extraction.
+- **OpenRouter & Postman API Key Signatures:** Formalized Tier 1 pattern detection for OpenRouter (`sk-or-v1-` + 64 alphanumeric validator) and Postman (`PMAK-` + UUID validator) API keys.
 
-- **Postman API Key Signature:** Added Tier 1 detection for Postman API keys with the `PMAK-` prefix.
+### False-Positive Reduction & Context Filtering
+- **Self-Assignment Suppression (Zero-Allocation):** Implemented stack-allocated buffer comparison `isSelfAssignment` in `internal/context/context.go` (Check 9), automatically suppressing default variable self-assignments (e.g. `auth_token: "auth_token"`, `api_key = "api_key"`, `client_key = "client"`) in source code files while preserving genuine environment variable defaults.
+- **Framework Schema & Validation Rule Suppression:** Added Check 9A in `internal/context/context.go` suppressing framework casts and validation rules where the assigned value is a type or rule name rather than a credential (e.g. Laravel `'private_key' => 'string'`, `'client_secret' => 'nullable|string'`, `'resend_api_key' => 'encrypted'`).
+- **Bearer Placeholder & Template Filtering:** Added Check 9C in `internal/context/context.go` suppressing authorization headers with redacted values (`Bearer <redacted>`, `Bearer redacted`, `Bearer <token>`) or code template expressions (`Bearer ${API_TOKEN}`, `Bearer {self.api_key}`).
+- **Numeric String Entropy Suppression:** Added Check 12 in `internal/context/context.go` preventing pure-digit strings (timestamps, account IDs, numeric serials) from triggering false-positive Tier 2 Shannon entropy alarms.
+
+### Performance & Memory Efficiency
+- **Zero-Allocation Context Hot-Path:** Built `isSelfAssignment` using fixed stack buffers (`[64]byte`), eliminating heap allocations on identifier normalization and maintaining `0 allocs/op` on the clean scan path.
+
+### Community Contributions & Acknowledgments
+We would like to express our deepest gratitude to our community contributors and reporters whose pull requests, technical reviews, and reproducible issues directly shaped this release and hardened Crenox's core engine:
+- **[@Pranav2259](https://github.com/Pranav2259) (Pranav Agarwal):** Contributed the built-in Tier 1 Aho-Corasick pattern detection for Postman API Keys (`PMAK-` prefix paired with strict 24-hex and 32/36-hex UUID validators) in [PR #10](https://github.com/crenoxhq/crenox/pull/10), accompanied by unit test coverage in `tests/trie_test.go`.
+- **[@poie-67](https://github.com/poie-67):** Contributed the Tier 1 pattern detection signature for OpenRouter API keys (`sk-or-v1-` prefix with a strict 64-character alphanumeric validator) in [PR #11](https://github.com/crenoxhq/crenox/pull/11) and `tests/trie_test.go`, safeguarding developers against unintended exposure of multi-model LLM access tokens.
+- **[@bfs2021](https://github.com/bfs2021) / zgy:** Investigated and contributed [PR #14](https://github.com/crenoxhq/crenox/pull/14) addressing Git diff hunk line-number offset drift in `crenox scan --history` mode (referenced in [Issue #13](https://github.com/crenoxhq/crenox/issues/13)), ensuring findings map accurately to absolute file line numbers rather than diff-relative offsets.
+- **[@Zahed316](https://github.com/Zahed316):** Contributed [PR #7](https://github.com/crenoxhq/crenox/pull/7) to ensure test deterministic reliability by passing explicit initial branch flags (`git init -b master`) in `TestScanCmd_History_GitRepo`, eliminating test flakiness across varied Git global configurations.
+- **[@andreagrax](https://github.com/andreagrax) (Andrea Grazioli):** Authored [Issue #8](https://github.com/crenoxhq/crenox/issues/8) identifying false positives on Age recipient public keys and Mozilla SOPS encrypted payloads, providing an exemplary minimal reproduction repository that drove our generalized cipher block suppression architecture.
+
+### Call for Future Community Contributions
+Crenox thrives as a community-driven, zero-dependency Git security scanner. We warmly encourage developers, security researchers, and DevOps engineers to continue contributing:
+- **Good First Issue:** Check out [Issue #12](https://github.com/crenoxhq/crenox/issues/12) proposing built-in pattern detection for WooCommerce REST API credentials (`ck_` / `cs_`).
+- **Signature Proposals:** Suggest new API token prefixes or secret formats by submitting a proposal using our GitHub Issue templates.
+- **False Positive Reports:** Help calibrate our context suppression engine by sharing reproducible non-secret patterns that triggered false alarms.
+- **Ecosystem Integration:** Contribute improvements to our pre-commit hooks, GitHub Actions composite workflow, Homebrew formulas, and package registry distributions.
 
 ## [2.1.10] - 2026-09-22
 

@@ -47,7 +47,7 @@ body:
     attributes:
       label: Crenox Version
       description: Run `crenox version` and paste the output here.
-      placeholder: "crenox v2.1.10 (commit: ...)"
+      placeholder: "crenox v2.1.11 (commit: ...)"
     validations:
       required: true
 

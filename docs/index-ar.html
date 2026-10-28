@@ -46,7 +46,7 @@
       "description": "منصة كرينوكس برو لفحص واعتراض أسرار Git محلياً بلغة Go بدون أي متطلبات تشغيل.",
       "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
       "applicationCategory": "SecurityApplication",
-      "softwareVersion": "2.1.10",
+      "softwareVersion": "2.1.11",
       "codeRepository": "https://github.com/crenoxhq/crenox",
       "license": "https://github.com/crenoxhq/crenox/blob/main/LICENSE",
       "offers": {
@@ -61,7 +61,7 @@
       },
       "featureList": [
         "فاحص أسرار محلي فائق السرعة في أقل من 20 مللي ثانية",
-        "أكثر من 130 توقيع كشف مدمج لمزودي السحابة والذكاء الاصطناعي",
+        "أكثر من 135 توقيع كشف مدمج لمزودي السحابة والذكاء الاصطناعي",
         "حساب الإنتروبيا بجدول Shannon Log2 LUT فائق الكفاءة",
         "توليد تقارير GitLab Secret Detection SAST الرسمية و GitHub SARIF",
         "انعدام استهلاك الذاكرة في المسار الحرج (Zero Allocations)"
@@ -88,7 +88,7 @@
           "name": "ما الفرق بين كرينوكس وأداة Gitleaks؟",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "كرينوكس أسرع بما بين 3.8 إلى 154 مرة من Gitleaks، ويستهلك ذاكرة ثابتة (13-17 MB) دون أي تخصيصات في المسار الحرج، مع دعم أكثر من 130 توقيعاً مدمجاً وفلترة سياقية متطورة تمنع الإنذارات الكاذبة."
+            "text": "كرينوكس أسرع بما بين 3.8 إلى 154 مرة من Gitleaks، ويستهلك ذاكرة ثابتة (13-17 MB) دون أي تخصيصات في المسار الحرج، مع دعم أكثر من 135 توقيعاً مدمجاً وفلترة سياقية متطورة تمنع الإنذارات الكاذبة."
           }
         },
         {
@@ -277,7 +277,7 @@
                     <thead>
                         <tr>
                             <th>المقياس المرصود</th>
-                            <th>كرينوكس (<span class="latest-version">v2.1.10</span>)</th>
+                            <th>كرينوكس (<span class="latest-version">v2.1.11</span>)</th>
                             <th>جيتليكس (v8.18.2)</th>
                             <th>بيترليكس (v1.6.1)</th>
                         </tr>
@@ -357,7 +357,7 @@ pkg install crenox</pre>
             <p>تنزيل البرنامج الجاهز مباشرة بدون أي متطلبات سابقة. مثال لنظام Linux AMD64:</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك (مثال لـ Linux AMD64)
-wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.10</span>/crenox-<span class="latest-version">v2.1.10</span>-linux-amd64 -O crenox
+wget https://github.com/crenoxhq/crenox/releases/download/<span class="latest-version">v2.1.11</span>/crenox-<span class="latest-version">v2.1.11</span>-linux-amd64 -O crenox
 
 # 2. منح صلاحيات التشغيل للملف
 chmod +x crenox
@@ -374,7 +374,7 @@ crenox version</pre>
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.10
+    rev: v2.1.11
     hooks:
       - id: crenox</pre>
 
@@ -463,6 +463,12 @@ allowlist_patterns:
             <p>مقالات يشاركها المطورون لشرح آليات تحسين وسرعة الكشف والفلسفة الأمنية خلف بناء الأداة.</p>
             
             <div style="margin: 2rem 0; border-top: 1px solid var(--color-border);">
+                <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
+                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">28 أكتوبر 2026</p>
+                    <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.11: تحديث حزمة رموز GitHub، تنقية سياقية بدون حجز ذاكرة، وتوسيع التواقيع إلى 135+</a></h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--color-text-muted);">يحدث الإصدار 2.1.11 منظومة كشف رموز ومفاتيح GitHub بالكامل (إضافة رموز User-to-Server <code>ghu_</code>، ورموز التثبيت الحديثة JWT <code>ghs_</code> حتى 600 محرف، ورموز الوصول الدقيقة <code>github_pat_</code> ذات الشرطة السفلية، ومتغيرات البيئة الحديثة)، ويرفع قاعدة التواقيع المدمجة في Tier 1 إلى 135+ نمطاً عبر توثيق مفاتيح OpenRouter وPostman، ويقدم حارس كتم الإسناد الذاتي (Self-Assignment) المنفذ كلياً عبر مكدس الذاكرة (0 allocs/op) مع صيانة قيم .env الافتراضية، وفلترة قوالب تحويل البيانات في أطر العمل (مثل <code>nullable|string</code> و<code>encrypted</code>) وترويسات Bearer المقتطعة، واستبعاد السلاسل الرقمية البحتة من إنذارات الإنتروبيا، مع الاحتفاء بمساهمات المطورين في المجتمع المفتوح.</p>
+                </div>
+
                 <div style="padding: 1.5rem 0; border-bottom: 1px solid var(--color-border);">
                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">22 سبتمبر 2026</p>
                     <h4 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif-ar); font-size: 1.5rem; font-weight: 700;"><a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" style="color: inherit; text-decoration: none;">الإصدار 2.1.10: كشف تشفير Age، تعميم فلاتر SOPS، الترخيص المزدوج، وحوكمة المساهمات</a></h4>
@@ -583,7 +589,7 @@ allowlist_patterns:
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
-        AsciinemaPlayer.create("demo.cast?v=2.1.10", document.getElementById("terminal-demo"), {
+        AsciinemaPlayer.create("demo.cast?v=2.1.11", document.getElementById("terminal-demo"), {
             cols: 105,
             rows: 24,
             autoPlay: true,
