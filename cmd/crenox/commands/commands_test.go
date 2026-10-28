@@ -252,6 +252,76 @@ func TestScanCmd_History_GitRepo(t *testing.T) {
 	}
 }
 
+func TestScanCmd_History_ReportsAbsoluteLineNumbers(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	runGit := func(args ...string) {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = tmpDir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+
+	runGit("init", "-q")
+	runGit("config", "user.email", "test@example.com")
+	runGit("config", "user.name", "Test")
+	runGit("config", "core.hooksPath", "")
+
+	lines := make([]string, 60)
+	for i := range lines {
+		lines[i] = fmt.Sprintf("// line %d", i+1)
+	}
+	file := filepath.Join(tmpDir, "server.go")
+	if err := os.WriteFile(file, []byte(strings.Join(lines, "\n")+"\n"), 0644); err != nil {
+		t.Fatalf("write server.go: %v", err)
+	}
+	runGit("add", "server.go")
+	runGit("commit", "-m", "add server")
+
+	// Replace line 50 in a follow-up commit; the diff hunk starts earlier,
+	// so the finding must still point at the absolute file line.
+	lines[49] = `token := "AKIAIOSFODNN7EXAMPLE"`
+	if err := os.WriteFile(file, []byte(strings.Join(lines, "\n")+"\n"), 0644); err != nil {
+		t.Fatalf("rewrite server.go: %v", err)
+	}
+	runGit("add", "server.go")
+	runGit("commit", "-m", "add token")
+
+	oldExit := exitFunc
+	exitCode := 0
+	exitFunc = func(code int) { exitCode = code }
+	defer func() { exitFunc = oldExit }()
+
+	outFile := filepath.Join(tmpDir, "report.json")
+	if err := runAdHocScan([]string{tmpDir}, "", "json", false, false, true, outFile, false); err != nil {
+		t.Fatalf("runAdHocScan error: %v", err)
+	}
+	if exitCode != 1 {
+		t.Errorf("expected exit code 1 due to detected secret, got %d", exitCode)
+	}
+
+	reportBytes, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("failed to read report file: %v", err)
+	}
+	var report struct {
+		Findings []struct {
+			FilePath string `json:"file_path"`
+			Line     int    `json:"line"`
+		} `json:"findings"`
+	}
+	if err := json.Unmarshal(reportBytes, &report); err != nil {
+		t.Fatalf("failed to parse report: %v", err)
+	}
+	for _, f := range report.Findings {
+		if strings.HasSuffix(f.FilePath, ":server.go") && f.Line == 50 {
+			return
+		}
+	}
+	t.Fatalf("expected a finding at line 50 of server.go, got %+v", report.Findings)
+}
+
 func TestScanCmd_MultipleFilesWithSameSecret_AllReported(t *testing.T) {
 	tmpDir := t.TempDir()
 	f1 := filepath.Join(tmpDir, "file1.txt")
@@ -901,6 +971,5 @@ func TestRunCmd_FailClosedOnDiffOrShowFailure(t *testing.T) {
 		t.Errorf("expected failed_files to be present in scan_error, got: %v", rep["failed_files"])
 	}
 }
-
 
 
