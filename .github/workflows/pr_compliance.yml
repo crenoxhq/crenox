@@ -5,6 +5,10 @@ on:
     types: [opened, edited, synchronize, reopened]
     branches: [main, dev]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   validate-pr:
     name: Crenox Standards Verification

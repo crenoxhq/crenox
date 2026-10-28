@@ -21,16 +21,19 @@
   </a>
 </p>
 
-[![Release](https://img.shields.io/github/v/release/crenoxhq/crenox?color=3c6382&logo=github&label=latest&v=4)](https://github.com/crenoxhq/crenox/releases)
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Crenox-3c6382.svg?logo=github&v=4)](https://github.com/marketplace/actions/crenox-git-secrets-scanner)
-[![Downloads](https://img.shields.io/github/downloads/crenoxhq/crenox/total?color=4b6584&logo=github&v=4)](https://github.com/crenoxhq/crenox/releases)
-[![CI](https://github.com/crenoxhq/crenox/actions/workflows/ci.yml/badge.svg?branch=main&v=4)](https://github.com/crenoxhq/crenox/actions/workflows/ci.yml)
-[![Stars](https://img.shields.io/github/stars/crenoxhq/crenox?style=flat&logo=github&color=3c6382&v=4)](https://github.com/crenoxhq/crenox/stargazers)
-[![Go Version](https://img.shields.io/badge/Go-1.22+-2f3542?logo=go&v=4)](https://go.dev)
-[![Go Reference](https://pkg.go.dev/badge/github.com/crenoxhq/crenox/v2.svg?v=4)](https://pkg.go.dev/github.com/crenoxhq/crenox/v2)
-[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android%2FTermux-2f3542?v=4)](#installation)
-[![License](https://img.shields.io/badge/license-AGPL_3.0-4b6584?v=4)](LICENSE)
-[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg?v=4)](https://github.com/avelino/awesome-go)
+[![Release](https://img.shields.io/github/v/release/crenoxhq/crenox?color=3c6382&logo=github&label=latest)](https://github.com/crenoxhq/crenox/releases)
+[![Go Reference](https://pkg.go.dev/badge/github.com/crenoxhq/crenox/v2.svg)](https://pkg.go.dev/github.com/crenoxhq/crenox/v2)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Crenox-3c6382.svg?logo=github)](https://github.com/marketplace/actions/crenox-git-secrets-scanner)
+[![Downloads](https://img.shields.io/github/downloads/crenoxhq/crenox/total?color=4b6584&logo=github)](https://github.com/crenoxhq/crenox/releases)
+
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16011/badge)](https://www.bestpractices.dev/projects/16011)
+[![CI](https://github.com/crenoxhq/crenox/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/crenoxhq/crenox/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-AGPL_3.0-4b6584)](LICENSE)
+[![Go Version](https://img.shields.io/badge/Go-1.22+-2f3542?logo=go)](https://go.dev)
+
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20Android%2FTermux-2f3542)](#installation)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+[![Stars](https://img.shields.io/github/stars/crenoxhq/crenox?style=flat&logo=github&color=3c6382)](https://github.com/crenoxhq/crenox/stargazers)
 
 <br><br>
 
