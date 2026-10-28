@@ -408,18 +408,43 @@ Show that your repository is actively protected against hardcoded secrets by emb
 
 ## Installation
 
-### One-Line Automatic Installer (Recommended)
+### Homebrew (macOS & Linux)
 
-Install Crenox in under 5 seconds (Linux, macOS, Termux, Windows Git Bash):
+Install Crenox via the official Homebrew tap:
+
+```bash
+brew tap crenoxhq/crenox
+brew install crenox
+```
+
+Or install directly in a single command:
+
+```bash
+brew install crenoxhq/crenox/crenox
+```
+
+### Termux / Android (TUR)
+
+Install Crenox natively on Android via the Termux User Repository (TUR):
+
+```bash
+pkg install tur-repo
+pkg install crenox
+```
+
+### One-Line Automatic Installer (Linux, macOS, Termux)
+
+Install Crenox with automatic platform architecture detection and SHA-256 integrity verification:
 
 ```bash
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash
 ```
 
-> **Security & Reliability Built-In:**
-> - **Truncation Protection:** Wrapped inside a syntax closure to prevent partial script execution if connection drops.
-> - **Integrity Verification:** Automatically checks SHA-256 cryptographic checksums against release metadata before execution.
-> - **Zero Root Requirement:** Automatically falls back to `$HOME/.local/bin` without crashing if `sudo` is absent.
+> **Security & Reliability:**
+> - **Truncation Protection:** Wrapped inside a syntax block to prevent partial execution if the network connection drops.
+> - **Integrity Verification:** Automatically checks SHA-256 cryptographic checksums against signed release metadata before execution.
+> - **Zero Root Requirement:** Automatically falls back to `$HOME/.local/bin` without failure if `sudo` is unavailable.
+> - **Termux / Android Support:** Automatically detects Termux environments and deploys directly to `$PREFIX/bin`.
 > - **Interactive `/dev/tty`:** Supports interactive hook selection even when piped from `curl`.
 
 **Automation & Non-Interactive Flags:**
@@ -438,23 +463,48 @@ curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --no-hook
 curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash -s -- --version=v2.1.10 --dir=/usr/local/bin
 ```
 
-### Pre-compiled Binary (Manual Download)
-
-Download the binary for your platform from the [Releases page](https://github.com/crenoxhq/crenox/releases):
-
-```bash
-# Replace <version> and <arch>  e.g.  linux-amd64  linux-arm64  darwin-amd64  darwin-arm64
-wget https://github.com/crenoxhq/crenox/releases/download/<version>/crenox-<version>-<arch> -O crenox
-chmod +x crenox
-mv crenox /usr/local/bin/       # Linux / macOS
-# mv crenox $PREFIX/bin/        # Termux (Android)
-crenox version
-```
-
-### Go Install
+### Go Toolchain
 
 ```bash
 go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest
+```
+
+### Pre-compiled Standalone Binaries (Manual Download)
+
+Download the binary for your platform from the [GitHub Releases](https://github.com/crenoxhq/crenox/releases) page:
+
+```bash
+# Linux / macOS (replace <version> and <arch>, e.g. linux-amd64, darwin-arm64):
+wget https://github.com/crenoxhq/crenox/releases/download/<version>/crenox-<version>-<arch> -O crenox
+chmod +x crenox
+sudo mv crenox /usr/local/bin/
+
+# Android (Termux):
+wget https://github.com/crenoxhq/crenox/releases/download/<version>/crenox-<version>-android-arm64 -O $PREFIX/bin/crenox
+chmod +x $PREFIX/bin/crenox
+
+# Verify installation:
+crenox version
+```
+
+### Native pre-commit Framework
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/crenoxhq/crenox
+    rev: v2.1.10 # Replace with the latest release version
+    hooks:
+      - id: crenox
+```
+
+### GitHub Actions CI/CD
+
+```yaml
+- name: Run Crenox Secret Scanner
+  uses: crenoxhq/crenox@latest
+  with:
+    args: "."
 ```
 
 ### Build from Source
@@ -465,16 +515,6 @@ cd crenox
 make build            # outputs to dist/crenox
 ./dist/crenox version
 ```
-
-### Android / Termux
-
-Crenox can be easily installed on Android using Termux via the Termux User Repository (TUR):
-
-```bash
-pkg install tur-repo
-pkg install crenox
-```
-
 
 ---
 
@@ -505,17 +545,6 @@ git config --global --unset core.hooksPath
 
 ```bash
 crenox uninstall
-```
-
-### Native pre-commit Framework
-
-```yaml
-# .pre-commit-config.yaml
-repos:
-  - repo: https://github.com/crenoxhq/crenox
-    rev: v2.1.10 # Replace with the latest release version
-    hooks:
-      - id: crenox
 ```
 
 ---

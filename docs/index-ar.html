@@ -335,11 +335,25 @@
             <h2>التثبيت والدمج المحلي</h2>
             <p>يتم تجميع كرينوكس كملف ثنائي مستقل للعمل مباشرة على أنظمة Linux و macOS وأجهزة Android عبر بيئة Termux دون الحاجة لتثبيت لغة Go أو أي اعتماديات برمجية أخرى.</p>
 
-            <h3>الخيار أ: التثبيت التفاعلي بسطر واحد (الموصى به)</h3>
-            <p>الطريقة الأسرع والأسهل لتثبيت كرينوكس محلياً مع اكتشاف نظام التشغيل ومعمارية المعالج وتجهيز خطاف Git تلقائياً:</p>
+            <h3>الخيار أ: مدير الحزم Homebrew (أنظمة macOS و Linux)</h3>
+            <p>تثبيت كرينوكس عبر المستودع الرسمي لـ Homebrew:</p>
+            <pre class="font-mono">brew tap crenoxhq/crenox
+brew install crenox</pre>
+
+            <h3>الخيار ب: مدير حزم Termux (نظام أندرويد عبر TUR)</h3>
+            <p>تثبيت كرينوكس مباشرة على أندرويد عبر مستودع مستخدمي Termux (TUR):</p>
+            <pre class="font-mono">pkg install tur-repo
+pkg install crenox</pre>
+
+            <h3>الخيار ج: التثبيت التلقائي بسطر واحد (الموصى به)</h3>
+            <p>الطريقة الأسرع لتثبيت كرينوكس محلياً مع اكتشاف نظام التشغيل ومعمارية المعالج (Linux, macOS, Termux) والتحقق الأمني من تجزئة التشفير SHA-256:</p>
             <pre class="font-mono">curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash</pre>
 
-            <h3>الخيار ب: الملفات الثنائية الجاهزة (Pre-compiled)</h3>
+            <h3>الخيار د: مثبت حزم لغة Go</h3>
+            <p>إذا كان لديك بيئة Go مهيأة في مسار نظامك، يمكنك تنزيل وبناء الأداة مباشرة بالأمر التالي:</p>
+            <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
+
+            <h3>الخيار هـ: الملفات الثنائية الجاهزة (Pre-compiled)</h3>
             <p>تنزيل البرنامج الجاهز مباشرة بدون أي متطلبات سابقة. مثال لنظام Linux AMD64:</p>
             <pre class="font-mono">
 # 1. تنزيل الملف الثنائي المناسب لمعمارية جهازك (مثال لـ Linux AMD64)
@@ -354,17 +368,17 @@ sudo mv crenox /usr/local/bin/
 # 4. التحقق من نجاح التثبيت
 crenox version</pre>
 
-            <h3>الخيار ج: مدير حزم أندرويد (Termux)</h3>
-            <p>إذا كنت تستخدم أندرويد عبر بيئة Termux، يمكنك تثبيت الأداة مباشرة وبسهولة فائقة بسطرين من الأوامر عبر مستودع مستخدمي Termux (TUR):</p>
+            <h3>الخيار و: إطار عمل pre-commit وخطوط CI/CD</h3>
+            <p>الدمج المباشر مع أداة <code>pre-commit</code> أو منصات البناء المستمر عبر ملف <code>.pre-commit-config.yaml</code>:</p>
             <pre class="font-mono">
-pkg install tur-repo
-pkg install crenox</pre>
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/crenoxhq/crenox
+    rev: v2.1.10
+    hooks:
+      - id: crenox</pre>
 
-            <h3>الخيار د: مثبت حزم لغة Go</h3>
-            <p>إذا كان لديك بيئة Go مهيأة في مسار نظامك، يمكنك تنزيل وبناء الأداة مباشرة بالأمر التالي:</p>
-            <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
-
-            <h3>الخيار هـ: التجميع والبناء من المصدر</h3>
+            <h3>الخيار ز: التجميع والبناء من المصدر</h3>
             <p>استنساخ المستودع وبناء الملف الثنائي يدوياً باستخدام أوامر Makefile المرفقة:</p>
             <pre class="font-mono">
 git clone https://github.com/crenoxhq/crenox.git

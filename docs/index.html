@@ -336,11 +336,25 @@
             <h2>Deployment and local setup</h2>
             <p>Crenox is statically compiled to run natively across Linux, macOS, and Android/Termux. It does not require Go, Python, or additional runtime setups on the workstation.</p>
 
-            <h3>Option A: One-Line Interactive Installer (Recommended)</h3>
-            <p>The fastest way to install Crenox natively with automatic OS/CPU architecture detection and interactive Git hook setup:</p>
+            <h3>Option A: Homebrew (macOS &amp; Linux)</h3>
+            <p>Install Crenox via the official Homebrew tap:</p>
+            <pre class="font-mono">brew tap crenoxhq/crenox
+brew install crenox</pre>
+
+            <h3>Option B: Termux / Android (TUR)</h3>
+            <p>Install natively on Android via the Termux User Repository (TUR):</p>
+            <pre class="font-mono">pkg install tur-repo
+pkg install crenox</pre>
+
+            <h3>Option C: One-Line Automated Installer (Recommended)</h3>
+            <p>The fastest way to install Crenox natively with automatic OS and CPU architecture detection (Linux, macOS, Android/Termux) and cryptographic SHA-256 integrity verification:</p>
             <pre class="font-mono">curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash</pre>
 
-            <h3>Option B: Pre-compiled Binaries</h3>
+            <h3>Option D: Go Package Installer</h3>
+            <p>If you have Go installed on your path, fetch and compile the latest release directly:</p>
+            <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
+
+            <h3>Option E: Pre-compiled Standalone Binaries</h3>
             <p>Download pre-built binaries directly without dependencies. Example for Linux AMD64:</p>
             <pre class="font-mono">
 # 1. Download the target binary (example for Linux AMD64)
@@ -355,18 +369,18 @@ sudo mv crenox /usr/local/bin/
 # 4. Verify deployment
 crenox version</pre>
 
-            <h3>Option C: Package Manager (Android / Termux)</h3>
-            <p>If you are on Android/Termux, you can install Crenox easily in just two command lines via the Termux User Repository (TUR):</p>
+            <h3>Option F: Pre-commit Framework &amp; CI/CD</h3>
+            <p>Integrate natively into <code>.pre-commit-config.yaml</code> or GitHub Actions workflows:</p>
             <pre class="font-mono">
-pkg install tur-repo
-pkg install crenox</pre>
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/crenoxhq/crenox
+    rev: v2.1.10
+    hooks:
+      - id: crenox</pre>
 
-            <h3>Option D: Go package installer</h3>
-            <p>If you have Go installed on your path, fetch and compile the latest release directly:</p>
-            <pre class="font-mono">go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</pre>
-
-            <h3>Option E: Compile from source</h3>
-            <p>Clone the repository and build manually using our Makefile configurations:</p>
+            <h3>Option G: Compile from Source</h3>
+            <p>Clone the repository and build manually using Makefile:</p>
             <pre class="font-mono">
 git clone https://github.com/crenoxhq/crenox.git
 cd crenox
