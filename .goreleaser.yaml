@@ -1,0 +1,80 @@
+# GoReleaser configuration for Crenox Community Edition
+# Documentation: https://goreleaser.com
+
+version: 2
+
+project_name: crenox
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: crenox
+    main: ./cmd/crenox/main.go
+    binary: crenox
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/crenoxhq/crenox/v2/pkg/version.Version={{.Version}}
+      - -X github.com/crenoxhq/crenox/v2/pkg/version.Commit={{.ShortCommit}}
+      - -X github.com/crenoxhq/crenox/v2/pkg/version.Date={{.Date}}
+
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: crenoxhq
+      name: homebrew-crenox
+      branch: main
+    name: crenox
+    directory: Formula
+    homepage: "https://crenoxhq.github.io/crenox/"
+    description: "Zero-dependency Git pre-commit secret scanner and credentials detector written in pure Go."
+    license: "AGPL-3.0"
+    commit_author:
+      name: crenox-bot
+      email: crenoxhq@proton.me
+    test: |
+      system "#{bin}/crenox version"
+
+scoops:
+  - repository:
+      owner: crenoxhq
+      name: scoop-crenox
+      branch: main
+    homepage: "https://crenoxhq.github.io/crenox/"
+    description: "Zero-dependency Git pre-commit secret scanner and credentials detector written in pure Go."
+    license: "AGPL-3.0"

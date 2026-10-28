@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crenox Pro — Enterprise Advance Pre-Order & Specification</title>
+    
+    <meta name="description" content="Advance pre-order allocation and technical licensing specification for Crenox Pro on-premises Git secret detection and fleet governance platform.">
+    <meta name="keywords" content="Crenox Pro, Crenox, enterprise git secret scanner, on-premises secret detection, air-gapped secret scanner, pre-commit secret enforcement, gitguardian, trufflehog, gitleaks, detect-secrets, git-secrets, sarif, gitlab secret detection sast, devsecops">
+    <meta name="author" content="CrenoxHQ">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="google-site-verification" content="googledc7329401f946fab">
+    
+    <link rel="canonical" href="https://crenoxhq.github.io/crenox/pro.html">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- Open Graph & Social Cards -->
+    <meta property="og:title" content="Crenox Pro — Enterprise Advance Pre-Order & Specification">
+    <meta property="og:description" content="Advance pre-order allocation and technical licensing specification for Crenox Pro on-premises Git secret detection platform.">
+    <meta property="og:url" content="https://crenoxhq.github.io/crenox/pro.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Crenox Pro">
+    <meta property="og:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Crenox Pro — Enterprise Advance Pre-Order & Specification">
+    <meta name="twitter:description" content="Advance pre-order allocation and technical licensing specification for Crenox Pro on-premises Git secret detection platform.">
+    <meta name="twitter:image" content="https://crenoxhq.github.io/crenox/social-preview.png">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Crenox Pro",
+          "alternateName": ["Crenox Enterprise", "crenox-master", "crenox-agent", "كرينوكس برو"],
+          "description": "On-premises Git pre-commit secret detection and fleet enforcement platform operating within customer-managed private and air-gapped infrastructure.",
+          "operatingSystem": "Linux, macOS, Windows",
+          "applicationCategory": "SecurityApplication",
+          "url": "https://crenoxhq.github.io/crenox/pro.html",
+          "author": {
+            "@type": "Organization",
+            "name": "CrenoxHQ",
+            "url": "https://crenoxhq.github.io/crenox/"
+          },
+          "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "6.00",
+            "highPrice": "12.00",
+            "priceCurrency": "USD",
+            "offerCount": "3",
+            "availability": "https://schema.org/PreOrder"
+          }
+        },
+        {
+          "@type": "VideoObject",
+          "name": "Crenox Pro — Product Walkthrough",
+          "description": "72-second demonstration of workstation commit interception, central console governance, detection rule synchronization, and Git history redaction.",
+          "thumbnailUrl": "https://crenoxhq.github.io/crenox/img/hero-poster.webp",
+          "uploadDate": "2026-10-19T00:00:00Z",
+          "duration": "PT1M12S",
+          "contentUrl": "https://crenoxhq.github.io/crenox/video/product-film-full.mp4"
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does Crenox Pro differ from cloud SaaS scanners like GitGuardian?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Crenox Pro runs entirely on-premises inside customer-controlled private or air-gapped networks as two statically compiled binaries (crenox-master and crenox-agent) with zero external telemetry. It blocks secrets in workstation memory prior to commit creation rather than scanning repositories after code is pushed to remote servers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does Crenox Pro differ from standalone CLI scanners like Gitleaks, TruffleHog, detect-secrets, and git-secrets?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Standalone CLI scanners operate without centralized governance and can be bypassed locally with git commit --no-verify. Crenox Pro adds a central controller for signed policy distribution, hook integrity monitoring, supervised Just-In-Time (JIT) exemptions, an append-only audit ledger, and history redaction with restore points."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Monochromatic Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --c-bg: #F8FAFC;
+            --c-card: #FFFFFF;
+            --c-subtle: #F1F5F9;
+            --c-border: #E2E8F0;
+            --c-border-strong: #CBD5E1;
+            --c-black: #0F172A;
+            --c-dark: #1E293B;
+            --c-secondary: #334155;
+            --c-muted: #64748B;
+            --c-light: #94A3B8;
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-family: var(--font-sans);
+            color: var(--c-black);
+            background-color: var(--c-bg);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .site-header {
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--c-border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: var(--c-black);
+        }
+
+        .header-logo {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .header-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .header-tag {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: var(--c-black);
+            color: #FFFFFF;
+            padding: 0.15rem 0.4rem;
+            border-radius: 2px;
+            letter-spacing: 0.05em;
+        }
+
+        .header-links {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            list-style: none;
+        }
+
+        .header-links a {
+            text-decoration: none;
+            color: var(--c-secondary);
+            font-size: 0.86rem;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        .header-links a:hover {
+            color: var(--c-black);
+        }
+
+        .header-btn {
+            background: var(--c-black);
+            color: #FFFFFF !important;
+            padding: 0.45rem 0.9rem;
+            border-radius: 3px;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+        }
+
+        .header-btn:hover {
+            background: var(--c-dark) !important;
+        }
+
+        @media (max-width: 768px) {
+            .header-links {
+                display: none;
+            }
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        /* Hero / Document Header */
+        .doc-header {
+            padding: 4.5rem 0 3rem;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .doc-meta {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--c-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+        }
+
+        .doc-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: var(--c-black);
+            max-width: 860px;
+            margin-bottom: 1.25rem;
+        }
+
+        .doc-lead {
+            font-size: clamp(1rem, 1.6vw, 1.1rem);
+            line-height: 1.65;
+            color: var(--c-secondary);
+            max-width: 820px;
+            margin-bottom: 2rem;
+        }
+
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 1.4rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 3px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-black {
+            background: var(--c-black);
+            color: #FFFFFF;
+            border: 1px solid var(--c-black);
+        }
+
+        .btn-black:hover {
+            background: var(--c-dark);
+            border-color: var(--c-dark);
+        }
+
+        .btn-outline {
+            background: #FFFFFF;
+            color: var(--c-black);
+            border: 1px solid var(--c-border-strong);
+        }
+
+        .btn-outline:hover {
+            background: var(--c-subtle);
+            border-color: var(--c-black);
+        }
+
+        /* Section Layout */
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .section-tag {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--c-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.5rem, 2.5vw, 1.95rem);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--c-black);
+            margin-bottom: 0.6rem;
+        }
+
+        .section-desc {
+            font-size: 0.94rem;
+            color: var(--c-secondary);
+            max-width: 780px;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Binary Specs Grid */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.75rem;
+        }
+
+        @media (max-width: 840px) {
+            .specs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .spec-card {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .spec-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid var(--c-border);
+            margin-bottom: 1.15rem;
+        }
+
+        .spec-binary-name {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--c-black);
+            background: var(--c-subtle);
+            padding: 0.2rem 0.55rem;
+            border-radius: 3px;
+            border: 1px solid var(--c-border);
+        }
+
+        .spec-role {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--c-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .spec-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.45rem;
+            letter-spacing: -0.01em;
+        }
+
+        .spec-card p {
+            font-size: 0.88rem;
+            color: var(--c-secondary);
+            margin-bottom: 1.35rem;
+            line-height: 1.6;
+        }
+
+        .spec-items {
+            list-style: none;
+            margin-top: auto;
+        }
+
+        .spec-items li {
+            font-size: 0.84rem;
+            color: var(--c-secondary);
+            padding: 0.45rem 0;
+            border-bottom: 1px solid var(--c-subtle);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.55rem;
+            line-height: 1.5;
+        }
+
+        .spec-items li:last-child {
+            border-bottom: none;
+        }
+
+        .spec-dot {
+            color: var(--c-black);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Early Adopter Cohort (Strictly Monochromatic) */
+        .cohort-box {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border-strong);
+            border-left: 4px solid var(--c-black);
+            border-radius: 0 4px 4px 0;
+            padding: 2rem;
+            margin-bottom: 2.25rem;
+        }
+
+        .cohort-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .cohort-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .tag-mono {
+            background: var(--c-subtle);
+            color: var(--c-black);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            border: 1px solid var(--c-border);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .cohort-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--c-black);
+        }
+
+        .cohort-price {
+            font-family: var(--font-mono);
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--c-black);
+        }
+
+        .cohort-price span {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--c-muted);
+        }
+
+        .cohort-desc {
+            font-size: 0.88rem;
+            color: var(--c-secondary);
+            margin-bottom: 1.35rem;
+            line-height: 1.6;
+        }
+
+        .cohort-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.55rem 1.25rem;
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .cohort-grid li {
+            font-size: 0.84rem;
+            color: var(--c-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .cohort-grid li::before {
+            content: "•";
+            color: var(--c-black);
+            font-weight: bold;
+        }
+
+        /* Standard Plans Grid (Strictly Monochromatic) */
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 960px) {
+            .tiers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tier-box {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            padding: 2rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .tier-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--c-black);
+            margin-bottom: 0.2rem;
+        }
+
+        .tier-limit {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--c-muted);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        .tier-rate {
+            font-family: var(--font-mono);
+            font-size: 1.95rem;
+            font-weight: 800;
+            color: var(--c-black);
+            line-height: 1;
+            margin-bottom: 1.35rem;
+        }
+
+        .tier-rate span {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--c-muted);
+        }
+
+        .tier-features {
+            list-style: none;
+            margin-bottom: 1.75rem;
+            flex-grow: 1;
+        }
+
+        .tier-features li {
+            font-size: 0.84rem;
+            color: var(--c-secondary);
+            padding: 0.45rem 0;
+            border-bottom: 1px solid var(--c-subtle);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .tier-features li:last-child {
+            border-bottom: none;
+        }
+
+        .tier-features li::before {
+            content: "•";
+            color: var(--c-black);
+            font-weight: bold;
+        }
+
+        /* Large Fleet Box */
+        .large-fleet-row {
+            background: #FFFFFF;
+            border: 1px dashed var(--c-border-strong);
+            border-radius: 4px;
+            padding: 1.5rem 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .large-fleet-info h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .large-fleet-info p {
+            font-size: 0.86rem;
+            color: var(--c-secondary);
+            max-width: 720px;
+        }
+
+        /* Deployment Model Box */
+        .policy-box {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-left: 4px solid var(--c-black);
+            border-radius: 0 4px 4px 0;
+            padding: 1.5rem 1.75rem;
+        }
+
+        .policy-box h4 {
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .policy-box p {
+            font-size: 0.86rem;
+            color: var(--c-secondary);
+            line-height: 1.6;
+        }
+
+        /* Entitlement Matrix Table */
+        .matrix-container {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .matrix-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+            min-width: 680px;
+        }
+
+        .matrix-tbl th {
+            background: #F8FAFC;
+            color: var(--c-black);
+            font-weight: 700;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--c-border);
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .matrix-tbl th.center,
+        .matrix-tbl td.center {
+            text-align: center;
+        }
+
+        .matrix-tbl td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--c-subtle);
+            color: var(--c-secondary);
+        }
+
+        .matrix-tbl tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ent-flag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--c-black);
+            background: var(--c-subtle);
+            padding: 0.12rem 0.4rem;
+            border-radius: 2px;
+            border: 1px solid var(--c-border);
+        }
+
+        .cell-yes {
+            color: var(--c-black);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .cell-no {
+            color: var(--c-light);
+        }
+
+        /* Settlement Card */
+        .settlement-block {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            padding: 2rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .settlement-block h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.45rem;
+        }
+
+        .settlement-block p {
+            font-size: 0.88rem;
+            color: var(--c-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .rails-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .rails-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rail-item {
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: 3px;
+            padding: 0.9rem;
+        }
+
+        .rail-name {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--c-black);
+            margin-bottom: 0.2rem;
+        }
+
+        .rail-detail {
+            font-size: 0.78rem;
+            color: var(--c-muted);
+        }
+
+        /* Procurement Desk & License Card */
+        .procurement-card {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            padding: 2.25rem 2rem;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .procurement-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--c-border);
+            margin-bottom: 1.75rem;
+            gap: 0.5rem;
+        }
+
+        .procurement-tab {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.25rem;
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--c-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .procurement-tab:hover {
+            color: var(--c-black);
+        }
+
+        .procurement-tab.active {
+            color: var(--c-black);
+            border-bottom-color: var(--c-black);
+        }
+
+        .mode-callout {
+            background: var(--c-subtle);
+            border: 1px solid var(--c-border);
+            border-left: 3px solid var(--c-black);
+            padding: 0.85rem 1.15rem;
+            font-size: 0.84rem;
+            color: var(--c-secondary);
+            line-height: 1.55;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .procurement-form {
+            max-width: 100%;
+            text-align: left;
+        }
+
+        .field-hint {
+            font-size: 0.76rem;
+            color: var(--c-muted);
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .field-hint-code {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--c-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem 1.5rem;
+        }
+
+        @media (max-width: 680px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1.15rem;
+            }
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .tier-summary-panel {
+            grid-column: 1 / -1;
+            background: #FBF9F4;
+            border: 1px solid #E4DDCC;
+            border-left: 3px solid var(--c-black);
+            border-radius: 4px;
+            padding: 0.85rem 1.15rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: -0.25rem;
+        }
+
+        @media (max-width: 680px) {
+            .tier-summary-panel {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        .summary-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .summary-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            background: var(--c-black);
+            padding: 2px 7px;
+            border-radius: 2px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .summary-text {
+            font-size: 0.82rem;
+            color: var(--c-secondary);
+            font-family: var(--font-mono);
+            line-height: 1.4;
+        }
+
+        .summary-right {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--c-black);
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .summary-mo {
+            font-size: 0.78rem;
+            font-weight: normal;
+            color: var(--c-muted);
+            margin-left: 0.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--c-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .form-group .req {
+            color: #E11D48;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.88rem;
+            font-family: var(--font-sans);
+            color: var(--c-black);
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 3px;
+            transition: border-color 0.15s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--c-black);
+        }
+
+        .form-status {
+            margin-top: 1.25rem;
+            padding: 1rem 1.25rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            font-family: var(--font-mono);
+            text-align: center;
+        }
+
+        .form-status.success {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            color: #166534;
+        }
+
+        .form-status.error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--c-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-top: 0.2rem;
+            cursor: pointer;
+            accent-color: var(--c-black);
+        }
+
+        .spec-output-card {
+            background: #FAFAFA;
+            border: 1px solid var(--c-border);
+            border-left: 4px solid var(--c-black);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .spec-output-card h4 {
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--c-black);
+            margin-bottom: 0.35rem;
+        }
+
+        .spec-output-card p {
+            font-size: 0.84rem;
+            color: var(--c-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.55;
+        }
+
+        .spec-output-pre {
+            background: #0F172A;
+            color: #F8FAFC;
+            font-family: var(--font-mono);
+            font-size: 0.77rem;
+            line-height: 1.55;
+            padding: 1.25rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 0 0 1.25rem 0;
+            border: 1px solid #1E293B;
+        }
+
+        .spec-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn-copy-status {
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: #166534;
+            display: none;
+        }
+
+        /* Footer */
+        .site-footer {
+            margin-top: auto;
+            background: #FFFFFF;
+            border-top: 1px solid var(--c-border);
+            padding: 2rem 0;
+            font-size: 0.82rem;
+            color: var(--c-muted);
+        }
+
+        .footer-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-nav a {
+            color: var(--c-secondary);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .footer-nav a:hover {
+            color: var(--c-black);
+        }
+
+        /* Media Pack Design System */
+        .media-frame {
+            border: 1px solid #E4DDCC;
+            border-radius: 14px;
+            box-shadow: 0 30px 60px -30px rgba(28, 25, 16, 0.25), 0 12px 24px -12px rgba(28, 25, 16, 0.12);
+            background: #FBF9F4;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            display: block;
+        }
+
+        .media-frame img,
+        .media-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border: 0;
+        }
+
+        .media-caption {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--c-muted);
+            margin-top: 0.65rem;
+            line-height: 1.45;
+        }
+
+        .media-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hero Media */
+        .hero-media-wrap {
+            margin-top: 2.75rem;
+            width: 100%;
+        }
+
+        /* Binaries Section Media */
+        .spec-card-media {
+            margin-top: 1.75rem;
+            width: 100%;
+        }
+
+        .binaries-fleet-frame {
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        /* Console in Operation Showcase */
+        .showcase-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 4.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .showcase-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .showcase-row.showcase-reverse .showcase-text {
+            order: 2;
+        }
+
+        .showcase-row.showcase-reverse .showcase-media {
+            order: 1;
+        }
+
+        .showcase-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .showcase-tag {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--c-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .showcase-heading {
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--c-black);
+            line-height: 1.25;
+            margin-bottom: 0.85rem;
+        }
+
+        .showcase-desc {
+            font-size: 0.92rem;
+            color: var(--c-secondary);
+            line-height: 1.65;
+            margin-bottom: 0;
+        }
+
+        .showcase-media {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Product Film Band */
+        .product-film-wrap {
+            margin-top: 2.25rem;
+            width: 100%;
+        }
+
+        /* Specification Matrix Supporting Gallery */
+        .matrix-supporting-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-top: 2.75rem;
+        }
+
+        @media (max-width: 1024px) {
+            .matrix-supporting-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .showcase-row {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .showcase-row.showcase-reverse .showcase-text {
+                order: 1;
+            }
+
+            .showcase-row.showcase-reverse .showcase-media {
+                order: 2;
+            }
+
+            .showcase-rows {
+                gap: 3.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .matrix-supporting-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="header-brand">
+                <img src="logo.png" alt="Crenox" class="header-logo">
+                <span class="header-title">Crenox</span>
+                <span class="header-tag">PRO</span>
+            </a>
+            
+            <nav>
+                <ul class="header-links">
+                    <li><a href="index.html">Open-Source Core</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#licensing">Capacity Plans</a></li>
+                    <li><a href="#specifications">Entitlements</a></li>
+                    <li><a href="#settlement">Settlement Rails</a></li>
+                    <li><a href="#procurement" class="header-btn">Advance Pre-Order</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Document Header / Hero -->
+        <section class="doc-header">
+            <div class="container">
+                <div class="doc-meta">
+                    Enterprise Technical Specification &bull; Advance Pre-Order Allocation
+                </div>
+                
+                <h1 class="doc-title">
+                    Enterprise Git Secret Detection & Fleet Enforcement Platform
+                </h1>
+
+                <p class="doc-lead">
+                    Statically linked Go binaries for local pre-commit Git secret inspection, centralized policy distribution, and tamper-evident audit logging within customer-managed private infrastructure. Operates with zero external network connectivity or telemetry.
+                </p>
+
+                <div class="action-row" style="margin-bottom: 0;">
+                    <a href="#licensing" class="btn btn-black">Review Capacity Plans &rarr;</a>
+                    <a href="#procurement" class="btn btn-outline">Advance Pre-Order Desk &rarr;</a>
+                </div>
+
+                <div class="hero-media-wrap">
+                    <div class="media-frame">
+                        <video autoplay muted loop playsinline poster="img/hero-poster.webp" width="1920" height="1080">
+                            <source src="video/hero-loop-silent.webm" type="video/webm">
+                            <source src="video/hero-loop-silent.mp4" type="video/mp4">
+                            Your browser does not support HTML5 video playback.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Topology Section -->
+        <section id="architecture" class="section">
+            <div class="container">
+                <div class="section-tag">System Topology</div>
+                <h2 class="section-title">Two Statically Compiled Binaries</h2>
+                <p class="section-desc">
+                    Crenox Pro executes entirely inside your private network boundary without external runtimes, interpreters, or remote dependencies.
+                </p>
+
+                <div class="specs-grid">
+                    <!-- Master Controller -->
+                    <div class="spec-card">
+                        <div class="spec-head">
+                            <span class="spec-binary-name">crenox-master</span>
+                            <span class="spec-role">Central Controller</span>
+                        </div>
+                        <h3>Fleet Governance & Audit Repository</h3>
+                        <p>
+                            Deployed on customer internal private servers. Acts as the central policy distribution authority, seat quota manager, and persistent audit storage.
+                        </p>
+                        <ul class="spec-items">
+                            <li><span class="spec-dot">&bull;</span> Embedded administrative web console without third-party CDN or asset calls</li>
+                            <li><span class="spec-dot">&bull;</span> Centralized policy signing and distribution of organization YAML detection rules</li>
+                            <li><span class="spec-dot">&bull;</span> Append-only immutable audit ledger recording blocked commits and integrity alerts</li>
+                            <li><span class="spec-dot">&bull;</span> Enterprise authentication via OIDC and perimeter reverse proxy headers</li>
+                            <li><span class="spec-dot">&bull;</span> Binds strictly to configured private internal network interfaces</li>
+                        </ul>
+                        <div class="spec-card-media">
+                            <div class="media-frame">
+                                <img src="img/console-01-overview.webp" alt="Crenox Pro master console overview dashboard" width="1920" height="1080" loading="lazy" decoding="async">
+                            </div>
+                            <div class="media-caption">Central fleet console — posture, events and coverage at a glance</div>
+                        </div>
+                    </div>
+
+                    <!-- Workstation Agent -->
+                    <div class="spec-card">
+                        <div class="spec-head">
+                            <span class="spec-binary-name">crenox-agent</span>
+                            <span class="spec-role">Workstation Agent</span>
+                        </div>
+                        <h3>Local Pre-Commit Interception Engine</h3>
+                        <p>
+                            Installed across developer workstations. Evaluates staged Git buffers, paths, and filenames directly in memory prior to commit completion.
+                        </p>
+                        <ul class="spec-items">
+                            <li><span class="spec-dot">&bull;</span> Evaluates staged buffers in memory prior to commit finalization</li>
+                            <li><span class="spec-dot">&bull;</span> Fail-closed interception halting commits upon detection (Exit Code 1)</li>
+                            <li><span class="spec-dot">&bull;</span> Monitors Git hook configurations and detects unauthorized bypasses</li>
+                            <li><span class="spec-dot">&bull;</span> Supervised developer Just-In-Time (JIT) exemption review workflow</li>
+                            <li><span class="spec-dot">&bull;</span> History redaction utility to rewrite past commits (crenox purge)</li>
+                        </ul>
+                        <div class="spec-card-media">
+                            <div class="media-frame">
+                                <img src="img/terminal-01-agent-blocks-commit.webp" alt="Terminal output of the Crenox agent blocking a commit containing a secret" width="1920" height="1080" loading="lazy" decoding="async">
+                            </div>
+                            <div class="media-caption">The agent stops the commit before it lands — value masked, remediation printed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrolled Workstations View beside Master/Agent Cards -->
+                <div class="binaries-fleet-frame">
+                    <div class="media-frame">
+                        <img src="img/console-02-workstations.webp" alt="Enrolled developer workstations in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                    </div>
+                    <div class="media-caption">Every enrolled workstation, its agent state and last sync</div>
+                </div>
+
+                <!-- Architectural Comparison Matrix -->
+                <div class="matrix-container" style="margin-top: 2.5rem;">
+                    <table class="matrix-tbl">
+                        <thead>
+                            <tr>
+                                <th>Architectural Dimension</th>
+                                <th class="center">Crenox Pro (On-Premises Fleet)</th>
+                                <th class="center">Standalone CLI (Gitleaks, TruffleHog, detect-secrets)</th>
+                                <th class="center">Cloud SaaS (GitGuardian, Remote Post-Push)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Execution Boundary</td>
+                                <td class="center cell-yes">100% On-Premises / Air-Gapped</td>
+                                <td class="center">Local Unmanaged CLI</td>
+                                <td class="center cell-no">External Cloud / Third-Party SaaS</td>
+                            </tr>
+                            <tr>
+                                <td>Interception Stage</td>
+                                <td class="center cell-yes">Pre-Commit (In-Memory)</td>
+                                <td class="center">Manual Local Hook / CI</td>
+                                <td class="center cell-no">Post-Push (After Secret Enters Git)</td>
+                            </tr>
+                            <tr>
+                                <td>Central Policy &amp; Rule Distribution</td>
+                                <td class="center cell-yes">Signed Central Sync</td>
+                                <td class="center cell-no">&mdash; (Per-Repo Manual Config)</td>
+                                <td class="center">Cloud Dashboard</td>
+                            </tr>
+                            <tr>
+                                <td>Hook Bypass Protection &amp; Audit Ledger</td>
+                                <td class="center cell-yes">Enforced + JIT Exemption Workflow</td>
+                                <td class="center cell-no">Bypassed via <code>--no-verify</code></td>
+                                <td class="center cell-no">Post-Incident Alert Only</td>
+                            </tr>
+                            <tr>
+                                <td>Runtime Dependencies</td>
+                                <td class="center cell-yes">2 Static Go Binaries</td>
+                                <td class="center">Go / Python / Perl Runtimes</td>
+                                <td class="center">Cloud Webhooks &amp; Agents</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Console in Operation Showcase -->
+        <section id="showcase" class="section">
+            <div class="container">
+                <div class="section-tag">Console in Operation</div>
+                <h2 class="section-title">Centralized Security Governance & Triage</h2>
+                <p class="section-desc">
+                    Real-time fleet visibility, centralized rule synchronization, and audited incident response across all enrolled workstations.
+                </p>
+
+                <div class="showcase-rows">
+                    <!-- Row 1: Telemetry & Event Inspection -->
+                    <div class="showcase-row">
+                        <div class="showcase-text">
+                            <div class="showcase-tag">Fleet Telemetry & Triage</div>
+                            <h3 class="showcase-heading">Real-Time Security Event Stream & Context Inspection</h3>
+                            <p class="showcase-desc">
+                                Workstation agents stream detection telemetry directly to the central master console. Security operators inspect blocked commits and contextual code diffs while secret values remain strictly masked in memory and on disk.
+                            </p>
+                        </div>
+                        <div class="showcase-media">
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-03-security-events.webp" alt="Security events stream in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Fleet-wide security events, streamed from every workstation</div>
+                            </div>
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-04-event-inspect.webp" alt="Inspecting one security event with masked code context" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Event detail with masked code context — values never exposed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Policy & Exemptions (Alternating: Media Left, Text Right) -->
+                    <div class="showcase-row showcase-reverse">
+                        <div class="showcase-text">
+                            <div class="showcase-tag">Policy & Governance</div>
+                            <h3 class="showcase-heading">Signed Detection Rules & Supervised Just-In-Time Exemptions</h3>
+                            <p class="showcase-desc">
+                                Centrally manage organization-wide detection rules authorized by the master binary and synchronized across all active agents. Supervise developer bypass requests with formal authorization workflows and audit tracking.
+                            </p>
+                        </div>
+                        <div class="showcase-media">
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-05-bypass-requests.webp" alt="Bypass and exemption requests in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Just-in-time exemptions, approved or denied from the console</div>
+                            </div>
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-06-rules-catalog.webp" alt="Detection rules catalog in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Organization rule catalog — signed by the master, synced to agents</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Remediation & Audit Ledger (Text Left, Media Right) -->
+                    <div class="showcase-row">
+                        <div class="showcase-text">
+                            <div class="showcase-tag">Remediation & Ledger</div>
+                            <h3 class="showcase-heading">Deep History Scan, Safe Redaction & Immutable Audit Ledger</h3>
+                            <p class="showcase-desc">
+                                Locate leaked credentials in past Git commit history with author and file attribution. Execute atomic purges with safety restore points for immediate rollback, accompanied by an append-only audit ledger recording every fleet event.
+                            </p>
+                        </div>
+                        <div class="showcase-media">
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-09-history-purge.webp" alt="Historical scan results in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Deep history scan — leaked keys found in past commits, by author and file</div>
+                            </div>
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-09b-restore-points.webp" alt="Restore points table created by a history purge in Crenox Pro" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Every purge creates a restore point first — history can be rolled back</div>
+                            </div>
+                            <div class="media-item">
+                                <div class="media-frame">
+                                    <img src="img/console-10-system-logs.webp" alt="System and audit logs in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                                </div>
+                                <div class="media-caption">Append-only audit ledger of every fleet action</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Film Section -->
+        <section id="product-film" class="section">
+            <div class="container">
+                <div class="section-tag">Product Film</div>
+                <h2 class="section-title">End-to-End Product Walkthrough</h2>
+                <p class="section-desc">
+                    Full 72-second demonstration: workstation commit interception, central console governance, detection rules synchronization, and deep history redaction with rollback safety.
+                </p>
+
+                <div class="product-film-wrap">
+                    <div class="media-frame">
+                        <video controls preload="none" poster="img/hero-poster.webp" width="1920" height="1080">
+                            <source src="video/product-film-full.mp4" type="video/mp4">
+                            Your browser does not support HTML5 video playback.
+                        </video>
+                    </div>
+                    <div class="media-caption">Full product walkthrough — from workstation interception to fleet history redaction</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Capacity Plans Section -->
+        <section id="licensing" class="section">
+            <div class="container">
+                <div class="section-tag">Commercial Licensing</div>
+                <h2 class="section-title">Annual Workstation Capacity Tiers</h2>
+                <p class="section-desc">
+                    Annual commercial subscriptions scaled to your developer workstations with full rate protection.
+                </p>
+
+                <!-- 3 Standard Commercial Capacity Tiers -->
+                <div class="tiers-grid">
+                    
+                    <!-- Team -->
+                    <div class="tier-box">
+                        <div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <div class="tier-name">Team Tier</div>
+                                <span class="tag-mono" style="font-size: 0.68rem;">First 5 Organizations Only</span>
+                            </div>
+                            <div class="tier-limit">10 &ndash; 50 Workstations</div>
+                            <div class="tier-rate">
+                                $6 <span>/ seat / mo</span>
+                                <span style="font-size: 0.82rem; text-decoration: line-through; color: var(--c-muted); margin-left: 0.35rem; font-weight: normal;">$8</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--c-secondary); font-family: var(--font-mono); margin-bottom: 0.35rem;">
+                                $72 / seat / yr (First 5 Orgs &bull; 25% Off First Year)
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--c-muted); margin-bottom: 1.25rem; font-family: var(--font-mono); line-height: 1.5;">
+                                Minimum Commitment: <strong style="color: var(--c-black);">$720 / year</strong> (10 seats &bull; standard $960/yr upon renewal)
+                            </div>
+
+                            <ul class="tier-features">
+                                <li><strong>25% discount reserved for the first 5 customer organizations</strong></li>
+                                <li>Central fleet management console</li>
+                                <li>Custom organization rule synchronization</li>
+                                <li>Tamper-evident append-only audit ledger</li>
+                                <li>Deep Git commit history scanning</li>
+                                <li>Standard electronic engineering support (48h business SLA)</li>
+                            </ul>
+                        </div>
+
+                        <a href="#procurement" onclick="selectTier('team')" class="btn btn-black">Pre-Order Team Tier ($6/seat/mo) &rarr;</a>
+                    </div>
+
+                    <!-- Business -->
+                    <div class="tier-box">
+                        <div>
+                            <div class="tier-name">Business Tier</div>
+                            <div class="tier-limit">25 &ndash; 150 Workstations</div>
+                            <div class="tier-rate">$10 <span>/ seat / mo ($120 / seat / yr)</span></div>
+                            <div style="font-size: 0.84rem; color: var(--c-muted); margin-bottom: 1.25rem; font-family: var(--font-mono); line-height: 1.5;">
+                                Minimum Commitment: <strong style="color: var(--c-black);">$3,000 / year</strong> (25 seats)
+                            </div>
+
+                            <ul class="tier-features">
+                                <li>All capabilities included in Team Tier</li>
+                                <li>Executive HTML and CSV audit export reports</li>
+                                <li>Management REST API and real-time event stream</li>
+                                <li>Priority engineering desk support (24h business SLA)</li>
+                                <li>Prioritized bug and vulnerability remediation triage</li>
+                            </ul>
+                        </div>
+
+                        <a href="#procurement" onclick="selectTier('business')" class="btn btn-black">Pre-Order Business Tier ($10/seat/mo) &rarr;</a>
+                    </div>
+
+                    <!-- Enterprise Fleet -->
+                    <div class="tier-box">
+                        <div>
+                            <div class="tier-name">Enterprise Fleet</div>
+                            <div class="tier-limit">100 &ndash; 200 Workstations</div>
+                            <div class="tier-rate">$12 <span>/ seat / mo ($144 / seat / yr)</span></div>
+                            <div style="font-size: 0.84rem; color: var(--c-muted); margin-bottom: 1.25rem; font-family: var(--font-mono); line-height: 1.5;">
+                                Minimum Commitment: <strong style="color: var(--c-black);">$14,400 / year</strong> (100 seats)
+                            </div>
+
+                            <ul class="tier-features">
+                                <li>Full 8-feature enterprise capability suite</li>
+                                <li>Git history secret redaction engine</li>
+                                <li>Enterprise Single Sign-On via OIDC & reverse proxy headers</li>
+                                <li><strong>Direct Principal Architect Support Channel</strong> (4h critical SLA)</li>
+                                <li>Dedicated engineering communication channel</li>
+                                <li>Bespoke air-gapped regulatory integration guidance</li>
+                            </ul>
+                        </div>
+
+                        <a href="#procurement" onclick="selectTier('enterprise')" class="btn btn-black">Pre-Order Enterprise Fleet ($12/seat/mo) &rarr;</a>
+                    </div>
+
+                </div>
+
+                <!-- Custom Fleet Agreements (>200 Seats) -->
+                <div class="large-fleet-row">
+                    <div class="large-fleet-info">
+                        <h4>Fleets Exceeding 200 Seats & Bespoke Custom Agreements</h4>
+                        <p>
+                            For engineering fleets scaling beyond 200 developer workstations, multi-master cluster topologies, or custom regulatory terms, licensing is negotiated directly through a Custom Enterprise Agreement with volume economics and tailored SLA covenants.
+                        </p>
+                    </div>
+                    <a href="#procurement" onclick="selectTier('custom')" class="btn btn-black" style="font-size: 0.84rem; padding: 0.65rem 1.25rem; white-space: nowrap;">Pre-Order Custom Agreement (&gt;200 Seats) &rarr;</a>
+                </div>
+
+                <!-- Price Stability & Deployment Model -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+                    <div class="policy-box">
+                        <h4>Annual Budget Predictability Guarantee</h4>
+                        <p>
+                            All contracted seat quotas and subscription rates remain strictly fixed throughout the active annual agreement. Renewal terms and pricing adjustments are confirmed in advance, providing enterprise budget certainty with zero mid-cycle fee variations.
+                        </p>
+                    </div>
+                    <div class="policy-box">
+                        <h4>Single-Master Deployment Model</h4>
+                        <p>
+                            Each commercial License File authorizes one (1) designated production instance of crenox-master bound to your server's hardware Node Fingerprint. Includes up to two (2) migration transfers per annual term with an authorized 14-day parallel dual-run transition window.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Specifications Matrix Section -->
+        <section id="specifications" class="section">
+            <div class="container">
+                <div class="section-tag">Feature Entitlements</div>
+                <h2 class="section-title">Enterprise License Specification Matrix</h2>
+                <p class="section-desc">
+                    Comprehensive feature entitlements, deployment limits, and technical support channels authorized across each enterprise tier.
+                </p>
+
+                <div class="matrix-container">
+                    <table class="matrix-tbl">
+                        <thead>
+                            <tr>
+                                <th>Platform Capability & Features</th>
+                                <th class="center">Community</th>
+                                <th class="center">Team ($6/mo &bull; First 5 Orgs)</th>
+                                <th class="center">Business ($10/mo)</th>
+                                <th class="center">Enterprise ($12/mo)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Minimum Workstation Commitment</td>
+                                <td class="center">1 Local</td>
+                                <td class="center">Min 10 Seats</td>
+                                <td class="center">Min 25 Seats</td>
+                                <td class="center">Min 100 Seats</td>
+                            </tr>
+                            <tr>
+                                <td>Authorized Capacity Range</td>
+                                <td class="center">1 Local Workstation</td>
+                                <td class="center">10 &ndash; 50 Seats</td>
+                                <td class="center">25 &ndash; 150 Seats</td>
+                                <td class="center">100 &ndash; 200 Seats (&gt;200 Custom)</td>
+                            </tr>
+                            <tr>
+                                <td>Per-Seat Rate (Monthly Equivalent)</td>
+                                <td class="center">Free ($0)</td>
+                                <td class="center">$6 / mo (First 5 Orgs) &bull; $8 std</td>
+                                <td class="center">$10 / seat / mo</td>
+                                <td class="center">$12 / seat / mo</td>
+                            </tr>
+                            <tr>
+                                <td>Annual Minimum Commitment</td>
+                                <td class="center">$0</td>
+                                <td class="center">$720 / yr (First 5 Orgs) &bull; $960 std</td>
+                                <td class="center">$3,000 / yr</td>
+                                <td class="center">$14,400 / yr</td>
+                            </tr>
+                            <tr>
+                                <td>Central Fleet Console</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Custom Organization Rules</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Tamper-Evident Audit Ledger</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Deep Git Commit History Scan</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Executive Audit Reports (HTML &amp; CSV)</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Management REST API &amp; Real-Time Event Stream</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Git History Redaction Engine</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Enterprise Single Sign-On (OIDC &amp; Reverse Proxy)</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-no">&mdash;</td>
+                                <td class="center cell-yes">Included</td>
+                            </tr>
+                            <tr>
+                                <td>Support Channel & SLA Tier</td>
+                                <td class="center" style="font-size: 0.78rem;">Community Docs</td>
+                                <td class="center" style="font-size: 0.78rem;">Standard Electronic (48h)</td>
+                                <td class="center" style="font-size: 0.78rem;">Priority Engineering Desk (24h)</td>
+                                <td class="center cell-yes" style="font-size: 0.78rem;">Direct Principal Architect (4h)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Supporting Specification Stills -->
+                <div class="matrix-supporting-grid">
+                    <div class="media-item">
+                        <div class="media-frame">
+                            <img src="img/console-07-allowlist.webp" alt="Allowlist management in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                        </div>
+                        <div class="media-caption">Organization allowlist, governed centrally</div>
+                    </div>
+                    <div class="media-item">
+                        <div class="media-frame">
+                            <img src="img/console-08-engine-settings.webp" alt="Engine settings in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                        </div>
+                        <div class="media-caption">Engine settings under central governance</div>
+                    </div>
+                    <div class="media-item">
+                        <div class="media-frame">
+                            <img src="img/console-11-license-quotas.webp" alt="License and quotas page in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                        </div>
+                        <div class="media-caption">Signed license entitlements and seat quotas, enforced offline</div>
+                    </div>
+                    <div class="media-item">
+                        <div class="media-frame">
+                            <img src="img/console-12-system-updates.webp" alt="System updates page in the Crenox Pro console" width="1920" height="1080" loading="lazy" decoding="async">
+                        </div>
+                        <div class="media-caption">Signed updates, applied inside the private network</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Procurement & Settlement Rails -->
+        <section id="settlement" class="section">
+            <div class="container">
+                <div class="settlement-block">
+                    <div class="section-tag">Procurement & Settlement</div>
+                    <h4>Enterprise Settlement Rails & Net 30 Terms</h4>
+                    <p>
+                        Commercial orders are formalized via formal Purchase Order (PO) with standard Net 30 calendar day terms. Settlement is accepted across major corporate clearing rails:
+                    </p>
+                    <div class="rails-grid">
+                        <div class="rail-item">
+                            <div class="rail-name">USD Settlement</div>
+                            <div class="rail-detail">Domestic ACH & Fedwire wire transfers</div>
+                        </div>
+                        <div class="rail-item">
+                            <div class="rail-name">EUR Settlement</div>
+                            <div class="rail-detail">SEPA & SEPA Instant credit transfers</div>
+                        </div>
+                        <div class="rail-item">
+                            <div class="rail-name">GBP Settlement</div>
+                            <div class="rail-detail">Faster Payments (FPS) & BACS transfers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commercial Procurement Desk -->
+                <div id="evaluation"></div>
+                <div id="procurement" class="procurement-card">
+                    <div class="section-tag" style="margin-bottom: 0.2rem;">Advance Pre-Order & Licensing Desk</div>
+                    <h3 style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; text-align: left;">
+                        Commercial License Pre-Order
+                    </h3>
+                    <p style="font-size: 0.9rem; color: var(--c-secondary); margin-bottom: 1.5rem; line-height: 1.6; text-align: left;">
+                        Reserve your organization's deployment capacity under the foundational allocation. All Crenox Pro licenses are digitally verified and bound strictly to your master server host Node Fingerprint. Operates entirely offline with zero external network connectivity or telemetry.
+                    </p>
+
+                    <!-- Intent Mode Tabs (Evaluation Pilot Hidden) -->
+                    <div class="procurement-tabs" style="display: none;">
+                        <button type="button" class="procurement-tab active" id="tab-commercial" onclick="switchProcurementMode('commercial')">
+                            Commercial License Pre-Order (Formal PO)
+                        </button>
+                    </div>
+
+                    <form id="procurement-form" class="procurement-form" onsubmit="handleProcurementSubmit(event)">
+                        <!-- Mode Indicator -->
+                        <input type="hidden" id="request-intent" name="request_intent" value="commercial_order">
+
+                        <!-- Mode Description Callouts -->
+                        <div id="mode-desc-commercial" class="mode-callout">
+                            <strong>Advance Pre-Order Allocation (Net 30 PO):</strong> Invoices issued according to your designated tier, seat quota, and settlement rail upon production release. The first 5 customer organizations receive an exclusive 25% foundational discount ($6/seat/mo). Upon allocation formalization, a verified offline license file and production binaries are provisioned directly to your security team.
+                        </div>
+                        <div id="mode-desc-evaluation" class="mode-callout" style="display: none;">
+                            <strong>30-Day Enterprise Technical Pilot (EULA Sec. 2.2):</strong> Provisioned for internal technical verification across up to 10 workstations. Authorizes central management console, custom rule synchronization, and tamper-evident audit ledger. Bound strictly to your designated evaluation host Node Fingerprint.
+                        </div>
+
+                        <div class="form-grid">
+                            <!-- Organization Name -->
+                            <div class="form-group">
+                                <label for="comp-name">Organization Legal Name <span class="req">*</span></label>
+                                <input type="text" id="comp-name" name="company_name" required placeholder="e.g. Acme Corp" class="form-input">
+                            </div>
+
+                            <!-- Work Email -->
+                            <div class="form-group">
+                                <label for="corp-email">Corporate Work Email <span class="req">*</span></label>
+                                <input type="email" id="corp-email" name="corporate_email" required placeholder="e.g. security@acme.com" class="form-input">
+                            </div>
+
+                            <!-- Commercial Plan -->
+                            <div class="form-group" id="field-tier-group">
+                                <label for="selected-tier">Commercial Plan Tier <span class="req">*</span></label>
+                                <select id="selected-tier" name="commercial_tier" class="form-input" onchange="onTierDropdownChange()">
+                                    <option value="team" selected>Team Tier (10 &ndash; 50 Seats &bull; $6 / seat / mo)</option>
+                                    <option value="business">Business Tier (25 &ndash; 150 Seats &bull; $10 / seat / mo)</option>
+                                    <option value="enterprise">Enterprise Fleet (100 &ndash; 200 Seats &bull; $12 / seat / mo)</option>
+                                    <option value="custom">Custom Fleet Agreement (&gt;200 Seats &bull; Bespoke SLA)</option>
+                                </select>
+                            </div>
+
+                            <!-- Authorized Workstation Seats -->
+                            <div class="form-group" id="field-seats-group">
+                                <label for="workstation-seats">Authorized Workstation Seats <span class="req">*</span></label>
+                                <input type="number" id="workstation-seats" name="workstation_seats" class="form-input" value="10" min="10" max="50" step="1" oninput="calculateLiveCommitment()" style="font-weight: 700; font-family: var(--font-mono); font-size: 0.95rem;">
+                            </div>
+
+                            <!-- Full Width Live Entitlement & Commitment Summary Panel -->
+                            <div class="tier-summary-panel" id="panel-tier-summary">
+                                <div class="summary-left">
+                                    <span class="summary-badge" id="summary-tier-badge">TEAM TIER</span>
+                                    <span class="summary-text" id="summary-entitlement-text">Authorized range: 10 &ndash; 50 developer workstations &bull; First 5 customer organizations allocation (25% off).</span>
+                                </div>
+                                <div class="summary-right" id="summary-calc-val">
+                                    $720.00 USD / yr <span class="summary-mo">($60.00 / mo)</span>
+                                </div>
+                            </div>
+
+                            <!-- Master Node Fingerprint (Full Width) -->
+                            <div class="form-group full-width">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.35rem;">
+                                    <label for="node-id" style="margin-bottom: 0;">Master Node Host Fingerprint (Optional for Advance Pre-Orders)</label>
+                                    <span class="field-hint-code">Hardware binding command: <code style="font-family: var(--font-mono); font-size: 0.78rem;">./crenox-master fingerprint</code></span>
+                                </div>
+                                <input type="text" id="node-id" name="node_fingerprint" placeholder="Leave blank for pre-order reservation (provisioned during server setup)" class="form-input" style="font-family: var(--font-mono); font-size: 0.86rem;">
+                                <div class="field-hint">
+                                    Offline licenses are cryptographically locked to host hardware. Leave blank if your server is not yet deployed; fingerprint binding is finalized during onboarding.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; text-align: center;">
+                            <button type="submit" id="procurement-btn" class="btn btn-black" style="width: 100%; max-width: 440px; padding: 0.85rem 1.5rem; font-size: 0.92rem; cursor: pointer;">
+                                Generate Commercial Pre-Order Allocation &rarr;
+                            </button>
+                        </div>
+                        <div id="procurement-feedback" class="form-status" style="display: none;"></div>
+
+                        <!-- Email Order Dispatch / Specification Output Panel -->
+                        <div id="spec-output-panel" class="spec-output-card" style="display: none;">
+                            <div class="spec-output-header">
+                                <div>
+                                    <h4 id="spec-panel-title">Pre-Order Draft Ready</h4>
+                                </div>
+                                <span class="badge badge-black">Direct Dispatch &amp; Copy</span>
+                            </div>
+                            <p id="spec-panel-desc">
+                                Advance pre-order allocation compiled for <strong>crenoxhq@proton.me</strong>. The specification has been copied to your clipboard. You can launch your email client or paste directly:
+                            </p>
+                            <pre id="spec-pre" class="spec-output-pre"></pre>
+                            <div class="spec-actions">
+                                <button type="button" class="btn btn-black" onclick="copySpecToClipboard()" style="padding: 0.65rem 1.25rem; font-size: 0.84rem; cursor: pointer;">Copy Specification to Clipboard</button>
+                                <a id="spec-mail-link" href="#" class="btn btn-outline" style="padding: 0.65rem 1.25rem; font-size: 0.84rem;">Open in Email Client &rarr;</a>
+                                <span id="copy-status" class="btn-copy-status">Copied to clipboard.</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="container footer-wrap">
+            <p>&copy; 2026 CrenoxHQ. All rights reserved. Governed under the <a href="https://github.com/crenoxhq/crenox-pro/blob/main/COMMERCIAL_EULA.md" target="_blank" rel="noopener noreferrer" style="color: var(--c-secondary); text-decoration: underline;">Commercial EULA</a>.</p>
+            <div class="footer-nav">
+                <a href="index.html">Open-Source Core</a>
+                <a href="https://github.com/crenoxhq/crenox" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+                <a href="https://github.com/crenoxhq/crenox-pro" target="_blank" rel="noopener noreferrer">Crenox Pro Repository</a>
+                <a href="https://github.com/crenoxhq/crenox-pro/blob/main/COMMERCIAL_EULA.md" target="_blank" rel="noopener noreferrer">Commercial EULA</a>
+                <a href="mailto:crenoxhq@proton.me">Pre-Order Desk</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    var TIER_METRICS = {
+        'team': {
+            name: 'Team Tier (Founders Allocation - 25% Off First 5 Organizations)',
+            label: 'Team Tier',
+            min: 10,
+            max: 50,
+            default: 10,
+            monthly: 6,
+            annual: 72,
+            badge: 'Authorized Range: 10 \u2013 50 Workstations',
+            help: 'Authorized tier range: 10 to 50 developer workstations ($6/seat/mo promotional rate for the first 5 customer organizations).'
+        },
+        'business': {
+            name: 'Business Tier',
+            label: 'Business Tier',
+            min: 25,
+            max: 150,
+            default: 25,
+            monthly: 10,
+            annual: 120,
+            badge: 'Authorized Range: 25 \u2013 150 Workstations',
+            help: 'Authorized tier range: 25 to 150 developer workstations ($10/seat/mo standard annual commitment).'
+        },
+        'enterprise': {
+            name: 'Enterprise Fleet',
+            label: 'Enterprise Fleet',
+            min: 100,
+            max: 200,
+            default: 100,
+            monthly: 12,
+            annual: 144,
+            badge: 'Authorized Range: 100 \u2013 200 Workstations',
+            help: 'Authorized tier range: 100 to 200 developer workstations ($12/seat/mo standard fleet commitment).'
+        },
+        'custom': {
+            name: 'Custom Fleet Agreement (>200 Seats)',
+            label: 'Custom Fleet Agreement',
+            min: 201,
+            max: 10000,
+            default: 250,
+            monthly: 12,
+            annual: 144,
+            badge: 'Fleets > 200 Workstations',
+            help: 'Bespoke enterprise agreement for engineering fleets scaling beyond 200 workstations.'
+        }
+    };
+
+    function switchProcurementMode(mode) {
+        // Technical Evaluation Pilot is hidden; locked to commercial pre-order mode
+        var tabComm = document.getElementById('tab-commercial');
+        if (tabComm) tabComm.className = 'procurement-tab active';
+        var reqIntent = document.getElementById('request-intent');
+        if (reqIntent) reqIntent.value = 'commercial_order';
+        
+        var descComm = document.getElementById('mode-desc-commercial');
+        if (descComm) descComm.style.display = 'block';
+        var descEval = document.getElementById('mode-desc-evaluation');
+        if (descEval) descEval.style.display = 'none';
+        
+        var fTier = document.getElementById('field-tier-group');
+        if (fTier) fTier.style.display = 'flex';
+        var fSeats = document.getElementById('field-seats-group');
+        if (fSeats) fSeats.style.display = 'flex';
+        var pSum = document.getElementById('panel-tier-summary');
+        if (pSum) pSum.style.display = 'flex';
+        
+        var btn = document.getElementById('procurement-btn');
+        if (btn) btn.innerText = 'Submit Commercial Pre-Order via Email \u2192';
+        
+        var specOut = document.getElementById('spec-output-panel');
+        if (specOut) specOut.style.display = 'none';
+        var feedBk = document.getElementById('procurement-feedback');
+        if (feedBk) feedBk.style.display = 'none';
+    }
+
+    function onTierDropdownChange() {
+        var sel = document.getElementById('selected-tier');
+        var tierKey = sel ? sel.value : 'team';
+        updateTierLimits(tierKey);
+    }
+
+    function updateTierLimits(tierKey) {
+        var conf = TIER_METRICS[tierKey] || TIER_METRICS['team'];
+        var seatsInput = document.getElementById('workstation-seats');
+
+        if (seatsInput) {
+            seatsInput.min = conf.min;
+            seatsInput.max = conf.max;
+            var curVal = parseInt(seatsInput.value, 10);
+            if (isNaN(curVal) || curVal < conf.min || curVal > conf.max) {
+                seatsInput.value = conf.default;
+            }
+        }
+
+        calculateLiveCommitment();
+    }
+
+    function calculateLiveCommitment() {
+        var sel = document.getElementById('selected-tier');
+        var tierKey = sel ? sel.value : 'team';
+        var conf = TIER_METRICS[tierKey] || TIER_METRICS['team'];
+        var seatsInput = document.getElementById('workstation-seats');
+        var badge = document.getElementById('summary-tier-badge');
+        var entText = document.getElementById('summary-entitlement-text');
+        var calcVal = document.getElementById('summary-calc-val');
+        if (!seatsInput) return;
+
+        var seats = parseInt(seatsInput.value, 10);
+        if (isNaN(seats) || seats < 1) seats = conf.min;
+
+        if (badge) badge.innerText = conf.label.toUpperCase();
+        if (entText) {
+            entText.innerText = (tierKey === 'team')
+                ? 'Authorized range: ' + seats + ' workstations (10\u201350 quota) \u2022 25% discount reserved for the first 5 customer organizations.'
+                : (tierKey === 'custom')
+                ? 'Authorized for engineering fleets scaling beyond 200 workstations with volume economics.'
+                : 'Authorized range: ' + seats + ' workstations (' + conf.min + '\u2013' + conf.max + ' quota) \u2022 Rate-protected commercial subscription.';
+        }
+
+        if (calcVal) {
+            if (tierKey === 'custom') {
+                calcVal.innerHTML = 'Volume Agreement <span class="summary-mo">(Tailored SLA Schedule)</span>';
+            } else {
+                var annualTotal = seats * conf.annual;
+                var monthlyEquiv = (annualTotal / 12.0);
+                calcVal.innerHTML = '$' + annualTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD / yr <span class="summary-mo">($' + monthlyEquiv.toFixed(2) + ' / mo)</span>';
+            }
+        }
+    }
+
+    function selectTier(tier) {
+        switchProcurementMode('commercial');
+        var select = document.getElementById('selected-tier');
+        if (select) {
+            if (tier === 'team' || tier === 'founders') select.value = 'team';
+            else if (tier === 'business') select.value = 'business';
+            else if (tier === 'enterprise') select.value = 'enterprise';
+            else if (tier === 'custom') select.value = 'custom';
+            updateTierLimits(select.value);
+        }
+    }
+
+    var currentSpecText = '';
+
+    function handleProcurementSubmit(e) {
+        e.preventDefault();
+        var feedback = document.getElementById('procurement-feedback');
+        var outputPanel = document.getElementById('spec-output-panel');
+        var copyStatus = document.getElementById('copy-status');
+        copyStatus.style.display = 'none';
+
+        var intent = document.getElementById('request-intent').value;
+        var isCommercial = (intent === 'commercial_order');
+
+        var compName = document.getElementById('comp-name').value.trim();
+        var corpEmail = document.getElementById('corp-email').value.trim();
+        var nodeId = document.getElementById('node-id').value.trim() || 'Pending Host Provisioning';
+
+        if (!compName || !corpEmail) {
+            feedback.className = 'form-status error';
+            feedback.style.display = 'block';
+            feedback.innerText = 'Please provide your organization name and work email.';
+            return;
+        }
+
+        var tierKey = document.getElementById('selected-tier').value;
+        var conf = TIER_METRICS[tierKey] || TIER_METRICS['team'];
+        var seatsInput = document.getElementById('workstation-seats');
+        var requestedSeats = seatsInput ? parseInt(seatsInput.value, 10) : conf.default;
+
+        if (isCommercial) {
+            if (isNaN(requestedSeats) || requestedSeats < conf.min || (conf.max && requestedSeats > conf.max)) {
+                feedback.className = 'form-status error';
+                feedback.style.display = 'block';
+                feedback.innerText = 'Please select a valid workstation seat count between ' + conf.min + ' and ' + conf.max + ' for ' + conf.label + '.';
+                return;
+            }
+        }
+
+        feedback.style.display = 'none';
+
+        var planText = isCommercial ? conf.name : '30-Day Evaluation License (10 Workstations)';
+        var mailSubject = isCommercial 
+            ? '[Crenox Pro Pre-Order] ' + compName + ' - ' + conf.label + ' (' + requestedSeats + ' Seats)'
+            : '[Crenox Pro Evaluation Pilot] ' + compName + ' (30 Days)';
+
+        var calcText = (tierKey === 'custom') 
+            ? 'Bespoke Volume Agreement (>200 Seats)' 
+            : '$' + (requestedSeats * conf.annual).toLocaleString('en-US', {minimumFractionDigits: 2}) + ' USD / year';
+
+        var nodeDisplay = nodeId.trim() ? nodeId.trim() : 'Provisioned during deployment onboarding';
+        var spec = 'Organization: ' + compName + '\n' +
+                   'Email: ' + corpEmail + '\n' +
+                   'Intent: ' + (isCommercial ? 'Advance Pre-Order Allocation (Net 30 PO)' : '30-Day Technical Evaluation Pilot') + '\n' +
+                   'Plan: ' + planText + '\n' +
+                   (isCommercial ? ('Authorized Seats: ' + requestedSeats + ' Workstations\nEstimated Annual Commitment: ' + calcText + '\n') : '') +
+                   'Master Node Fingerprint: ' + nodeDisplay;
+
+        currentSpecText = spec;
+        document.getElementById('spec-pre').innerText = spec;
+
+        var mailtoUrl = 'mailto:crenoxhq@proton.me?subject=' + encodeURIComponent(mailSubject) + '&body=' + encodeURIComponent(spec);
+        document.getElementById('spec-mail-link').href = mailtoUrl;
+
+        outputPanel.style.display = 'block';
+        outputPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        copySpecToClipboard();
+
+        try {
+            window.location.href = mailtoUrl;
+        } catch (e) {}
+    }
+
+    function copySpecToClipboard() {
+        if (!currentSpecText) return;
+        var copyStatus = document.getElementById('copy-status');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(currentSpecText).then(function() {
+                copyStatus.style.display = 'inline-block';
+                setTimeout(function() { copyStatus.style.display = 'none'; }, 4000);
+            }).catch(function() {
+                fallbackCopy();
+            });
+        } else {
+            fallbackCopy();
+        }
+    }
+
+    function fallbackCopy() {
+        var pre = document.getElementById('spec-pre');
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try {
+            document.execCommand('copy');
+            var copyStatus = document.getElementById('copy-status');
+            copyStatus.style.display = 'inline-block';
+            setTimeout(function() { copyStatus.style.display = 'none'; }, 4000);
+        } catch (_) {}
+    }
+
+    // Initialize procurement commitment calculation
+    calculateLiveCommitment();
+    </script>
+</body>
+</html>
