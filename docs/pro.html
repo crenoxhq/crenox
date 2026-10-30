@@ -1247,7 +1247,7 @@
                     <li><a href="#licensing">Capacity Plans</a></li>
                     <li><a href="#specifications">Entitlements</a></li>
                     <li><a href="#settlement">Settlement Rails</a></li>
-                    <li><a href="#procurement" class="header-btn">Advance Pre-Order</a></li>
+                    <li><a href="#procurement" onclick="switchProcurementMode('evaluation')" class="header-btn">Free 30-Day Pilot</a></li>
                 </ul>
             </nav>
         </div>
@@ -1270,8 +1270,8 @@
                 </p>
 
                 <div class="action-row" style="margin-bottom: 0;">
-                    <a href="#licensing" class="btn btn-black">Review Capacity Plans &rarr;</a>
-                    <a href="#procurement" class="btn btn-outline">Advance Pre-Order Desk &rarr;</a>
+                    <a href="#procurement" onclick="switchProcurementMode('evaluation')" class="btn btn-black">Request 30-Day Technical Pilot &rarr;</a>
+                    <a href="#licensing" class="btn btn-outline">Commercial Capacity Plans &rarr;</a>
                 </div>
 
                 <div class="hero-media-wrap">
@@ -1809,34 +1809,46 @@
                     </div>
                 </div>
 
-                <!-- Commercial Procurement Desk -->
+                <!-- Commercial Procurement & Evaluation Desk -->
                 <div id="evaluation"></div>
                 <div id="procurement" class="procurement-card">
-                    <div class="section-tag" style="margin-bottom: 0.2rem;">Advance Pre-Order & Licensing Desk</div>
-                    <h3 style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; text-align: left;">
-                        Commercial License Pre-Order
+                    <div class="section-tag" style="margin-bottom: 0.2rem;">Enterprise Pilot &amp; Licensing Desk</div>
+                    <h3 id="procurement-card-title" style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; text-align: left;">
+                        Request 30-Day Enterprise Technical Pilot
                     </h3>
-                    <p style="font-size: 0.9rem; color: var(--c-secondary); margin-bottom: 1.5rem; line-height: 1.6; text-align: left;">
-                        Reserve your organization's deployment capacity under the foundational allocation. All Crenox Pro licenses are digitally verified and bound strictly to your master server host Node Fingerprint. Operates entirely offline with zero external network connectivity or telemetry.
+                    <p id="procurement-card-desc" style="font-size: 0.9rem; color: var(--c-secondary); margin-bottom: 1.5rem; line-height: 1.6; text-align: left;">
+                        Test Crenox Pro inside your own infrastructure for 30 days &mdash; up to 10 developer workstations, 100% offline, zero commitment.
                     </p>
 
-                    <!-- Intent Mode Tabs (Evaluation Pilot Hidden) -->
-                    <div class="procurement-tabs" style="display: none;">
-                        <button type="button" class="procurement-tab active" id="tab-commercial" onclick="switchProcurementMode('commercial')">
-                            Commercial License Pre-Order (Formal PO)
+                    <!-- Intent Mode Tabs -->
+                    <div class="procurement-tabs">
+                        <button type="button" class="procurement-tab active" id="tab-evaluation" onclick="switchProcurementMode('evaluation')">
+                            30-Day Technical Pilot (Free Evaluation)
+                        </button>
+                        <button type="button" class="procurement-tab" id="tab-commercial" onclick="switchProcurementMode('commercial')">
+                            Commercial Pre-Order (Formal PO)
                         </button>
                     </div>
 
                     <form id="procurement-form" class="procurement-form" onsubmit="handleProcurementSubmit(event)">
                         <!-- Mode Indicator -->
-                        <input type="hidden" id="request-intent" name="request_intent" value="commercial_order">
+                        <input type="hidden" id="request-intent" name="request_intent" value="evaluation_pilot">
 
                         <!-- Mode Description Callouts -->
-                        <div id="mode-desc-commercial" class="mode-callout">
-                            <strong>Advance Pre-Order Allocation (Net 30 PO):</strong> Invoices issued according to your designated tier, seat quota, and settlement rail upon production release. The first 5 customer organizations receive an exclusive 25% foundational discount ($6/seat/mo). Upon allocation formalization, a verified offline license file and production binaries are provisioned directly to your security team.
+                        <div id="mode-desc-evaluation" class="mode-callout">
+                            <div style="font-weight: 700; margin-bottom: 0.35rem; font-size: 0.95rem;">Free 30-Day Evaluation Pilot</div>
+                            <p style="margin-bottom: 0.6rem; line-height: 1.55; color: var(--c-secondary);">
+                                Full access to the central management console, policy synchronization, and audit logging for up to 10 workstations. Runs 100% on-premises with zero cloud dial-out.
+                            </p>
+                            <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--c-border); border-radius: 6px; padding: 0.65rem 0.85rem; font-size: 0.82rem; font-family: var(--font-mono); color: var(--c-secondary); line-height: 1.6;">
+                                <strong style="color: var(--c-black);">Get started in 3 steps:</strong><br>
+                                1. Download <code style="color: var(--c-black);">crenox-master</code> from <a href="https://github.com/crenoxhq/crenox-pro/releases" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: var(--c-black); font-weight: 700;">GitHub Releases</a>.<br>
+                                2. Run on your server: <code style="color: var(--c-black);">./crenox-master fingerprint</code><br>
+                                3. Paste your Node ID below to receive your license file.
+                            </div>
                         </div>
-                        <div id="mode-desc-evaluation" class="mode-callout" style="display: none;">
-                            <strong>30-Day Enterprise Technical Pilot (EULA Sec. 2.2):</strong> Provisioned for internal technical verification across up to 10 workstations. Authorizes central management console, custom rule synchronization, and tamper-evident audit ledger. Bound strictly to your designated evaluation host Node Fingerprint.
+                        <div id="mode-desc-commercial" class="mode-callout" style="display: none;">
+                            <strong>Advance Pre-Order Allocation (Net 30 PO):</strong> Invoices issued according to your designated tier, seat quota, and settlement rail upon production release. The first 5 customer organizations receive an exclusive 25% foundational discount ($6/seat/mo). Upon allocation formalization, a verified offline license file and production binaries are provisioned directly to your security team.
                         </div>
 
                         <div class="form-grid">
@@ -1853,7 +1865,7 @@
                             </div>
 
                             <!-- Commercial Plan -->
-                            <div class="form-group" id="field-tier-group">
+                            <div class="form-group" id="field-tier-group" style="display: none;">
                                 <label for="selected-tier">Commercial Plan Tier <span class="req">*</span></label>
                                 <select id="selected-tier" name="commercial_tier" class="form-input" onchange="onTierDropdownChange()">
                                     <option value="team" selected>Team Tier (10 &ndash; 50 Seats &bull; $6 / seat / mo)</option>
@@ -1864,13 +1876,13 @@
                             </div>
 
                             <!-- Authorized Workstation Seats -->
-                            <div class="form-group" id="field-seats-group">
+                            <div class="form-group" id="field-seats-group" style="display: none;">
                                 <label for="workstation-seats">Authorized Workstation Seats <span class="req">*</span></label>
                                 <input type="number" id="workstation-seats" name="workstation_seats" class="form-input" value="10" min="10" max="50" step="1" oninput="calculateLiveCommitment()" style="font-weight: 700; font-family: var(--font-mono); font-size: 0.95rem;">
                             </div>
 
                             <!-- Full Width Live Entitlement & Commitment Summary Panel -->
-                            <div class="tier-summary-panel" id="panel-tier-summary">
+                            <div class="tier-summary-panel" id="panel-tier-summary" style="display: none;">
                                 <div class="summary-left">
                                     <span class="summary-badge" id="summary-tier-badge">TEAM TIER</span>
                                     <span class="summary-text" id="summary-entitlement-text">Authorized range: 10 &ndash; 50 developer workstations &bull; First 5 customer organizations allocation (25% off).</span>
@@ -1883,19 +1895,19 @@
                             <!-- Master Node Fingerprint (Full Width) -->
                             <div class="form-group full-width">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.35rem;">
-                                    <label for="node-id" style="margin-bottom: 0;">Master Node Host Fingerprint (Optional for Advance Pre-Orders)</label>
-                                    <span class="field-hint-code">Hardware binding command: <code style="font-family: var(--font-mono); font-size: 0.78rem;">./crenox-master fingerprint</code></span>
+                                    <label for="node-id" id="node-id-label" style="margin-bottom: 0;">Master Node ID (Required for 30-Day Pilot) <span class="req" id="node-id-req">*</span></label>
+                                    <span class="field-hint-code">Server command: <code style="font-family: var(--font-mono); font-size: 0.78rem;">./crenox-master fingerprint</code></span>
                                 </div>
-                                <input type="text" id="node-id" name="node_fingerprint" placeholder="Leave blank for pre-order reservation (provisioned during server setup)" class="form-input" style="font-family: var(--font-mono); font-size: 0.86rem;">
-                                <div class="field-hint">
-                                    Offline licenses are cryptographically locked to host hardware. Leave blank if your server is not yet deployed; fingerprint binding is finalized during onboarding.
+                                <input type="text" id="node-id" name="node_fingerprint" required placeholder="e.g. CNX-5429-CF93-4C4C-9A44" class="form-input" style="font-family: var(--font-mono); font-size: 0.86rem;">
+                                <div class="field-hint" id="node-id-hint">
+                                    Run <code style="font-family: var(--font-mono); font-size: 0.75rem;">./crenox-master fingerprint</code> on your server to bind the license to your host instance.
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top: 1.5rem; text-align: center;">
                             <button type="submit" id="procurement-btn" class="btn btn-black" style="width: 100%; max-width: 440px; padding: 0.85rem 1.5rem; font-size: 0.92rem; cursor: pointer;">
-                                Generate Commercial Pre-Order Allocation &rarr;
+                                Request 30-Day Technical Pilot &rarr;
                             </button>
                         </div>
                         <div id="procurement-feedback" class="form-status" style="display: none;"></div>
@@ -1987,27 +1999,72 @@
     };
 
     function switchProcurementMode(mode) {
-        // Technical Evaluation Pilot is hidden; locked to commercial pre-order mode
+        var isEval = (mode === 'evaluation');
+        var tabEval = document.getElementById('tab-evaluation');
         var tabComm = document.getElementById('tab-commercial');
-        if (tabComm) tabComm.className = 'procurement-tab active';
+        if (tabEval) tabEval.className = isEval ? 'procurement-tab active' : 'procurement-tab';
+        if (tabComm) tabComm.className = isEval ? 'procurement-tab' : 'procurement-tab active';
+
         var reqIntent = document.getElementById('request-intent');
-        if (reqIntent) reqIntent.value = 'commercial_order';
-        
-        var descComm = document.getElementById('mode-desc-commercial');
-        if (descComm) descComm.style.display = 'block';
+        if (reqIntent) reqIntent.value = isEval ? 'evaluation_pilot' : 'commercial_order';
+
+        var titleEl = document.getElementById('procurement-card-title');
+        if (titleEl) {
+            titleEl.innerText = isEval 
+                ? 'Request 30-Day Enterprise Technical Pilot' 
+                : 'Commercial Pre-Order Allocation & Formal PO';
+        }
+
+        var descEl = document.getElementById('procurement-card-desc');
+        if (descEl) {
+            descEl.innerText = isEval
+                ? 'Test Crenox Pro inside your own infrastructure for 30 days — up to 10 developer workstations, 100% offline, zero commitment.'
+                : 'Reserve foundational capacity and lock in introductory rates for your engineering organization. Production binaries and offline licenses are provisioned upon formalization.';
+        }
+
         var descEval = document.getElementById('mode-desc-evaluation');
-        if (descEval) descEval.style.display = 'none';
-        
+        if (descEval) descEval.style.display = isEval ? 'block' : 'none';
+        var descComm = document.getElementById('mode-desc-commercial');
+        if (descComm) descComm.style.display = isEval ? 'none' : 'block';
+
         var fTier = document.getElementById('field-tier-group');
-        if (fTier) fTier.style.display = 'flex';
+        if (fTier) fTier.style.display = isEval ? 'none' : 'flex';
         var fSeats = document.getElementById('field-seats-group');
-        if (fSeats) fSeats.style.display = 'flex';
+        if (fSeats) fSeats.style.display = isEval ? 'none' : 'flex';
         var pSum = document.getElementById('panel-tier-summary');
-        if (pSum) pSum.style.display = 'flex';
-        
+        if (pSum) pSum.style.display = isEval ? 'none' : 'flex';
+
+        var nodeLabel = document.getElementById('node-id-label');
+        var nodeInput = document.getElementById('node-id');
+        var nodeHint = document.getElementById('node-id-hint');
+
+        if (nodeLabel) {
+            nodeLabel.innerHTML = isEval
+                ? 'Master Node ID (Required for 30-Day Pilot) <span class="req">*</span>'
+                : 'Master Node ID (Optional for Advance Pre-Orders)';
+        }
+        if (nodeInput) {
+            if (isEval) {
+                nodeInput.setAttribute('required', 'required');
+                nodeInput.placeholder = 'e.g. CNX-5429-CF93-4C4C-9A44';
+            } else {
+                nodeInput.removeAttribute('required');
+                nodeInput.placeholder = 'Leave blank for pre-order reservation (provisioned during server setup)';
+            }
+        }
+        if (nodeHint) {
+            nodeHint.innerHTML = isEval
+                ? 'Run <code style="font-family: var(--font-mono); font-size: 0.75rem;">./crenox-master fingerprint</code> on your server to bind the license to your host instance.'
+                : 'Leave blank if your server is not yet deployed; node binding is finalized during onboarding.';
+        }
+
         var btn = document.getElementById('procurement-btn');
-        if (btn) btn.innerText = 'Submit Commercial Pre-Order via Email \u2192';
-        
+        if (btn) {
+            btn.innerText = isEval
+                ? 'Request 30-Day Technical Pilot \u2192'
+                : 'Generate Commercial Pre-Order Allocation \u2192';
+        }
+
         var specOut = document.getElementById('spec-output-panel');
         if (specOut) specOut.style.display = 'none';
         var feedBk = document.getElementById('procurement-feedback');
@@ -2088,20 +2145,35 @@
         var feedback = document.getElementById('procurement-feedback');
         var outputPanel = document.getElementById('spec-output-panel');
         var copyStatus = document.getElementById('copy-status');
-        copyStatus.style.display = 'none';
+        if (copyStatus) copyStatus.style.display = 'none';
 
         var intent = document.getElementById('request-intent').value;
-        var isCommercial = (intent === 'commercial_order');
+        var isEval = (intent === 'evaluation_pilot');
 
         var compName = document.getElementById('comp-name').value.trim();
         var corpEmail = document.getElementById('corp-email').value.trim();
-        var nodeId = document.getElementById('node-id').value.trim() || 'Pending Host Provisioning';
+        var nodeId = document.getElementById('node-id').value.trim();
 
         if (!compName || !corpEmail) {
             feedback.className = 'form-status error';
             feedback.style.display = 'block';
-            feedback.innerText = 'Please provide your organization name and work email.';
+            feedback.innerText = 'Please provide your organization legal name and corporate work email.';
             return;
+        }
+
+        if (isEval) {
+            if (!nodeId) {
+                feedback.className = 'form-status error';
+                feedback.style.display = 'block';
+                feedback.innerText = 'Master Node ID is required for the 30-day pilot. Please run "./crenox-master fingerprint" on your server and paste the resulting ID.';
+                return;
+            }
+            if (!nodeId.toUpperCase().startsWith('CNX-') || nodeId.length < 8) {
+                feedback.className = 'form-status error';
+                feedback.style.display = 'block';
+                feedback.innerText = 'Invalid Master Node ID format. Please paste the exact output from "./crenox-master fingerprint" (format: CNX-XXXX-XXXX-XXXX-XXXX).';
+                return;
+            }
         }
 
         var tierKey = document.getElementById('selected-tier').value;
@@ -2109,7 +2181,7 @@
         var seatsInput = document.getElementById('workstation-seats');
         var requestedSeats = seatsInput ? parseInt(seatsInput.value, 10) : conf.default;
 
-        if (isCommercial) {
+        if (!isEval) {
             if (isNaN(requestedSeats) || requestedSeats < conf.min || (conf.max && requestedSeats > conf.max)) {
                 feedback.className = 'form-status error';
                 feedback.style.display = 'block';
@@ -2120,25 +2192,45 @@
 
         feedback.style.display = 'none';
 
-        var planText = isCommercial ? conf.name : '30-Day Evaluation License (10 Workstations)';
-        var mailSubject = isCommercial 
-            ? '[Crenox Pro Pre-Order] ' + compName + ' - ' + conf.label + ' (' + requestedSeats + ' Seats)'
-            : '[Crenox Pro Evaluation Pilot] ' + compName + ' (30 Days)';
+        var mailSubject, spec;
 
-        var calcText = (tierKey === 'custom') 
-            ? 'Bespoke Volume Agreement (>200 Seats)' 
-            : '$' + (requestedSeats * conf.annual).toLocaleString('en-US', {minimumFractionDigits: 2}) + ' USD / year';
-
-        var nodeDisplay = nodeId.trim() ? nodeId.trim() : 'Provisioned during deployment onboarding';
-        var spec = 'Organization: ' + compName + '\n' +
+        if (isEval) {
+            mailSubject = '[Crenox Pro Evaluation Pilot] ' + compName + ' (10 Seats)';
+            spec = 'Organization: ' + compName + '\n' +
                    'Email: ' + corpEmail + '\n' +
-                   'Intent: ' + (isCommercial ? 'Advance Pre-Order Allocation (Net 30 PO)' : '30-Day Technical Evaluation Pilot') + '\n' +
-                   'Plan: ' + planText + '\n' +
-                   (isCommercial ? ('Authorized Seats: ' + requestedSeats + ' Workstations\nEstimated Annual Commitment: ' + calcText + '\n') : '') +
+                   'Intent: 30-Day Technical Evaluation Pilot\n' +
+                   'Plan: 30-Day Evaluation License (10 Seats)\n' +
+                   'Seats: 10 Workstations\n' +
+                   'Master Node Fingerprint: ' + nodeId;
+        } else {
+            var calcText = (tierKey === 'custom') 
+                ? 'Bespoke Volume Agreement (>200 Seats)' 
+                : '$' + (requestedSeats * conf.annual).toLocaleString('en-US', {minimumFractionDigits: 2}) + ' USD / year';
+            var nodeDisplay = nodeId ? nodeId : 'Provisioned during deployment onboarding';
+
+            mailSubject = '[Crenox Pro Pre-Order] ' + compName + ' - ' + conf.label + ' (' + requestedSeats + ' Seats)';
+            spec = 'Organization: ' + compName + '\n' +
+                   'Email: ' + corpEmail + '\n' +
+                   'Intent: Advance Pre-Order Allocation (Net 30 PO)\n' +
+                   'Plan: ' + conf.name + ' (' + requestedSeats + ' Seats)\n' +
+                   'Seats: ' + requestedSeats + ' Workstations\n' +
+                   'Estimated Annual Commitment: ' + calcText + '\n' +
                    'Master Node Fingerprint: ' + nodeDisplay;
+        }
 
         currentSpecText = spec;
         document.getElementById('spec-pre').innerText = spec;
+
+        var panelTitle = document.getElementById('spec-panel-title');
+        if (panelTitle) {
+            panelTitle.innerText = isEval ? 'Evaluation Pilot Request Ready' : 'Pre-Order Draft Ready';
+        }
+        var panelDesc = document.getElementById('spec-panel-desc');
+        if (panelDesc) {
+            panelDesc.innerHTML = isEval
+                ? 'Your 30-day technical pilot request has been compiled for <strong>crenoxhq@proton.me</strong> with your node fingerprint. The specification has been copied to your clipboard:'
+                : 'Advance pre-order allocation compiled for <strong>crenoxhq@proton.me</strong>. The specification has been copied to your clipboard:';
+        }
 
         var mailtoUrl = 'mailto:crenoxhq@proton.me?subject=' + encodeURIComponent(mailSubject) + '&body=' + encodeURIComponent(spec);
         document.getElementById('spec-mail-link').href = mailtoUrl;
@@ -2183,8 +2275,9 @@
         } catch (_) {}
     }
 
-    // Initialize procurement commitment calculation
+    // Initialize procurement commitment calculation & default mode to Evaluation Pilot
     calculateLiveCommitment();
+    switchProcurementMode('evaluation');
     </script>
 </body>
 </html>
