@@ -2168,10 +2168,11 @@
                 feedback.innerText = 'Master Node ID is required for the 30-day pilot. Please run "./crenox-master fingerprint" on your server and paste the resulting ID.';
                 return;
             }
-            if (!nodeId.toUpperCase().startsWith('CNX-') || nodeId.length < 8) {
+            var fpRegex = /^CNX-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}$/;
+            if (!fpRegex.test(nodeId)) {
                 feedback.className = 'form-status error';
                 feedback.style.display = 'block';
-                feedback.innerText = 'Invalid Master Node ID format. Please paste the exact output from "./crenox-master fingerprint" (format: CNX-XXXX-XXXX-XXXX-XXXX).';
+                feedback.innerText = 'Invalid Master Node ID format. Please paste the exact output from "./crenox-master fingerprint" (format: CNX-XXXX-XXXX-XXXX-XXXX with 4 hex characters in each block).';
                 return;
             }
         }
