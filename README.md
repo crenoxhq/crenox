@@ -97,7 +97,7 @@ For engineering teams and organizations, **Crenox Pro** provides centralized pol
 
 https://crenoxhq.github.io/crenox/crenox-demo.mp4
 
-> **[Enterprise Specification & Pre-Order →](https://crenoxhq.github.io/crenox/pro.html)** &bull; **[Watch Demonstration (MP4)](https://crenoxhq.github.io/crenox/crenox-demo.mp4)**
+> **[Enterprise Licensing & Specification →](https://crenoxhq.github.io/crenox/pro.html)** &bull; **[Watch Demonstration (MP4)](https://crenoxhq.github.io/crenox/crenox-demo.mp4)**
 
 ---
 

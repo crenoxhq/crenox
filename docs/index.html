@@ -14,9 +14,6 @@
     
     <!-- Canonical & Multilingual SEO (Hreflang) -->
     <link rel="canonical" href="https://crenoxhq.github.io/crenox/">
-    <link rel="alternate" hreflang="en" href="https://crenoxhq.github.io/crenox/">
-    <link rel="alternate" hreflang="ar" href="https://crenoxhq.github.io/crenox/index-ar.html">
-    <link rel="alternate" hreflang="x-default" href="https://crenoxhq.github.io/crenox/">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="logo.png">
     
@@ -118,9 +115,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.2.1">
+    <link rel="stylesheet" href="style.css?v=2.4.0">
     <!-- Asciinema Player CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.css">
+
+    <!-- Immediate Theme Restoration (Zero Flash) -->
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('crenox_theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = saved || (prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
 
@@ -133,14 +142,23 @@
             </a>
             
             <div class="nav-controls">
-                <a href="pro.html" class="nav-enterprise-link" title="Crenox Pro Pre-Order">Crenox Pro (Pre-Order)</a>
-                <a href="index-ar.html" class="lang-switch-btn" aria-label="Switch to Arabic" title="العربية">
-                    <svg class="lang-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle Color Theme" title="Toggle Dark/Light Mode">
+                    <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                </a>
+                    <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <a href="pro.html" class="nav-enterprise-link" title="Crenox Pro — Free Trial &amp; Commercial Licensing">Crenox Pro</a>
                 <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
                     <span class="bar"></span>
                     <span class="bar"></span>
@@ -149,7 +167,7 @@
             </div>
 
             <div class="nav-links" id="navLinks">
-                <a href="pro.html" class="nav-link" title="Enterprise Pro Pre-Order">Enterprise Pro (Pre-Order)</a>
+                <a href="pro.html" class="nav-link" title="Crenox Pro — Enterprise Licensing &amp; Free Trial">Enterprise Pro</a>
                 <a href="#philosophy" class="nav-link">Philosophy</a>
                 <a href="#pipeline" class="nav-link">Pipeline</a>
                 <a href="#benchmarks" class="nav-link">Performance</a>
@@ -183,14 +201,147 @@
             <div class="hero-actions">
                 <a href="#installation" class="btn btn-primary">Deploy Crenox Free</a>
                 <a href="pro.html" class="btn btn-secondary">
-                    Crenox Pro (Pre-Order) &rarr;
+                    Crenox Pro (Free Trial &amp; Licensing) &rarr;
                 </a>
                 <a href="https://github.com/crenoxhq/crenox" target="_blank" class="btn btn-secondary">
                     GitHub Codebase
-                    <span class="btn-icon">↗</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.35rem;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                 </a>
             </div>
 
+            <!-- Official Installation Hub (From README.md) -->
+            <div class="install-hub">
+                <div class="install-hub-tabs">
+                    <button class="install-tab-btn active" data-tab="tab-curl">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 17 10 11 4 5"></polyline>
+                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                        </svg>
+                        curl
+                    </button>
+                    <button class="install-tab-btn" data-tab="tab-brew">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                            <line x1="6" y1="1" x2="6" y2="4"></line>
+                            <line x1="10" y1="1" x2="10" y2="4"></line>
+                            <line x1="14" y1="1" x2="14" y2="4"></line>
+                        </svg>
+                        brew
+                    </button>
+                    <button class="install-tab-btn" data-tab="tab-termux">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                            <polyline points="8 10 11 12 8 14"></polyline>
+                            <line x1="13" y1="14" x2="16" y2="14"></line>
+                        </svg>
+                        termux
+                    </button>
+                    <button class="install-tab-btn" data-tab="tab-go">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 12h8"></path>
+                            <path d="M12 8l4 4-4 4"></path>
+                        </svg>
+                        go install
+                    </button>
+                    <button class="install-tab-btn" data-tab="tab-binaries">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        binaries
+                    </button>
+                </div>
+
+                <!-- Panel 1: Curl Automatic Installer -->
+                <div class="install-tab-panel active" id="tab-curl">
+                    <div class="install-cmd-row">
+                        <div class="install-cmd-code">
+                            <span class="install-cmd-prompt">$</span>
+                            <code>curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash</code>
+                        </div>
+                        <button class="copy-btn" data-copy="curl -fsSL https://crenoxhq.github.io/crenox/install.sh | bash" aria-label="Copy curl command">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="install-cmd-desc">One-line installer with automatic OS/architecture detection (Linux, macOS, Termux) and SHA-256 integrity verification.</p>
+                </div>
+
+                <!-- Panel 2: Homebrew -->
+                <div class="install-tab-panel" id="tab-brew">
+                    <div class="install-cmd-row">
+                        <div class="install-cmd-code">
+                            <span class="install-cmd-prompt">$</span>
+                            <code>brew install crenoxhq/crenox/crenox</code>
+                        </div>
+                        <button class="copy-btn" data-copy="brew install crenoxhq/crenox/crenox" aria-label="Copy brew command">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="install-cmd-desc">Install via the official Homebrew tap for macOS and Linux workstations.</p>
+                </div>
+
+                <!-- Panel 3: Termux -->
+                <div class="install-tab-panel" id="tab-termux">
+                    <div class="install-cmd-row">
+                        <div class="install-cmd-code">
+                            <span class="install-cmd-prompt">$</span>
+                            <code>pkg install tur-repo &amp;&amp; pkg install crenox</code>
+                        </div>
+                        <button class="copy-btn" data-copy="pkg install tur-repo && pkg install crenox" aria-label="Copy termux command">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="install-cmd-desc">Native Android ARM64 deployment through the Termux User Repository (TUR).</p>
+                </div>
+
+                <!-- Panel 4: Go Toolchain -->
+                <div class="install-tab-panel" id="tab-go">
+                    <div class="install-cmd-row">
+                        <div class="install-cmd-code">
+                            <span class="install-cmd-prompt">$</span>
+                            <code>go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest</code>
+                        </div>
+                        <button class="copy-btn" data-copy="go install github.com/crenoxhq/crenox/v2/cmd/crenox@latest" aria-label="Copy go install command">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="install-cmd-desc">Build and compile directly into your $GOPATH/bin using Go 1.22 or later.</p>
+                </div>
+
+                <!-- Panel 5: Standalone Binaries -->
+                <div class="install-tab-panel" id="tab-binaries">
+                    <div class="install-cmd-row">
+                        <div class="install-cmd-code">
+                            <span class="install-cmd-prompt">→</span>
+                            <span style="font-size: 0.85rem;">Pre-compiled binaries for Linux, macOS, Windows, Android</span>
+                        </div>
+                        <a href="https://github.com/crenoxhq/crenox/releases/latest" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; text-decoration: none;">
+                            GitHub Releases
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.35rem;"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                        </a>
+                    </div>
+                    <p class="install-cmd-desc">Direct standalone executable downloads with zero external runtime dependencies.</p>
+                </div>
+            </div>
 
             <!-- Video Demonstration -->
             <div class="hero-video-frame">
@@ -220,8 +371,8 @@
                             Centralized policy management, automated compliance audit trails, and fleet-wide enforcement for engineering teams.
                         </p>
                     </div>
-                    <a href="pro.html" class="tier-bridge-btn-pro" title="Crenox Pro Pre-Order">
-                        Enterprise Fleet (Pre-Order) &rarr;
+                    <a href="pro.html" class="tier-bridge-btn-pro" title="Crenox Pro — Free Trial &amp; Commercial Licensing">
+                        Start Free Trial / License &rarr;
                     </a>
                 </div>
             </div>
@@ -578,7 +729,7 @@ allowlist_patterns:
                 </a>
             </div>
             <div class="footer-links">
-                <a href="pro.html" class="footer-link">Enterprise Pro (Pre-Order)</a>
+                <a href="pro.html" class="footer-link">Enterprise Pro</a>
                 <a href="https://github.com/crenoxhq/crenox" target="_blank" class="footer-link">GitHub Repository</a>
                 <a href="https://github.com/crenoxhq/crenox/blob/main/CHANGELOG.md" target="_blank" class="footer-link">Changelog</a>
             </div>
@@ -586,7 +737,7 @@ allowlist_patterns:
     </footer>
 
     <!-- JavaScript -->
-    <script src="app.js?v=2.2.0"></script>
+    <script src="app.js?v=2.4.0"></script>
     <!-- Asciinema Player JS -->
     <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
     <script>
